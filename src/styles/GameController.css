@@ -1,0 +1,476 @@
+/* ============================================
+   GameController — v2
+   Pantalla del estudiante (mobile-first)
+   Sincronizado con HostGame: letras A/B/C/D
+   ============================================ */
+
+/* ─── Keyframes ───────────────────────────────────────── */
+@keyframes gc-dot {
+  0%, 80%, 100% { opacity: 0.2; transform: scale(0.7); }
+  40%           { opacity: 1;   transform: scale(1);   }
+}
+
+@keyframes gc-pulse {
+  0%, 100% { transform: scale(1);    opacity: 0.9; }
+  50%      { transform: scale(1.08); opacity: 1;   }
+}
+
+/* ─── Background blobs (same system) ─────────────────── */
+.gc-bg {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.gc-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(70px);
+  opacity: 0.3;
+}
+
+.gc-blob-1 {
+  width: 400px; height: 400px;
+  background: linear-gradient(135deg, oklch(0.26 0.14 14) 0%, oklch(0.72 0.09 72) 100%);
+  top: -140px; left: -100px;
+}
+.gc-blob-2 {
+  width: 340px; height: 340px;
+  background: linear-gradient(135deg, oklch(0.88 0.06 72) 0%, oklch(0.72 0.09 72) 100%);
+  bottom: -120px; right: -100px;
+}
+.gc-blob-3 {
+  width: 280px; height: 280px;
+  background: linear-gradient(135deg, oklch(0.32 0.14 14) 0%, oklch(0.26 0.14 14) 100%);
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* ─── Base state shell ────────────────────────────────── */
+.gc-state {
+  min-height: 100dvh;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2.5rem 1.75rem;
+  overflow: hidden;
+  font-family: var(--font-body);
+}
+
+/* Hero gradient (waiting, submitted, other rank) */
+.gc-state--waiting,
+.gc-state--other {
+  background: linear-gradient(180deg,
+    oklch(0.995 0.004 14) 0%,
+    oklch(0.98  0.003 252) 100%
+  );
+  color: var(--text-main);
+}
+
+/* Result states */
+.gc-state--correct   { background: oklch(0.32 0.14 145); color: white; }
+.gc-state--incorrect { background: oklch(0.36 0.18 25);  color: white; }
+
+/* Drumroll */
+.gc-state--drumroll { background: var(--color-primary); color: white; }
+
+/* Podium rank colors */
+.gc-state--gold   { background: oklch(0.86 0.16 88);  color: oklch(0.22 0.12 14); }
+.gc-state--silver { background: oklch(0.72 0.01 250); color: oklch(0.18 0.02 250); }
+.gc-state--bronze { background: oklch(0.58 0.09 55);  color: white; }
+
+/* ─── State icon wrapper ──────────────────────────────── */
+.gc-state-icon-wrap {
+  width: 80px;
+  height: 80px;
+  border-radius: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+  flex-shrink: 0;
+}
+
+.gc-state-icon-wrap--neutral {
+  background: rgba(90, 14, 36, 0.08);
+  color: var(--color-primary);
+  animation: gc-pulse 2.4s ease-in-out infinite;
+}
+
+.gc-state-icon-wrap--primary {
+  background: var(--color-primary);
+  color: white;
+}
+
+.gc-state-icon-wrap--light {
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+}
+
+/* ─── Spinner (syncing state) ─────────────────────────── */
+.gc-spinner-icon {
+  color: var(--color-primary);
+  animation: spin 1s linear infinite;
+  margin-bottom: 1.25rem;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ─── State typography ────────────────────────────────── */
+.gc-state-title {
+  font-family: var(--font-heading);
+  font-size: 1.625rem;
+  font-weight: 800;
+  margin: 0 0 0.625rem;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.gc-state-title--light { color: white; }
+
+.gc-state-sub {
+  font-family: var(--font-heading);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.gc-state-sub--light { color: rgba(255, 255, 255, 0.65); }
+
+/* ─── Name chip ───────────────────────────────────────── */
+.gc-name-chip {
+  margin-top: 2rem;
+  display: inline-block;
+  padding: 0.5rem 1.5rem;
+  background: var(--color-primary);
+  color: white;
+  border-radius: 100px;
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  font-weight: 700;
+  box-shadow: 0 8px 24px rgba(90, 14, 36, 0.28);
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ─── Animated dots ───────────────────────────────────── */
+.gc-dots {
+  display: flex;
+  gap: 0.3rem;
+  margin: 0.75rem 0 0.25rem;
+}
+
+.gc-dot {
+  display: block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  animation: gc-dot 1.4s ease-in-out infinite;
+}
+
+.gc-dot:nth-child(1) { animation-delay: 0ms; }
+.gc-dot:nth-child(2) { animation-delay: 160ms; }
+.gc-dot:nth-child(3) { animation-delay: 320ms; }
+
+/* ─── Result screen ───────────────────────────────────── */
+.gc-result-circle {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.18);
+  border: 3px solid rgba(255, 255, 255, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  margin-bottom: 1.25rem;
+  flex-shrink: 0;
+}
+
+.gc-result-title {
+  font-family: var(--font-heading);
+  font-size: 2.5rem;
+  font-weight: 900;
+  margin: 0 0 1.5rem;
+  letter-spacing: -0.03em;
+}
+
+.gc-points-card {
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 16px;
+  padding: 1.125rem 2.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  width: 100%;
+  max-width: 280px;
+}
+
+.gc-points-label {
+  font-family: var(--font-heading);
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.gc-points-value {
+  font-family: var(--font-heading);
+  font-size: 2.25rem;
+  font-weight: 900;
+  color: white;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.gc-total-score {
+  margin-top: 1rem;
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.gc-total-score strong {
+  color: white;
+  font-weight: 800;
+}
+
+/* ─── Game over ───────────────────────────────────────── */
+.gc-rank-icon {
+  margin-bottom: 1rem;
+}
+
+.gc-state--gold   .gc-rank-icon { color: oklch(0.5 0.14 58); }
+.gc-state--silver .gc-rank-icon { color: oklch(0.45 0.04 250); }
+.gc-state--bronze .gc-rank-icon { color: white; }
+.gc-state--other  .gc-rank-icon { color: var(--color-primary); }
+
+.gc-rank-label {
+  font-family: var(--font-heading);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  margin: 0;
+  opacity: 0.7;
+}
+
+.gc-rank-number {
+  font-family: var(--font-heading);
+  font-size: 5rem;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  margin: 0.25rem 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.gc-rank-message {
+  font-family: var(--font-heading);
+  font-size: 1.625rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin: 0 0 1.5rem;
+}
+
+.gc-final-stats {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 1rem 1.5rem;
+  background: rgba(0, 0, 0, 0.12);
+  border-radius: 14px;
+  font-family: var(--font-heading);
+  font-size: 0.9375rem;
+  width: 100%;
+  max-width: 280px;
+}
+
+.gc-state--gold   .gc-final-stats { background: rgba(0, 0, 0, 0.1); }
+.gc-state--other  .gc-final-stats { background: rgba(90, 14, 36, 0.07); border: 1px solid rgba(90,14,36,0.1); }
+
+.gc-final-stats strong {
+  font-size: 1.375rem;
+  font-weight: 900;
+}
+
+.gc-reaction-time {
+  font-size: 0.8125rem;
+  opacity: 0.65;
+  margin-top: 0.125rem;
+}
+
+.gc-btn-exit {
+  margin-top: 1.75rem;
+  padding: 0.75rem 2.25rem;
+  border-radius: 100px;
+  border: none;
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.18s;
+  min-height: 48px;
+}
+
+.gc-state--gold   .gc-btn-exit { background: oklch(0.22 0.12 14); color: white; }
+.gc-state--silver .gc-btn-exit { background: oklch(0.22 0.02 250); color: white; }
+.gc-state--bronze .gc-btn-exit { background: rgba(255,255,255,0.22); color: white; border: 1px solid rgba(255,255,255,0.4); }
+.gc-state--other  .gc-btn-exit { background: var(--color-primary); color: white; }
+.gc-state--drumroll .gc-btn-exit { background: rgba(255,255,255,0.2); color: white; }
+
+.gc-btn-exit:hover { opacity: 0.82; }
+.gc-btn-exit:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
+
+/* ─── Play area (answering state) ─────────────────────── */
+.gc-play {
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: oklch(0.1 0.01 252);
+}
+
+/* ─── Instruction bar ─────────────────────────────────── */
+.gc-info-bar {
+  flex-shrink: 0;
+  height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: rgba(255, 255, 255, 0.88);
+  font-family: var(--font-heading);
+  font-size: 0.875rem;
+  font-weight: 600;
+  padding: 0 1.25rem;
+  letter-spacing: 0.01em;
+}
+
+/* ─── 2×2 button grid ─────────────────────────────────── */
+.gc-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 5px;
+  padding: 5px;
+  min-height: 0;
+}
+
+/* ─── Answer button ───────────────────────────────────── */
+.gc-btn {
+  border: none;
+  border-radius: 16px;
+  cursor: pointer;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s ease, filter 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.gc-btn::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 5px solid transparent;
+  transition: border-color 0.15s ease;
+  pointer-events: none;
+}
+
+.gc-btn--selected::after {
+  border-color: white;
+}
+
+.gc-btn--dimmed {
+  opacity: 0.42;
+}
+
+.gc-btn:focus-visible::after {
+  border-color: rgba(255, 255, 255, 0.7);
+}
+
+/* Letter label */
+.gc-btn-letter {
+  font-family: var(--font-heading);
+  font-size: clamp(2.5rem, 10vw, 4rem);
+  font-weight: 900;
+  color: white;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+  letter-spacing: -0.03em;
+  line-height: 1;
+  user-select: none;
+}
+
+/* Selected checkmark */
+.gc-btn-check {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.95);
+  color: oklch(0.42 0.18 145);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* ─── Multi submit button ─────────────────────────────── */
+.gc-submit {
+  flex-shrink: 0;
+  height: 62px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: rgba(90, 14, 36, 0.4);
+  color: rgba(255, 255, 255, 0.5);
+  border: none;
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  cursor: not-allowed;
+  transition: background 0.22s ease, color 0.22s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.gc-submit--ready {
+  background: var(--color-primary);
+  color: white;
+  cursor: pointer;
+  box-shadow: 0 -4px 20px rgba(90, 14, 36, 0.35);
+}
+
+.gc-submit--ready:active { filter: brightness(0.9); }
+.gc-submit:focus-visible { outline: 2px solid white; outline-offset: -4px; }
+
+/* ─── Reduced motion ──────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .gc-state-icon-wrap--neutral { animation: none; }
+  .gc-dot                      { animation: none; opacity: 0.6; }
+  .gc-state-icon-wrap--light   { animation: none; }
+}

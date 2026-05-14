@@ -1,0 +1,327 @@
+/* ===========================
+   FEATURES SECTION
+   =========================== */
+
+.features {
+  position: relative;
+  padding: 120px 0;
+  background: oklch(0.995 0.004 14);
+  overflow: hidden;
+}
+
+.features-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+/* ===========================
+   HEADER
+   =========================== */
+
+.features-header {
+  margin-bottom: 4rem;
+  max-width: 640px;
+}
+
+.features-eyebrow {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: oklch(0.26 0.14 14);
+  margin: 0 0 1.25rem 0;
+}
+
+.features-title {
+  font-size: 3rem;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  color: oklch(0.22 0.03 252);
+  margin: 0 0 1.25rem 0;
+}
+
+.features-subtitle {
+  font-size: 1.125rem;
+  line-height: 1.7;
+  color: oklch(0.53 0.025 252);
+  margin: 0;
+  max-width: 55ch;
+}
+
+/* ===========================
+   FEATURED CARDS (3 tarjetas con pesos distintos)
+   =========================== */
+
+.features-grid-featured {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.feature-card-featured {
+  border-radius: 20px;
+  padding: 2.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.125rem;
+  transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+              box-shadow 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Oscuro: la IA, la más importante */
+.feature-card-featured.accent-dark {
+  background: oklch(0.26 0.14 14);
+  box-shadow: 0 8px 32px oklch(0.26 0.14 14 / 0.25);
+}
+
+.feature-card-featured.accent-dark:hover {
+  box-shadow: 0 20px 48px oklch(0.26 0.14 14 / 0.35);
+}
+
+/* Cálido: tiempo real */
+.feature-card-featured.accent-warm {
+  background: oklch(0.88 0.06 72);
+  box-shadow: 0 8px 32px oklch(0.72 0.09 72 / 0.15);
+}
+
+.feature-card-featured.accent-warm:hover {
+  box-shadow: 0 20px 48px oklch(0.72 0.09 72 / 0.25);
+}
+
+/* Neutro tintado: gamificación */
+.feature-card-featured.accent-mid {
+  background: oklch(0.96 0.006 14);
+  border: 1px solid oklch(0.92 0.008 252);
+  box-shadow: 0 4px 16px oklch(0.22 0.03 252 / 0.04);
+}
+
+.feature-card-featured.accent-mid:hover {
+  box-shadow: 0 16px 40px oklch(0.22 0.03 252 / 0.08);
+}
+
+/* Icono en cada variante */
+.featured-icon-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 60px;
+  border-radius: 16px;
+  flex-shrink: 0;
+}
+
+.accent-dark .featured-icon-wrap {
+  background: oklch(0.72 0.09 72 / 0.15);
+  color: oklch(0.88 0.06 72);
+}
+
+.accent-warm .featured-icon-wrap {
+  background: oklch(0.26 0.14 14 / 0.1);
+  color: oklch(0.26 0.14 14);
+}
+
+.accent-mid .featured-icon-wrap {
+  background: oklch(0.26 0.14 14 / 0.08);
+  color: oklch(0.26 0.14 14);
+}
+
+.featured-icon-wrap svg {
+  stroke-width: 1.75;
+}
+
+.featured-title {
+  font-size: 1.375rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 0;
+  line-height: 1.25;
+}
+
+.accent-dark .featured-title {
+  color: oklch(0.98 0.003 14);
+}
+
+.accent-warm .featured-title,
+.accent-mid .featured-title {
+  color: oklch(0.22 0.03 252);
+}
+
+.featured-description {
+  font-size: 1rem;
+  line-height: 1.65;
+  margin: 0;
+}
+
+.accent-dark .featured-description {
+  color: oklch(0.84 0.012 252 / 0.8);
+}
+
+.accent-warm .featured-description,
+.accent-mid .featured-description {
+  color: oklch(0.43 0.025 252);
+}
+
+/* ===========================
+   SECONDARY FEATURES (grid tabla sin tarjetas)
+   =========================== */
+
+.features-grid-secondary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border: 1px solid oklch(0.92 0.008 252);
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.feature-item-secondary {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1.75rem;
+  border-bottom: 1px solid oklch(0.92 0.008 252);
+  border-right: 1px solid oklch(0.92 0.008 252);
+  transition: background 0.2s ease;
+}
+
+.feature-item-secondary:hover {
+  background: oklch(0.98 0.003 252);
+}
+
+.feature-item-secondary:nth-child(3n) {
+  border-right: none;
+}
+
+.feature-item-secondary:nth-child(n+4) {
+  border-bottom: none;
+}
+
+.secondary-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: oklch(0.26 0.14 14 / 0.07);
+  color: oklch(0.26 0.14 14);
+  flex-shrink: 0;
+}
+
+.secondary-icon svg {
+  stroke-width: 2;
+}
+
+.secondary-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.secondary-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: oklch(0.22 0.03 252);
+  margin: 0 0 0.35rem 0;
+  letter-spacing: -0.01em;
+}
+
+.secondary-description {
+  font-size: 0.875rem;
+  line-height: 1.55;
+  color: oklch(0.53 0.025 252);
+  margin: 0;
+}
+
+/* ===========================
+   RESPONSIVE
+   =========================== */
+
+@media (max-width: 1024px) {
+  .features { padding: 100px 0; }
+
+  .features-grid-featured {
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  .features-grid-featured .feature-card-featured:last-child {
+    grid-column: span 2;
+  }
+
+  .features-title { font-size: 2.5rem; }
+}
+
+@media (max-width: 768px) {
+  .features { padding: 80px 0; }
+
+  .features-header { margin-bottom: 3rem; }
+
+  .features-title { font-size: 2rem; }
+
+  .features-grid-featured {
+    grid-template-columns: 1fr;
+  }
+
+  .features-grid-featured .feature-card-featured:last-child {
+    grid-column: span 1;
+  }
+
+  .features-grid-secondary {
+    grid-template-columns: 1fr 1fr;
+    border-radius: 16px;
+  }
+
+  .feature-item-secondary:nth-child(3n) {
+    border-right: 1px solid oklch(0.92 0.008 252);
+  }
+
+  .feature-item-secondary:nth-child(2n) {
+    border-right: none;
+  }
+
+  .feature-item-secondary:nth-child(n+5) {
+    border-bottom: none;
+  }
+
+  .feature-item-secondary:nth-child(n+4):nth-child(-n+4) {
+    border-bottom: 1px solid oklch(0.92 0.008 252);
+  }
+}
+
+@media (max-width: 640px) {
+  .features { padding: 60px 0; }
+
+  .features-container { padding: 0 1rem; }
+
+  .features-title { font-size: 1.75rem; }
+
+  .features-subtitle { font-size: 1rem; }
+
+  .feature-card-featured { padding: 1.75rem; }
+
+  .features-grid-secondary {
+    grid-template-columns: 1fr;
+  }
+
+  .feature-item-secondary {
+    border-right: none !important;
+    border-bottom: 1px solid oklch(0.92 0.008 252) !important;
+  }
+
+  .feature-item-secondary:last-child {
+    border-bottom: none !important;
+  }
+}
+
+/* ===========================
+   REDUCED MOTION
+   =========================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .feature-card-featured,
+  .feature-item-secondary {
+    transition: none;
+  }
+}

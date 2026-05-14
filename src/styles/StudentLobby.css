@@ -1,0 +1,340 @@
+/* ============================================
+   StudentLobby — v2
+   Mismo sistema visual que Hero / Join / GameRoom
+   Mobile-first: el estudiante siempre está en celular
+   ============================================ */
+
+/* ─── Keyframes ───────────────────────────────────────── */
+@keyframes sl-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes sl-pulse-ring {
+  0%   { transform: scale(1);    opacity: 0.55; }
+  70%  { transform: scale(1.32); opacity: 0; }
+  100% { transform: scale(1.32); opacity: 0; }
+}
+
+@keyframes sl-pulse-ring-outer {
+  0%   { transform: scale(1);    opacity: 0.28; }
+  70%  { transform: scale(1.55); opacity: 0; }
+  100% { transform: scale(1.55); opacity: 0; }
+}
+
+@keyframes sl-dot {
+  0%, 80%, 100% { opacity: 0.2;  transform: scale(0.7); }
+  40%           { opacity: 1;    transform: scale(1); }
+}
+
+@keyframes sl-starting-bg {
+  0%   { background-color: transparent; }
+  100% { background-color: var(--state-success); }
+}
+
+/* ─── Page shell ──────────────────────────────────────── */
+.sl-page {
+  min-height: 100dvh;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(
+    180deg,
+    oklch(0.995 0.004 14) 0%,
+    oklch(0.98  0.003 252) 100%
+  );
+  overflow: hidden;
+  transition: background-color 0.5s ease;
+}
+
+.sl-page--starting {
+  animation: sl-starting-bg 0.4s ease forwards;
+}
+
+/* ─── Background blobs ────────────────────────────────── */
+.sl-bg {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.sl-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.32;
+}
+
+.sl-blob-1 {
+  width: 520px;
+  height: 520px;
+  background: linear-gradient(135deg, oklch(0.26 0.14 14) 0%, oklch(0.72 0.09 72) 100%);
+  top: -180px;
+  left: -120px;
+}
+
+.sl-blob-2 {
+  width: 440px;
+  height: 440px;
+  background: linear-gradient(135deg, oklch(0.88 0.06 72) 0%, oklch(0.72 0.09 72) 100%);
+  bottom: -140px;
+  right: -120px;
+}
+
+.sl-blob-3 {
+  width: 360px;
+  height: 360px;
+  background: linear-gradient(135deg, oklch(0.32 0.14 14) 0%, oklch(0.26 0.14 14) 100%);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* ─── Header ──────────────────────────────────────────── */
+.sl-header {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.25rem;
+  height: 52px;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+  flex-shrink: 0;
+}
+
+.sl-logo {
+  height: 42px;
+  width: auto;
+  display: block;
+}
+
+/* ─── PIN badge ───────────────────────────────────────── */
+.sl-pin-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.3125rem 0.75rem;
+  background: var(--color-primary);
+  border-radius: 100px;
+}
+
+.sl-pin-label {
+  font-family: var(--font-heading);
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.sl-pin-value {
+  font-family: var(--font-heading);
+  font-size: 0.875rem;
+  font-weight: 800;
+  color: var(--text-inverted);
+  letter-spacing: 0.06em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ─── Main ────────────────────────────────────────────── */
+.sl-main {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1.5rem;
+}
+
+/* ─── Waiting content ─────────────────────────────────── */
+.sl-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  text-align: center;
+  max-width: 320px;
+  width: 100%;
+}
+
+/* ─── Avatar ──────────────────────────────────────────── */
+.sl-avatar-wrap {
+  position: relative;
+  width: 130px;
+  height: 130px;
+  margin-bottom: 1.75rem;
+  flex-shrink: 0;
+}
+
+.sl-avatar-ring {
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  background: transparent;
+  border: 3px solid var(--color-primary);
+  animation: sl-pulse-ring 2.2s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+
+.sl-avatar-ring--outer {
+  inset: -4px;
+  border-color: var(--color-primary);
+  animation: sl-pulse-ring-outer 2.2s cubic-bezier(0.22, 1, 0.36, 1) 0.35s infinite;
+}
+
+.sl-avatar {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--bg-card);
+  overflow: hidden;
+  border: 3px solid var(--color-primary);
+  box-shadow: 0 12px 36px rgba(90, 14, 36, 0.22);
+}
+
+.sl-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.sl-avatar-initial {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-heading);
+  font-size: 2.75rem;
+  font-weight: 800;
+  color: var(--color-primary);
+}
+
+/* ─── Heading ─────────────────────────────────────────── */
+.sl-heading {
+  font-family: var(--font-heading);
+  font-size: 1.625rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin: 0 0 0.875rem;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+/* ─── Name chip ───────────────────────────────────────── */
+.sl-name-chip {
+  display: inline-block;
+  padding: 0.5625rem 1.5rem;
+  background: var(--color-primary);
+  color: var(--text-inverted);
+  border-radius: 100px;
+  font-family: var(--font-heading);
+  font-size: 1.0625rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  box-shadow: 0 8px 24px rgba(90, 14, 36, 0.28);
+  margin-bottom: 2rem;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ─── Status ──────────────────────────────────────────── */
+.sl-status {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  margin-bottom: 0.75rem;
+}
+
+.sl-dots {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex-shrink: 0;
+}
+
+.sl-dot {
+  display: block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  animation: sl-dot 1.4s ease-in-out infinite;
+}
+
+.sl-dot:nth-child(1) { animation-delay: 0ms; }
+.sl-dot:nth-child(2) { animation-delay: 160ms; }
+.sl-dot:nth-child(3) { animation-delay: 320ms; }
+
+.sl-status-text {
+  font-family: var(--font-heading);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--text-main);
+  margin: 0;
+}
+
+/* ─── Hint ────────────────────────────────────────────── */
+.sl-hint {
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ─── Starting state ──────────────────────────────────── */
+.sl-starting {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  text-align: center;
+}
+
+.sl-start-icon {
+  font-size: 4rem;
+  line-height: 1;
+  margin-bottom: 0.25rem;
+  filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.15));
+}
+
+.sl-start-heading {
+  font-family: var(--font-heading);
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--color-primary);
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.sl-start-sub {
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* ─── Responsive: slightly larger screens ─────────────── */
+@media (min-width: 480px) {
+  .sl-avatar-wrap { width: 148px; height: 148px; }
+  .sl-heading     { font-size: 1.875rem; }
+  .sl-name-chip   { font-size: 1.125rem; padding: 0.625rem 1.75rem; }
+}
+
+/* ─── Reduced motion ──────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .sl-avatar-ring,
+  .sl-avatar-ring--outer { animation: none; opacity: 0.4; }
+  .sl-dot                { animation: none; opacity: 0.6; }
+  .sl-page--starting     { animation: none; }
+}

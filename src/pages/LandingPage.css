@@ -1,0 +1,76 @@
+/* ===========================
+   LANDING PAGE - Base
+   =========================== */
+
+.landing-page {
+  min-height: 100vh;
+  background: white;
+  overflow-x: hidden;
+}
+
+/* ===========================
+   PLACEHOLDERS (Temporal)
+   =========================== */
+
+.section-placeholder {
+  min-height: 60vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #F8FAFC;
+  border-top: 1px solid #E2E8F0;
+}
+
+.section-placeholder:nth-child(even) {
+  background: white;
+}
+
+.placeholder-content {
+  text-align: center;
+  padding: 2rem;
+}
+
+.placeholder-content h2 {
+  font-size: 2rem;
+  color: #64748B;
+  margin-bottom: 0.5rem;
+}
+
+.placeholder-content p {
+  color: #94A3B8;
+  font-size: 1rem;
+}
+
+/* ===========================
+   SMOOTH SCROLLING
+   =========================== */
+
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+/* ===========================
+   LAZY LOADING SPINNER
+   =========================== */
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ===========================
+   MOBILE BOTTOM NAV SPACING
+   =========================== */
+
+@media (max-width: 900px) {
+  .landing-page {
+    padding-bottom: calc(100px + env(safe-area-inset-bottom));
+  }
+}

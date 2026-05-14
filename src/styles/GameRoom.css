@@ -1,0 +1,494 @@
+/* ============================================
+   GameRoom — v4
+   Mismo fondo del hero (degradado + blobs)
+   PIN en caja vino, bottom bar vino
+   Coherencia total con el sistema
+   ============================================ */
+
+/* ─── Keyframes ───────────────────────────────────────── */
+@keyframes gr-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes gr-pin-glow {
+  0%, 100% { box-shadow: 0 20px 56px rgba(90, 14, 36, 0.28); }
+  50%       { box-shadow: 0 28px 72px rgba(90, 14, 36, 0.44); }
+}
+
+/* ─── Spinner ─────────────────────────────────────────── */
+.gr-spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: var(--text-inverted);
+  border-radius: 50%;
+  animation: gr-spin 0.65s linear infinite;
+  flex-shrink: 0;
+}
+
+/* ─── Page shell ──────────────────────────────────────── */
+.gr-page {
+  min-height: 100dvh;
+  position: relative;
+  background: linear-gradient(180deg,
+    oklch(0.995 0.004 14) 0%,
+    oklch(0.98  0.003 252) 100%
+  );
+  color: var(--text-main);
+  font-family: var(--font-body);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ─── Background blobs (same as hero) ────────────────── */
+.gr-bg {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.gr-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.35;
+}
+
+.gr-blob-1 {
+  width: 600px;
+  height: 600px;
+  background: linear-gradient(135deg, oklch(0.26 0.14 14) 0%, oklch(0.72 0.09 72) 100%);
+  top: -200px;
+  left: -100px;
+}
+
+.gr-blob-2 {
+  width: 500px;
+  height: 500px;
+  background: linear-gradient(135deg, oklch(0.88 0.06 72) 0%, oklch(0.72 0.09 72) 100%);
+  bottom: -150px;
+  right: -150px;
+}
+
+.gr-blob-3 {
+  width: 400px;
+  height: 400px;
+  background: linear-gradient(135deg, oklch(0.32 0.14 14) 0%, oklch(0.26 0.14 14) 100%);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* ─── Navbar ──────────────────────────────────────────── */
+.gr-nav {
+  position: relative;
+  z-index: 10;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0 1.5rem;
+  height: 56px;
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+  flex-shrink: 0;
+}
+
+.gr-nav-left  { display: flex; justify-content: flex-start; }
+.gr-nav-right { display: flex; justify-content: flex-end; }
+.gr-nav-center {
+  display: flex;
+  justify-content: center;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.gr-nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.gr-nav-logo {
+  height: 42px;
+  width: auto;
+  display: block;
+  flex-shrink: 0;
+}
+
+.gr-nav-sep {
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.gr-nav-quiz {
+  font-family: var(--font-heading);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gr-nav-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.4375rem 0.875rem;
+  background: transparent;
+  border: 1.5px solid rgba(90, 14, 36, 0.2);
+  border-radius: 8px;
+  color: var(--color-primary);
+  font-family: var(--font-heading);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+  white-space: nowrap;
+  min-height: 36px;
+}
+
+.gr-nav-btn:hover {
+  background: rgba(90, 14, 36, 0.06);
+  border-color: rgba(90, 14, 36, 0.35);
+}
+
+.gr-nav-btn:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* ─── Exit banner ─────────────────────────────────────── */
+.gr-exit-banner {
+  position: relative;
+  z-index: 9;
+  background: rgba(255, 255, 255, 0.9);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  flex-shrink: 0;
+}
+
+.gr-exit-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+  padding: 0.75rem 1.5rem;
+  flex-wrap: wrap;
+}
+
+.gr-exit-text {
+  font-family: var(--font-heading);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-main);
+}
+
+.gr-exit-actions { display: flex; gap: 0.5rem; }
+
+.gr-exit-cancel,
+.gr-exit-confirm {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.4rem 1rem;
+  border-radius: 6px;
+  font-family: var(--font-heading);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  min-height: 34px;
+}
+
+.gr-exit-cancel {
+  background: transparent;
+  border: 1.5px solid rgba(0, 0, 0, 0.15);
+  color: var(--text-main);
+}
+
+.gr-exit-confirm {
+  background: var(--color-primary);
+  border: none;
+  color: var(--text-inverted);
+}
+
+.gr-exit-cancel:hover  { opacity: 0.7; }
+.gr-exit-confirm:hover { background: var(--color-primary-light); }
+
+.gr-exit-cancel:focus-visible,
+.gr-exit-confirm:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* ─── Main ────────────────────────────────────────────── */
+.gr-main {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2.5rem 1.5rem 8rem;
+}
+
+/* ─── Join hint ───────────────────────────────────────── */
+.gr-join-hint {
+  font-family: var(--font-body);
+  font-size: 0.9375rem;
+  font-weight: 400;
+  color: var(--text-muted);
+  margin-bottom: 1.25rem;
+  text-align: center;
+}
+
+.gr-join-hint strong {
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+/* ─── PIN hero (caja vino) ────────────────────────────── */
+.gr-pin {
+  background: var(--color-primary);
+  border-radius: 24px;
+  padding: 1.75rem 4rem;
+  margin-bottom: 3rem;
+  animation: gr-pin-glow 4.5s ease-in-out infinite;
+  cursor: default;
+}
+
+.gr-pin--loading {
+  opacity: 0.5;
+}
+
+.gr-pin-text {
+  display: block;
+  font-family: var(--font-heading);
+  font-size: clamp(3.5rem, 10vw, 6.5rem);
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: var(--text-inverted);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  text-align: center;
+  user-select: all;
+}
+
+/* ─── Players section ─────────────────────────────────── */
+.gr-players {
+  width: 100%;
+  max-width: 1020px;
+}
+
+.gr-players-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-bottom: 0.875rem;
+  margin-bottom: 1.25rem;
+  border-bottom: 1.5px solid rgba(0, 0, 0, 0.08);
+  font-family: var(--font-heading);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--text-muted);
+}
+
+.gr-players-empty {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.9375rem;
+  padding: 2.5rem 1rem;
+  font-family: var(--font-heading);
+  font-weight: 500;
+  max-width: 36ch;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+.gr-players-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 0.75rem;
+}
+
+/* ─── Player chip (tarjeta blanca del sistema) ────────── */
+.gr-player {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 0.5rem 0.875rem;
+  background: var(--bg-card);
+  border: 1px solid rgba(0, 0, 0, 0.07);
+  border-radius: 14px;
+  box-shadow: var(--shadow-soft);
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.gr-player:hover {
+  box-shadow: var(--shadow-hover);
+  transform: translateY(-2px);
+}
+
+.gr-player-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--bg-main);
+  overflow: hidden;
+  border: 2.5px solid rgba(90, 14, 36, 0.15);
+  flex-shrink: 0;
+}
+
+.gr-player-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.gr-player-name {
+  font-family: var(--font-heading);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-main);
+  text-align: center;
+  word-break: break-word;
+  line-height: 1.25;
+  max-width: 100%;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ─── Bottom bar (vino) ───────────────────────────────── */
+.gr-bottom {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: var(--color-primary);
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  z-index: 200;
+  flex-shrink: 0;
+}
+
+.gr-bottom-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.875rem 1.75rem;
+  max-width: 1020px;
+  margin: 0 auto;
+}
+
+.gr-bottom-stat {
+  display: flex;
+  align-items: baseline;
+  gap: 0.375rem;
+}
+
+.gr-stat-number {
+  font-family: var(--font-heading);
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--text-inverted);
+  font-variant-numeric: tabular-nums;
+}
+
+.gr-stat-label {
+  font-family: var(--font-heading);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.55);
+  white-space: nowrap;
+}
+
+/* ─── Start button ────────────────────────────────────── */
+.gr-btn-start {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.8125rem 2.25rem;
+  border: none;
+  border-radius: 10px;
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: not-allowed;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.2s ease;
+  background: rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.4);
+  white-space: nowrap;
+}
+
+.gr-btn-start--ready {
+  background: var(--text-inverted);
+  color: var(--color-primary);
+  cursor: pointer;
+  box-shadow: 0 0 24px rgba(255, 255, 255, 0.2);
+}
+
+.gr-btn-start--ready:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 28px rgba(255, 255, 255, 0.3);
+}
+
+.gr-btn-start--ready:active { transform: translateY(0); }
+
+.gr-btn-start:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.7);
+  outline-offset: 3px;
+}
+
+/* ─── Responsive ──────────────────────────────────────── */
+@media (max-width: 640px) {
+  .gr-nav { padding: 0 1rem; }
+  .gr-nav-btn-label { display: none; }
+  .gr-nav-quiz { display: none; }
+  .gr-nav-sep  { display: none; }
+
+  .gr-main { padding: 1.75rem 1rem 7.5rem; }
+
+  .gr-pin { padding: 1.25rem 2.25rem; border-radius: 18px; margin-bottom: 2rem; }
+  .gr-pin-text { font-size: clamp(2.75rem, 14vw, 4rem); }
+
+  .gr-players-grid {
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 0.625rem;
+  }
+
+  .gr-player { padding: 0.75rem 0.375rem; border-radius: 12px; }
+  .gr-player-avatar { width: 44px; height: 44px; }
+  .gr-player-name { font-size: 0.6875rem; }
+
+  .gr-bottom-inner { padding: 0.75rem 1rem; }
+  .gr-stat-number  { font-size: 1.625rem; }
+  .gr-btn-start    { padding: 0.75rem 1.5rem; font-size: 0.9375rem; }
+
+  .gr-exit-inner { flex-direction: column; gap: 0.75rem; text-align: center; }
+
+  .gr-blob-1 { width: 380px; height: 380px; filter: blur(60px); }
+  .gr-blob-2 { width: 320px; height: 320px; filter: blur(60px); }
+  .gr-blob-3 { width: 280px; height: 280px; filter: blur(60px); }
+}
+
+/* ─── Reduced motion ──────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .gr-pin    { animation: none; }
+  .gr-spinner { animation: none; }
+  .gr-player { transition: none; }
+}
