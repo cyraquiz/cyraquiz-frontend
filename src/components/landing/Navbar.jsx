@@ -158,6 +158,7 @@ export default function Navbar() {
           <motion.button
             className="mobile-nav-cta"
             onClick={openRegister}
+            aria-label="Comenzar gratis"
             whileTap={{ scale: 0.95 }}
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}

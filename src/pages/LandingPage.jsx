@@ -28,19 +28,21 @@ export default function LandingPage() {
   return (
     <div className="landing-page">
       <Navbar />
-      <Hero />
-      <Suspense fallback={<SectionLoader />}>
-        <LazyFeatures />
-      </Suspense>
-      <Suspense fallback={<SectionLoader />}>
-        <LazyHowItWorks />
-      </Suspense>
-      <Suspense fallback={<SectionLoader />}>
-        <LazyContact />
-      </Suspense>
-      <Suspense fallback={<SectionLoader />}>
-        <LazyFooter />
-      </Suspense>
+      <main>
+        <Hero />
+        <Suspense fallback={<SectionLoader />}>
+          <LazyFeatures />
+        </Suspense>
+        <Suspense fallback={<SectionLoader />}>
+          <LazyHowItWorks />
+        </Suspense>
+        <Suspense fallback={<SectionLoader />}>
+          <LazyContact />
+        </Suspense>
+        <Suspense fallback={<SectionLoader />}>
+          <LazyFooter />
+        </Suspense>
+      </main>
     </div>
   );
 }
