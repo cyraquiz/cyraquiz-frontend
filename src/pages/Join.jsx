@@ -122,11 +122,10 @@ export default function Join() {
           {/* Avatar Selection */}
           <div className="join-avatar-section">
             <label className="join-label">Tu Avatar</label>
-            <motion.div
+            <button
               className="join-avatar-preview"
               onClick={() => setShowAvatarModal(true)}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+              aria-label="Cambiar avatar"
             >
               <div className="join-avatar-circle">
                 <img
@@ -138,7 +137,7 @@ export default function Join() {
                   <Edit2 size={16} />
                 </div>
               </div>
-            </motion.div>
+            </button>
           </div>
 
           {/* Error Message */}
@@ -238,14 +237,16 @@ export default function Join() {
 
           <div className="join-avatar-grid">
             {AVATAR_SEEDS.map((seed) => (
-              <div
+              <button
                 key={seed}
                 id={`avatar-${seed}`}
-                onClick={() => {
+                onPointerDown={() => {
                   setSelectedAvatar(seed);
                   setShowAvatarModal(false);
                 }}
                 className={`join-avatar-option${selectedAvatar === seed ? " selected" : ""}`}
+                aria-label={`Avatar ${seed}`}
+                aria-pressed={selectedAvatar === seed}
               >
                 <img src={getAvatarSrc(seed)} alt="Avatar" className="join-avatar-option-img" />
                 {selectedAvatar === seed && (
@@ -253,7 +254,7 @@ export default function Join() {
                     <Check size={16} strokeWidth={3} />
                   </div>
                 )}
-              </div>
+              </button>
             ))}
           </div>
         </div>
