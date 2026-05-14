@@ -298,7 +298,7 @@ export default function Join() {
                 {/* Avatar Grid */}
                 <div className="join-avatar-grid">
                   {AVATARES.map((img) => (
-                    <motion.div
+                    <div
                       key={img}
                       id={`avatar-${img}`}
                       onClick={() => {
@@ -306,26 +306,20 @@ export default function Join() {
                         setShowAvatarModal(false);
                       }}
                       className={`join-avatar-option ${selectedAvatar === img ? "selected" : ""}`}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
                     >
                       <img
                         src={`/avatars/${img}`}
-                        alt="avatar"
+                        alt="Avatar"
                         className="join-avatar-option-img"
                         loading="lazy"
+                        decoding="async"
                       />
                       {selectedAvatar === img && (
-                        <motion.div
-                          className="join-avatar-selected-badge"
-                          initial={{ scale: 0 }}
-                          animate={{ scale: 1 }}
-                          transition={{ type: "spring", stiffness: 300 }}
-                        >
+                        <div className="join-avatar-selected-badge">
                           <Check size={16} strokeWidth={3} />
-                        </motion.div>
+                        </div>
                       )}
-                    </motion.div>
+                    </div>
                   ))}
                 </div>
               </div>

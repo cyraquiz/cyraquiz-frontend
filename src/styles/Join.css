@@ -465,6 +465,11 @@
   box-shadow: 0 4px 12px oklch(0.72 0.09 72 / 0.2);
 }
 
+.join-avatar-option:active {
+  transform: scale(0.95);
+  transition: transform 0.1s;
+}
+
 .join-avatar-option.selected {
   background: oklch(0.26 0.14 14 / 0.06);
   border-color: oklch(0.26 0.14 14);
