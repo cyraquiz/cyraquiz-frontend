@@ -3,21 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Hash, User, Play, X, Check, AlertCircle, Edit2 } from "lucide-react";
 import { socket } from "../socket";
+import { AVATAR_SEEDS, getAvatarSrc } from "../utils/avatars";
 import Footer from "../components/landing/Footer";
 import "../styles/Join.css";
-
-const AVATARES = [
-  "micky.webp", "minnie.webp", "pato.webp", "goofy.webp", "pluto.webp",
-  "bella.webp", "cenicienta.webp", "blanca.webp", "durmiente.webp",
-  "mulan.webp", "sirenita.webp", "jasmine.webp", "tiana.webp", "merida.webp",
-  "rapunzel.webp", "moana.webp", "woody.webp", "buzz.webp", "marciano.webp",
-  "rayo.webp", "mate.webp", "nemo.webp", "dory.webp", "baymax.webp", "sulley.webp",
-  "mike.webp", "groot.webp", "rocket.webp", "spider.webp", "iron.webp",
-  "hulk.webp", "capitan.webp", "viuda.webp", "thor.webp", "doctor.webp",
-  "wanda.webp", "loki.webp", "thanos.webp", "harry.webp", "hermione.webp",
-  "ron.webp", "luna.webp", "dum.webp", "snape.webp", "vold.webp", "dobby.webp",
-  "hed.webp", "buck.webp",
-];
 
 export default function Join() {
   const navigate = useNavigate();
@@ -25,7 +13,7 @@ export default function Join() {
   const [name, setName] = useState(localStorage.getItem("join_name") || "");
   const [error, setError] = useState("");
   const savedAvatar = localStorage.getItem("join_avatar");
-  const [selectedAvatar, setSelectedAvatar] = useState((savedAvatar && AVATARES.includes(savedAvatar)) ? savedAvatar : AVATARES[0]);
+  const [selectedAvatar, setSelectedAvatar] = useState((savedAvatar && AVATAR_SEEDS.includes(savedAvatar)) ? savedAvatar : AVATAR_SEEDS[0]);
   const [showAvatarModal, setShowAvatarModal] = useState(false);
 
   const goToLobby = () => {
@@ -33,7 +21,7 @@ export default function Join() {
     localStorage.setItem("join_name", name.trim());
     localStorage.setItem("join_avatar", selectedAvatar);
     navigate(`/student/lobby/${pin.trim()}`, {
-      state: { name: name.trim(), avatar: `/avatars/${selectedAvatar}` }
+      state: { name: name.trim(), avatarSeed: selectedAvatar }
     });
   };
 
@@ -58,10 +46,8 @@ export default function Join() {
   useEffect(() => {
     if (showAvatarModal) {
       setTimeout(() => {
-        const elementoSeleccionado = document.getElementById(`avatar-${selectedAvatar}`);
-        if (elementoSeleccionado) {
-          elementoSeleccionado.scrollIntoView({ behavior: "smooth", block: "center" });
-        }
+        document.getElementById(`avatar-${selectedAvatar}`)
+          ?.scrollIntoView({ behavior: "smooth", block: "center" });
       }, 50);
     }
   }, [showAvatarModal, selectedAvatar]);
@@ -152,7 +138,7 @@ export default function Join() {
             >
               <div className="join-avatar-circle">
                 <img
-                  src={`/avatars/${selectedAvatar}`}
+                  src={getAvatarSrc(selectedAvatar)}
                   alt="Avatar"
                   className="join-avatar-img"
                 />
@@ -270,24 +256,22 @@ export default function Join() {
 
                 {/* Avatar Grid */}
                 <div className="join-avatar-grid">
-                  {AVATARES.map((img) => (
+                  {AVATAR_SEEDS.map((seed) => (
                     <div
-                      key={img}
-                      id={`avatar-${img}`}
+                      key={seed}
+                      id={`avatar-${seed}`}
                       onClick={() => {
-                        setSelectedAvatar(img);
+                        setSelectedAvatar(seed);
                         setShowAvatarModal(false);
                       }}
-                      className={`join-avatar-option ${selectedAvatar === img ? "selected" : ""}`}
+                      className={`join-avatar-option ${selectedAvatar === seed ? "selected" : ""}`}
                     >
                       <img
-                        src={`/avatars/${img}`}
+                        src={getAvatarSrc(seed)}
                         alt="Avatar"
                         className="join-avatar-option-img"
-                        loading="lazy"
-                        decoding="async"
                       />
-                      {selectedAvatar === img && (
+                      {selectedAvatar === seed && (
                         <div className="join-avatar-selected-badge">
                           <Check size={16} strokeWidth={3} />
                         </div>

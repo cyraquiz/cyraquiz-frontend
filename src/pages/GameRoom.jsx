@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { LogOut, Play, Users, X, ArrowLeft } from "lucide-react";
 import { socket } from "../socket";
+import { getAvatarSrc } from "../utils/avatars";
 import useSound from "use-sound";
 import "../styles/GameRoom.css";
 
@@ -244,15 +245,8 @@ export default function GameRoom() {
                   >
                     <div className="gr-player-avatar" aria-hidden="true">
                       <img
-                        src={
-                          player.avatar ||
-                          `https://api.dicebear.com/9.x/notionists/svg?seed=${encodeURIComponent(player.name)}`
-                        }
+                        src={getAvatarSrc(player.avatar || player.name)}
                         alt=""
-                        loading="lazy"
-                        onError={(e) => {
-                          e.currentTarget.src = `https://api.dicebear.com/9.x/notionists/svg?seed=${encodeURIComponent(player.name)}`;
-                        }}
                       />
                     </div>
                     <span className="gr-player-name">{player.name}</span>

@@ -3,6 +3,7 @@ import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Trophy, Star } from "lucide-react";
 import { socket } from "../socket";
+import { getAvatarSrc } from "../utils/avatars";
 import confetti from "canvas-confetti";
 import useSound from "use-sound";
 import "../styles/Podium.css";
@@ -229,7 +230,7 @@ export default function Podium() {
                   <Star size={16} strokeWidth={2.5} aria-hidden="true" />
                 </div>
                 <div className="pd-avatar-ring pd-avatar-ring--silver">
-                  <img src={second.avatar} alt={second.name} className="pd-avatar" loading="lazy" />
+                  <img src={getAvatarSrc(second.avatar || second.name)} alt={second.name} className="pd-avatar" loading="lazy" />
                 </div>
                 <p className="pd-name">{second.name}</p>
                 <div className="pd-stats">
@@ -258,7 +259,7 @@ export default function Podium() {
                   <Trophy size={18} strokeWidth={2.5} aria-hidden="true" />
                 </div>
                 <div className="pd-avatar-ring pd-avatar-ring--gold">
-                  <img src={first.avatar} alt={first.name} className="pd-avatar pd-avatar--xl" loading="lazy" />
+                  <img src={getAvatarSrc(first.avatar || first.name)} alt={first.name} className="pd-avatar pd-avatar--xl" loading="lazy" />
                 </div>
                 <p className="pd-name pd-name--gold">{first.name}</p>
                 <div className="pd-stats pd-stats--gold">
@@ -287,7 +288,7 @@ export default function Podium() {
                   <Star size={14} strokeWidth={2.5} aria-hidden="true" />
                 </div>
                 <div className="pd-avatar-ring pd-avatar-ring--bronze">
-                  <img src={third.avatar} alt={third.name} className="pd-avatar" loading="lazy" />
+                  <img src={getAvatarSrc(third.avatar || third.name)} alt={third.name} className="pd-avatar" loading="lazy" />
                 </div>
                 <p className="pd-name">{third.name}</p>
                 <div className="pd-stats">
@@ -340,7 +341,7 @@ export default function Podium() {
                   transition={{ duration: 0.4, ease: EASE_OUT_EXPO, delay: 0.75 + index * 0.05 }}
                 >
                   <span className="pd-lb-rank">{index + 4}</span>
-                  <img src={p.avatar} alt={p.name} className="pd-lb-avatar" loading="lazy" />
+                  <img src={getAvatarSrc(p.avatar || p.name)} alt={p.name} className="pd-lb-avatar" loading="lazy" />
                   <span className="pd-lb-name">{p.name}</span>
                   <span className="pd-lb-score">{p.score} pts</span>
                   <span className="pd-lb-time">{(p.timeAccumulated / 1000).toFixed(2)}s</span>

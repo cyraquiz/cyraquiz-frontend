@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { socket } from "../socket";
+import { getAvatarSrc } from "../utils/avatars";
 import "../styles/StudentLobby.css";
 
 export default function StudentLobby() {
@@ -10,13 +11,14 @@ export default function StudentLobby() {
   const navigate   = useNavigate();
 
   const myName   = location.state?.name       || localStorage.getItem("join_name")       || "Jugador";
-  const myAvatar = location.state?.avatar     || localStorage.getItem("join_avatar_url");
+  const avatarSeed = location.state?.avatarSeed || localStorage.getItem("join_avatar");
+  const myAvatar   = avatarSeed ? getAvatarSrc(avatarSeed) : null;
 
   const [phase, setPhase] = useState("waiting"); // "waiting" | "starting"
 
   useEffect(() => {
     const joinRoom = () => {
-      socket.emit("join_room", { roomCode: pin, playerName: myName, avatar: myAvatar });
+      socket.emit("join_room", { roomCode: pin, playerName: myName, avatar: avatarSeed });
     };
 
     if (socket.connected) joinRoom();

@@ -8,11 +8,13 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: (id) => {
-          // Estas libs solo se usan en páginas lazy → van con su chunk, no en vendor
+          // Lazy-only libs — go with their page chunk, not vendor
           if (id.includes('node_modules/canvas-confetti')) return undefined;
           if (id.includes('node_modules/use-sound')) return undefined;
           if (id.includes('node_modules/howler')) return undefined;
-          // Chunks fijos
+          // DiceBear only needed on Join/StudentLobby/GameRoom (all lazy)
+          if (id.includes('node_modules/@dicebear')) return 'avatars';
+          // Fixed chunks
           if (id.includes('node_modules/socket.io-client')) return 'socket';
           if (id.includes('node_modules/react-dom')) return 'react-dom';
           if (id.includes('node_modules')) return 'vendor';
