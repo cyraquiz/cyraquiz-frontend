@@ -329,10 +329,16 @@
 .join-modal-backdrop {
   position: fixed;
   inset: 0;
-  background: oklch(0.14 0.05 14 / 0.78);
-  backdrop-filter: blur(8px) saturate(120%);
-  -webkit-backdrop-filter: blur(8px) saturate(120%);
+  background: oklch(0.14 0.05 14 / 0.72);
   z-index: 9998;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.22s ease;
+}
+
+.join-modal-backdrop.is-open {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .join-modal-container {
@@ -344,6 +350,16 @@
   padding: 1rem;
   z-index: 9999;
   pointer-events: none;
+  opacity: 0;
+  transform: scale(0.96) translateY(14px);
+  transition: opacity 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+              transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.join-modal-container.is-open {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+  pointer-events: auto;
 }
 
 /* ===========================
@@ -419,31 +435,12 @@
    =========================== */
 
 .join-avatar-grid {
-  flex: 1;
-  overflow-y: auto;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 1rem;
   padding: 0.5rem;
 }
 
-.join-avatar-grid::-webkit-scrollbar {
-  width: 6px;
-}
-
-.join-avatar-grid::-webkit-scrollbar-track {
-  background: oklch(0.98 0.003 252);
-  border-radius: 3px;
-}
-
-.join-avatar-grid::-webkit-scrollbar-thumb {
-  background: oklch(0.84 0.012 252);
-  border-radius: 3px;
-}
-
-.join-avatar-grid::-webkit-scrollbar-thumb:hover {
-  background: oklch(0.67 0.02 245);
-}
 
 .join-avatar-option {
   position: relative;
