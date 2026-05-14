@@ -86,9 +86,9 @@ export default function Footer() {
           <div className="footer-links-wrapper">
             {Object.entries(footerLinks).map(([category, links]) => (
               <div key={category} className="footer-links-section">
-                <h3 className="footer-section-title">
+                <h4 className="footer-section-title">
                   {category.charAt(0).toUpperCase() + category.slice(1)}
-                </h3>
+                </h4>
                 <ul className="footer-links-list">
                   {links.map((link) => (
                     <li key={link.label}>

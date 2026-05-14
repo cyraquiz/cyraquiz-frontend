@@ -7,16 +7,16 @@ import Footer from "../components/landing/Footer";
 import "../styles/Join.css";
 
 const AVATARES = [
-  "micky.png", "minnie.png", "pato.png", "goofy.png", "pluto.png",
-  "bella.png", "cenicienta.png", "blanca.png", "durmiente.png",
-  "mulan.png", "sirenita.png", "jasmine.png", "tiana.png", "merida.png",
-  "rapunzel.png", "moana.png", "woody.png", "buzz.png", "marciano.png",
-  "rayo.png", "mate.png", "nemo.png", "dory.png", "baymax.png", "sulley.png",
-  "mike.png", "groot.png", "rocket.png", "spider.png", "iron.png",
-  "hulk.png", "capitan.png", "viuda.png", "thor.png", "doctor.png",
-  "wanda.png", "loki.png", "thanos.png", "harry.png", "hermione.png",
-  "ron.png", "luna.png", "dum.png", "snape.png", "vold.png", "dobby.png",
-  "hed.png", "buck.png",
+  "micky.webp", "minnie.webp", "pato.webp", "goofy.webp", "pluto.webp",
+  "bella.webp", "cenicienta.webp", "blanca.webp", "durmiente.webp",
+  "mulan.webp", "sirenita.webp", "jasmine.webp", "tiana.webp", "merida.webp",
+  "rapunzel.webp", "moana.webp", "woody.webp", "buzz.webp", "marciano.webp",
+  "rayo.webp", "mate.webp", "nemo.webp", "dory.webp", "baymax.webp", "sulley.webp",
+  "mike.webp", "groot.webp", "rocket.webp", "spider.webp", "iron.webp",
+  "hulk.webp", "capitan.webp", "viuda.webp", "thor.webp", "doctor.webp",
+  "wanda.webp", "loki.webp", "thanos.webp", "harry.webp", "hermione.webp",
+  "ron.webp", "luna.webp", "dum.webp", "snape.webp", "vold.webp", "dobby.webp",
+  "hed.webp", "buck.webp",
 ];
 
 export default function Join() {
@@ -127,7 +127,7 @@ export default function Join() {
 
   return (
     <>
-      <div className="join-page">
+      <main className="join-page">
         {/* Background decoration */}
         <div className="join-background">
           <motion.div
@@ -333,7 +333,7 @@ export default function Join() {
           </>
         )}
       </AnimatePresence>
-      </div>
+      </main>
 
       {/* Footer */}
       <Footer />
