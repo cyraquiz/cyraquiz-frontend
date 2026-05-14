@@ -381,11 +381,16 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: opacity 0.2s ease, filter 0.15s ease;
+  transition: opacity 0.2s ease, filter 0.15s ease, transform 0.08s ease;
   -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
   outline: none;
   overflow: hidden;
   min-height: 0;
+}
+
+.gc-btn:active {
+  transform: scale(0.94);
 }
 
 .gc-btn::after {
@@ -436,6 +441,12 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  animation: gc-check-pop 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes gc-check-pop {
+  from { transform: scale(0); }
+  to   { transform: scale(1); }
 }
 
 /* ─── Multi submit button ─────────────────────────────── */

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { Check, X, Eye, Send, Trophy, Loader2, Star } from "lucide-react";
 import { socket } from "../socket";
 import { OPTION_BG, OPTION_SHADOW, OPTION_LETTER } from "../constants/game";
@@ -131,35 +131,24 @@ export default function GameController() {
             const isDimmed   = questionType === "multi" && selectedOptions.length > 0 && !isSelected;
 
             return (
-              <motion.button
+              <button
                 key={i}
                 className={`gc-btn${isSelected ? " gc-btn--selected" : ""}${isDimmed ? " gc-btn--dimmed" : ""}`}
                 style={{
                   background: OPTION_BG[i],
                   boxShadow:  `inset 0 -7px 0 ${OPTION_SHADOW[i]}`,
                 }}
-                onClick={() => handleOptionClick(opt)}
-                whileTap={{ scale: 0.94, transition: { duration: 0.08 } }}
+                onPointerDown={() => handleOptionClick(opt)}
                 aria-label={`Opción ${OPTION_LETTER[i]}`}
                 aria-pressed={isSelected}
               >
                 <span className="gc-btn-letter">{OPTION_LETTER[i]}</span>
-
-                <AnimatePresence>
-                  {isSelected && (
-                    <motion.span
-                      className="gc-btn-check"
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      exit={{ scale: 0 }}
-                      transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-                      aria-hidden="true"
-                    >
-                      <Check size={18} strokeWidth={3} />
-                    </motion.span>
-                  )}
-                </AnimatePresence>
-              </motion.button>
+                {isSelected && (
+                  <span className="gc-btn-check" aria-hidden="true">
+                    <Check size={18} strokeWidth={3} />
+                  </span>
+                )}
+              </button>
             );
           })}
         </div>
