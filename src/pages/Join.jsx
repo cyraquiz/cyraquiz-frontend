@@ -207,58 +207,60 @@ export default function Join() {
         </motion.div>
       </motion.div>
 
-      {/* Avatar Modal — always in DOM, toggled via CSS class */}
-      <div
-        className={`join-modal-backdrop${showAvatarModal ? " is-open" : ""}`}
-        onClick={() => setShowAvatarModal(false)}
-        aria-hidden="true"
-      />
-      <div
-        className={`join-modal-container${showAvatarModal ? " is-open" : ""}`}
-        role="dialog"
-        aria-modal="true"
-        aria-label="Elige tu personaje"
-      >
-        <div className="join-modal">
-          <button
-            className="join-modal-close"
+      {showAvatarModal && (
+        <>
+          <div
+            className="join-modal-backdrop"
             onClick={() => setShowAvatarModal(false)}
-            aria-label="Cerrar"
+            aria-hidden="true"
+          />
+          <div
+            className="join-modal-container"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Elige tu personaje"
           >
-            <X size={24} />
-          </button>
-
-          <div className="join-modal-header">
-            <h2 className="join-modal-title">Elige tu personaje</h2>
-            <p className="join-modal-subtitle">
-              Selecciona el avatar que te representará en el juego
-            </p>
-          </div>
-
-          <div className="join-avatar-grid">
-            {AVATAR_SEEDS.map((seed) => (
+            <div className="join-modal">
               <button
-                key={seed}
-                id={`avatar-${seed}`}
-                onPointerDown={() => {
-                  setSelectedAvatar(seed);
-                  setShowAvatarModal(false);
-                }}
-                className={`join-avatar-option${selectedAvatar === seed ? " selected" : ""}`}
-                aria-label={`Avatar ${seed}`}
-                aria-pressed={selectedAvatar === seed}
+                className="join-modal-close"
+                onClick={() => setShowAvatarModal(false)}
+                aria-label="Cerrar"
               >
-                <img src={getAvatarSrc(seed)} alt="Avatar" className="join-avatar-option-img" />
-                {selectedAvatar === seed && (
-                  <div className="join-avatar-selected-badge">
-                    <Check size={16} strokeWidth={3} />
-                  </div>
-                )}
+                <X size={24} />
               </button>
-            ))}
+
+              <div className="join-modal-header">
+                <h2 className="join-modal-title">Elige tu personaje</h2>
+                <p className="join-modal-subtitle">
+                  Selecciona el avatar que te representará en el juego
+                </p>
+              </div>
+
+              <div className="join-avatar-grid">
+                {AVATAR_SEEDS.map((seed) => (
+                  <button
+                    key={seed}
+                    onPointerDown={() => {
+                      setSelectedAvatar(seed);
+                      setShowAvatarModal(false);
+                    }}
+                    className={`join-avatar-option${selectedAvatar === seed ? " selected" : ""}`}
+                    aria-label={`Avatar ${seed}`}
+                    aria-pressed={selectedAvatar === seed}
+                  >
+                    <img src={getAvatarSrc(seed)} alt="Avatar" className="join-avatar-option-img" />
+                    {selectedAvatar === seed && (
+                      <div className="join-avatar-selected-badge">
+                        <Check size={16} strokeWidth={3} />
+                      </div>
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
+        </>
+      )}
       </main>
 
       {/* Footer */}
