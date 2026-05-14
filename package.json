@@ -10,7 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@dicebear/adventurer": "^9.4.2",
+    "@dicebear/avataaars-neutral": "^9.4.2",
     "@dicebear/core": "^9.4.2",
     "canvas-confetti": "^1.9.4",
     "framer-motion": "^12.38.0",
