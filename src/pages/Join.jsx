@@ -45,22 +45,15 @@ export default function Join() {
       setTimeout(() => setError(""), 3000);
     };
 
-    const onPlayerJoined = (player) => {
-      const joinedName = typeof player === "string" ? player : (player.name || player.playerName);
-
-      if (joinedName === name || joinedName === name.trim()) {
-        goToLobby();
-      }
-    };
-
     socket.on("error", onError);
-    socket.on("player_joined", onPlayerJoined);
+
+    // Prefetch the StudentLobby chunk while the user fills the form
+    import("./StudentLobby.jsx");
 
     return () => {
       socket.off("error", onError);
-      socket.off("player_joined", onPlayerJoined);
     };
-  }, [name, pin, selectedAvatar, navigate]);
+  }, []);
 
   useEffect(() => {
     if (showAvatarModal) {
@@ -79,27 +72,7 @@ export default function Join() {
       return;
     }
     setError("");
-
-    if (!socket.connected) {
-      console.log("⚠️ Socket desconectado. Intentando reconectar...");
-      socket.connect();
-    }
-
-    socket.emit("join_room", {
-      roomCode: pin.trim(),
-      playerName: name.trim(),
-      avatar: `/avatars/${selectedAvatar}`
-    });
-
-    setTimeout(() => {
-      setError((currentError) => {
-        if (!currentError) {
-          console.log("Usando Plan B: Navegación forzada al lobby");
-          goToLobby();
-        }
-        return currentError;
-      });
-    }, 500);
+    goToLobby();
   };
 
   const containerVariants = {
