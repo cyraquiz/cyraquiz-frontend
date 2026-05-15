@@ -450,9 +450,8 @@
   overflow-y: auto;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 0.875rem;
-  padding: 0.25rem 0.25rem 0.5rem;
-  /* smooth scroll on iOS */
+  gap: 0.75rem;
+  padding: 0.25rem 0.75rem 0.5rem 0.25rem;
   -webkit-overflow-scrolling: touch;
 }
 
@@ -630,7 +629,7 @@
    MOBILE — bottom sheet modal
    =========================== */
 
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   /* Slide up from the bottom — full width, no horizontal overflow */
   @keyframes join-modal-in {
     from { opacity: 0; transform: translateY(100%); }
@@ -670,6 +669,7 @@
   .join-avatar-grid {
     gap: 0.5rem;
     grid-template-columns: repeat(3, 1fr);
+    padding-right: 0.5rem;
     overflow-y: unset;
   }
 
