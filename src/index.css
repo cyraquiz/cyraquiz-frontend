@@ -23,6 +23,7 @@
   font-weight: 400;
   width: 100%;
   height: 100%;
+  color-scheme: light; /* fuerza modo claro aunque el sistema esté en oscuro */
 }
 
 body {
