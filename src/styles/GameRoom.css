@@ -255,24 +255,68 @@
   font-weight: 700;
 }
 
+/* ─── Entry row: QR + PIN side by side ───────────────── */
+.gr-entry {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2.5rem;
+  margin-bottom: 3rem;
+  flex-wrap: wrap;
+}
+
+/* ─── QR card ─────────────────────────────────────────── */
+.gr-qr {
+  background: oklch(0.995 0.004 14);
+  border-radius: 16px;
+  padding: 1rem;
+  box-shadow:
+    0 8px 24px oklch(0.14 0.05 14 / 0.12),
+    0 2px 8px  oklch(0.14 0.05 14 / 0.06);
+  border: 1px solid oklch(0.92 0.008 252);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gr-qr-placeholder {
+  width: 148px;
+  height: 148px;
+  background: oklch(0.96 0.005 252);
+  border-radius: 8px;
+  animation: gr-spin 1s linear infinite;
+}
+
 /* ─── PIN hero (caja vino) ────────────────────────────── */
 .gr-pin {
   background: var(--color-primary);
   border-radius: 24px;
-  padding: 1.75rem 4rem;
-  margin-bottom: 3rem;
+  padding: 1.5rem 3.5rem;
   animation: gr-pin-glow 4.5s ease-in-out infinite;
   cursor: default;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
 }
 
 .gr-pin--loading {
   opacity: 0.5;
 }
 
+.gr-pin-label {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: oklch(0.995 0.004 14 / 0.55);
+}
+
 .gr-pin-text {
   display: block;
   font-family: var(--font-heading);
-  font-size: clamp(3.5rem, 10vw, 6.5rem);
+  font-size: clamp(3rem, 9vw, 5.5rem);
   font-weight: 800;
   letter-spacing: 0.12em;
   color: var(--text-inverted);
@@ -463,7 +507,12 @@
 
   .gr-main { padding: 1.75rem 1rem 7.5rem; }
 
-  .gr-pin { padding: 1.25rem 2.25rem; border-radius: 18px; margin-bottom: 2rem; }
+  .gr-entry { gap: 1.5rem; margin-bottom: 2rem; }
+  .gr-qr { padding: 0.75rem; border-radius: 12px; }
+  .gr-qr svg { width: 120px !important; height: 120px !important; }
+  .gr-qr-placeholder { width: 120px; height: 120px; }
+
+  .gr-pin { padding: 1.25rem 2.25rem; border-radius: 18px; }
   .gr-pin-text { font-size: clamp(2.75rem, 14vw, 4rem); }
 
   .gr-players-grid {

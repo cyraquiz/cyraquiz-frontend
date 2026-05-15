@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Hash, User, Play, X, Check, AlertCircle, Edit2 } from "lucide-react";
 import { socket } from "../socket";
@@ -9,7 +9,10 @@ import "../styles/Join.css";
 
 export default function Join() {
   const navigate = useNavigate();
-  const [pin, setPin] = useState(localStorage.getItem("join_roomCode") || "");
+  const [searchParams] = useSearchParams();
+  const [pin, setPin] = useState(
+    searchParams.get("pin") || localStorage.getItem("join_roomCode") || ""
+  );
   const [name, setName] = useState(localStorage.getItem("join_name") || "");
   const [error, setError] = useState("");
   const savedAvatar = localStorage.getItem("join_avatar");

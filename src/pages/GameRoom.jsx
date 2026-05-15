@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { LogOut, Play, Users, X, ArrowLeft } from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
 import { socket } from "../socket";
 import { getAvatarSrc } from "../utils/avatars";
 import useSound from "use-sound";
@@ -193,17 +194,36 @@ export default function GameRoom() {
       <main className="gr-main" id="main-content">
 
         <p className="gr-join-hint">
-          Entra en <strong>cyraquiz.com/join</strong> y escribe el PIN:
+          Escanea el QR o entra en <strong>cyraquiz.com/join</strong>:
         </p>
 
-        {/* PIN hero */}
-        <div
-          className={`gr-pin${!roomCode ? " gr-pin--loading" : ""}`}
-          aria-label={roomCode ? `PIN de sala: ${formattedPin}` : "Generando PIN..."}
-          aria-live="polite"
-          aria-atomic="true"
-        >
-          <span className="gr-pin-text">{formattedPin}</span>
+        {/* QR + PIN — side by side */}
+        <div className="gr-entry">
+          {/* QR code */}
+          <div className="gr-qr" aria-label="Código QR para unirse">
+            {roomCode ? (
+              <QRCodeSVG
+                value={`${window.location.origin}/join?pin=${roomCode}`}
+                size={148}
+                bgColor="transparent"
+                fgColor="oklch(0.22 0.03 252)"
+                level="M"
+              />
+            ) : (
+              <div className="gr-qr-placeholder" aria-hidden="true" />
+            )}
+          </div>
+
+          {/* PIN hero */}
+          <div
+            className={`gr-pin${!roomCode ? " gr-pin--loading" : ""}`}
+            aria-label={roomCode ? `PIN de sala: ${formattedPin}` : "Generando PIN..."}
+            aria-live="polite"
+            aria-atomic="true"
+          >
+            <span className="gr-pin-label">PIN</span>
+            <span className="gr-pin-text">{formattedPin}</span>
+          </div>
         </div>
 
         {/* Players */}

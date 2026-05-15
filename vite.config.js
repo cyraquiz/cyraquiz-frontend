@@ -14,6 +14,7 @@ export default defineConfig({
           if (id.includes('node_modules/howler')) return undefined;
           // DiceBear only needed on Join/StudentLobby/GameRoom (all lazy)
           if (id.includes('node_modules/@dicebear')) return 'avatars';
+          if (id.includes('node_modules/qrcode')) return 'qr';
           // Fixed chunks
           if (id.includes('node_modules/socket.io-client')) return 'socket';
           if (id.includes('node_modules/react-dom')) return 'react-dom';
