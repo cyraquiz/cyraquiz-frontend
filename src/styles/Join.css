@@ -645,10 +645,13 @@
   .join-modal {
     width: 100%;
     max-width: 100%;
-    max-height: 88dvh;
+    /* height: auto — modal wraps to content, not stretched to dvh */
+    height: auto;
+    max-height: 95svh; /* svh = conservative: chrome always visible */
     border-radius: 22px 22px 0 0;
     border-bottom: none;
     padding: 1.25rem 1rem 1.5rem;
+    overflow: hidden; /* no bounce/scroll on the modal itself */
   }
 
   .join-modal-close {
@@ -667,10 +670,14 @@
   .join-modal-subtitle { display: none; }
 
   .join-avatar-grid {
+    /* Reset flex: 1 from base — grid sizes to content, NOT to modal height */
+    flex: none;
+    min-height: unset;
+    /* Cell size = column width (square via aspect-ratio), not modal height */
     gap: 0.5rem;
     grid-template-columns: repeat(3, 1fr);
     padding: 0.25rem;
-    overflow-y: unset;
+    overflow: hidden; /* block all scroll — 12 avatars is the final list */
   }
 
   .join-avatar-option {
