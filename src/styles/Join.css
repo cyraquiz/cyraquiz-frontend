@@ -665,9 +665,12 @@
   .join-modal-title  { font-size: 1.125rem; }
   .join-modal-subtitle { font-size: 0.8125rem; }
 
+  .join-modal-subtitle { display: none; }
+
   .join-avatar-grid {
-    gap: 0.625rem;
-    grid-template-columns: repeat(4, 1fr); /* 4 cols fits better at full width */
+    gap: 0.5rem;
+    grid-template-columns: repeat(3, 1fr);
+    overflow-y: unset;
   }
 
   .join-avatar-option {
