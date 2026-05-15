@@ -59,6 +59,20 @@ code {
 
 html {
   scroll-behavior: smooth;
+  color-scheme: light; /* previene dark mode forzado del navegador */
+}
+
+/* Bloquea el algoritmo de dark mode de Brave/Chrome aunque esté forzado */
+@media (prefers-color-scheme: dark) {
+  html {
+    color-scheme: light;
+    background: #FFFFFF;
+    color: #1E293B;
+  }
+  body {
+    background: #FFFFFF;
+    color: #1E293B;
+  }
 }
 
 /* Disable animations for users who prefer reduced motion */
