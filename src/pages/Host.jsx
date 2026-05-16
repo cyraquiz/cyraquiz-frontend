@@ -55,6 +55,15 @@ export default function Host() {
   }, []);
 
   useEffect(() => {
+    const handleExpired = () => {
+      showToast("Tu sesión ha expirado. Inicia sesión de nuevo.", "error");
+      setTimeout(() => { logout(); navigate("/"); }, 2500);
+    };
+    window.addEventListener("auth:expired", handleExpired);
+    return () => window.removeEventListener("auth:expired", handleExpired);
+  }, [showToast, logout, navigate]);
+
+  useEffect(() => {
     const fetchQuizzes = async () => {
       if (!getUser().token) { setIsFetching(false); return; }
       try {

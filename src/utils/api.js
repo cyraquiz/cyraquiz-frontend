@@ -12,7 +12,11 @@ export async function apiFetch(path, options = {}) {
     ...(token ? { token } : {}),
     ...extraHeaders,
   };
-  return fetch(`${BASE}${path}`, { ...rest, headers });
+  const response = await fetch(`${BASE}${path}`, { ...rest, headers });
+  if ((response.status === 401 || response.status === 403) && token) {
+    window.dispatchEvent(new CustomEvent("auth:expired"));
+  }
+  return response;
 }
 
 export async function apiUpload(path, formData) {

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { ArrowRight, Sparkles, HelpCircle, Mail, LogIn, Play, Home } from "lucide-react";
+import { ArrowRight, Sparkles, HelpCircle, Mail, LogIn, Home, Hash } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import "./Navbar.css";
@@ -60,6 +60,12 @@ export default function Navbar() {
       icon: <LogIn size={20} />,
       action: openLogin,
     },
+    {
+      label: "Unirse",
+      icon: <Hash size={20} />,
+      action: () => navigate("/join"),
+      highlight: true,
+    },
   ];
 
   return (
@@ -104,6 +110,22 @@ export default function Navbar() {
           {/* Desktop Actions */}
           <div className="navbar-actions">
             <motion.button
+              className="navbar-btn-join"
+              onClick={() => navigate("/join")}
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.35, duration: 0.4 }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              aria-label="Unirse a un juego"
+            >
+              <span className="navbar-btn-join-grid" aria-hidden="true">
+                <span /><span /><span /><span />
+              </span>
+              <span>Unirse</span>
+            </motion.button>
+
+            <motion.button
               className="navbar-btn-login"
               onClick={openLogin}
               initial={{ opacity: 0, y: -20 }}
@@ -142,32 +164,23 @@ export default function Navbar() {
           {mobileMenuItems.map((item, index) => (
             <motion.button
               key={item.label}
-              className="mobile-nav-item"
+              className={`mobile-nav-item${item.highlight ? " mobile-nav-item--join" : ""}`}
               onClick={item.action}
               whileTap={{ scale: 0.95 }}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 + index * 0.05, duration: 0.3 }}
             >
-              <div className="mobile-nav-icon">{item.icon}</div>
+              {item.highlight ? (
+                <span className="mobile-nav-join-grid" aria-hidden="true">
+                  <span /><span /><span /><span />
+                </span>
+              ) : (
+                <div className="mobile-nav-icon">{item.icon}</div>
+              )}
               <span className="mobile-nav-label">{item.label}</span>
             </motion.button>
           ))}
-
-          {/* CTA Button destacado */}
-          <motion.button
-            className="mobile-nav-cta"
-            onClick={openRegister}
-            aria-label="Comenzar gratis"
-            whileTap={{ scale: 0.95 }}
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.7, duration: 0.4, type: "spring", stiffness: 200 }}
-          >
-            <div className="mobile-nav-cta-icon">
-              <Play size={24} fill="currentColor" />
-            </div>
-          </motion.button>
         </div>
       </motion.nav>
     </>
