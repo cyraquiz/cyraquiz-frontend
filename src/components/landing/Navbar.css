@@ -138,14 +138,14 @@
 .navbar-btn-join-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 2.5px;
-  width: 28px;
-  height: 28px;
-  border-radius: 7px;
+  gap: 2px;
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
   overflow: hidden;
   flex-shrink: 0;
   background: oklch(0.995 0.004 14 / 0.15);
-  padding: 2.5px;
+  padding: 2px;
 }
 
 .navbar-btn-join-grid span:nth-child(1) { background: #E55B4D; border-radius: 2px; }

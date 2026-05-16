@@ -123,11 +123,24 @@ export default function Navbar() {
 
             <div className="navbar-btn-group">
               <motion.button
+                className="navbar-btn-cta"
+                onClick={openRegister}
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.45, duration: 0.4 }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                Comenzar
+                <ArrowRight size={18} strokeWidth={2.5} />
+              </motion.button>
+
+              <motion.button
                 className="navbar-btn-join"
                 onClick={() => navigate("/join")}
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.45, duration: 0.4 }}
+                transition={{ delay: 0.55, duration: 0.4 }}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 aria-label="Unirse a un juego"
@@ -136,19 +149,6 @@ export default function Navbar() {
                   <span /><span /><span /><span />
                 </span>
                 <span>Unirse</span>
-              </motion.button>
-
-              <motion.button
-                className="navbar-btn-cta"
-                onClick={openRegister}
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.55, duration: 0.4 }}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                Comenzar
-                <ArrowRight size={18} strokeWidth={2.5} />
               </motion.button>
             </div>
           </div>
