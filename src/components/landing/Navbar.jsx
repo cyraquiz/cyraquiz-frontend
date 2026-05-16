@@ -110,45 +110,47 @@ export default function Navbar() {
           {/* Desktop Actions */}
           <div className="navbar-actions">
             <motion.button
-              className="navbar-btn-join"
-              onClick={() => navigate("/join")}
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.35, duration: 0.4 }}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              aria-label="Unirse a un juego"
-            >
-              <span className="navbar-btn-join-grid" aria-hidden="true">
-                <span /><span /><span /><span />
-              </span>
-              <span>Unirse</span>
-            </motion.button>
-
-            <motion.button
               className="navbar-btn-login"
               onClick={openLogin}
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4, duration: 0.4 }}
+              transition={{ delay: 0.35, duration: 0.4 }}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
               Login
             </motion.button>
 
-            <motion.button
-              className="navbar-btn-cta"
-              onClick={openRegister}
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5, duration: 0.4 }}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              Comenzar
-              <ArrowRight size={18} strokeWidth={2.5} />
-            </motion.button>
+            <div className="navbar-btn-group">
+              <motion.button
+                className="navbar-btn-join"
+                onClick={() => navigate("/join")}
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.45, duration: 0.4 }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                aria-label="Unirse a un juego"
+              >
+                <span className="navbar-btn-join-grid" aria-hidden="true">
+                  <span /><span /><span /><span />
+                </span>
+                <span>Unirse</span>
+              </motion.button>
+
+              <motion.button
+                className="navbar-btn-cta"
+                onClick={openRegister}
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.55, duration: 0.4 }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                Comenzar
+                <ArrowRight size={18} strokeWidth={2.5} />
+              </motion.button>
+            </div>
           </div>
         </div>
       </motion.nav>

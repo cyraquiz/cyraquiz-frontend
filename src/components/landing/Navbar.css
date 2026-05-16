@@ -93,7 +93,13 @@
 .navbar-actions {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 1.25rem;
+}
+
+.navbar-btn-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 /* ===========================
@@ -104,7 +110,7 @@
   display: flex;
   align-items: center;
   gap: 0.625rem;
-  padding: 0.5rem 1.125rem 0.5rem 0.625rem;
+  padding: 0.625rem 1.25rem 0.625rem 0.75rem;
   border-radius: 12px;
   font-size: 0.9375rem;
   font-weight: 700;
@@ -147,12 +153,24 @@
 .navbar-btn-join-grid span:nth-child(3) { background: #F5A623; border-radius: 2px; }
 .navbar-btn-join-grid span:nth-child(4) { background: #27AE60; border-radius: 2px; }
 
-.navbar-btn-login,
-.navbar-btn-cta {
-  padding: 0.625rem 1.5rem;
+.navbar-btn-login {
+  padding: 0.625rem 1.25rem;
   border-radius: 10px;
   font-size: 0.9375rem;
   font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+  font-family: inherit;
+  white-space: nowrap;
+  letter-spacing: -0.01em;
+}
+
+.navbar-btn-cta {
+  padding: 0.625rem 1.5rem;
+  border-radius: 12px;
+  font-size: 0.9375rem;
+  font-weight: 700;
   border: none;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.22, 1, 0.36, 1);
