@@ -142,19 +142,25 @@ const CustomDropdown = ({ value, options, onChange, icon, ariaLabel }) => {
   );
 };
 
-/* ─── SortableQuestionCard ────────────────────────────── */
-function SortableQuestionCard({ id, children }) {
+/* ─── SortableCard ────────────────────────────────────── */
+function SortableCard({ id, children, custom, variants, initial, animate, exit }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
   return (
-    <div
+    <motion.div
       ref={setNodeRef}
+      className={`eq-question-card${isDragging ? " eq-question-card--dragging" : ""}`}
       style={{
         transform: CSS.Transform.toString(transform),
         transition: isDragging ? undefined : transition,
       }}
+      custom={custom}
+      variants={variants}
+      initial={initial}
+      animate={animate}
+      exit={exit}
     >
-      {children({ listeners, attributes, isDragging })}
-    </div>
+      {children({ listeners, attributes })}
+    </motion.div>
   );
 }
 
@@ -522,16 +528,16 @@ export default function EditQuiz() {
           {questions.map((q, qIndex) => {
             const isPendingDelete = pendingDeleteIndex === qIndex;
             return (
-              <SortableQuestionCard key={q._uid} id={q._uid}>
-                {({ listeners, attributes, isDragging }) => (
-              <motion.div
-                className={`eq-question-card${isDragging ? " eq-question-card--dragging" : ""}`}
+              <SortableCard
+                key={q._uid}
+                id={q._uid}
                 custom={qIndex}
                 variants={cardVariants}
                 initial="hidden"
                 animate="visible"
                 exit="exit"
               >
+                {({ listeners, attributes }) => (<>
                 {/* Toolbar */}
                 <div className="eq-card-toolbar">
                   <div className="eq-toolbar-left">
@@ -804,9 +810,8 @@ export default function EditQuiz() {
                   )}
 
                 </div>
-              </motion.div>
-                )}
-              </SortableQuestionCard>
+                </>)}
+              </SortableCard>
             );
           })}
         </AnimatePresence>
