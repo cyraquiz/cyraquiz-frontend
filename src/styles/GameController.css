@@ -15,6 +15,24 @@
   50%      { transform: scale(1.08); opacity: 1;   }
 }
 
+/* Submitted screen — CSS animations (no Framer Motion overhead) */
+@keyframes gc-pop-in {
+  from { transform: scale(0) rotate(-12deg); opacity: 0; }
+  to   { transform: scale(1) rotate(0deg);   opacity: 1; }
+}
+@keyframes gc-fade-up {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+@keyframes gc-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.gc-anim-pop     { animation: gc-pop-in  0.4s  cubic-bezier(0.16,1,0.3,1) both; }
+.gc-anim-fade-up { animation: gc-fade-up 0.35s ease both 0.14s; }
+.gc-anim-fade    { animation: gc-fade-in 0.3s  ease both 0.28s; }
+
 /* ─── Background blobs (same system) ─────────────────── */
 .gc-bg {
   position: fixed;
@@ -340,6 +358,7 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  contain: layout style;
   background: radial-gradient(
     ellipse 130% 70% at 50% -5%,
     oklch(0.24 0.10 14) 0%,
@@ -390,6 +409,7 @@
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
   outline: none;
+  will-change: transform;
   overflow: hidden;
   min-height: 0;
 }

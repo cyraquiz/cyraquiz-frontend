@@ -340,39 +340,14 @@ export default function GameController() {
         <div className="gc-bg" aria-hidden="true">
           <div className="gc-blob gc-blob-1" /><div className="gc-blob gc-blob-2" /><div className="gc-blob gc-blob-3" />
         </div>
-        <motion.div
-          className="gc-state-icon-wrap gc-state-icon-wrap--primary"
-          initial={{ scale: 0, rotate: -12 }}
-          animate={{ scale: 1, rotate: 0 }}
-          transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-          aria-hidden="true"
-        >
+        <div className="gc-state-icon-wrap gc-state-icon-wrap--primary gc-anim-pop" aria-hidden="true">
           <Check size={34} strokeWidth={3} />
-        </motion.div>
-        <motion.h2
-          className="gc-state-title"
-          initial={{ opacity: 0, y: 14 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.14, duration: 0.35 }}
-        >
-          ¡Respuesta enviada!
-        </motion.h2>
-        <motion.div
-          className="gc-dots" aria-hidden="true"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.28 }}
-        >
+        </div>
+        <h2 className="gc-state-title gc-anim-fade-up">¡Respuesta enviada!</h2>
+        <div className="gc-dots gc-anim-fade" aria-hidden="true">
           <span className="gc-dot" /><span className="gc-dot" /><span className="gc-dot" />
-        </motion.div>
-        <motion.p
-          className="gc-state-sub"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3, duration: 0.35 }}
-        >
-          Esperando al resto...
-        </motion.p>
+        </div>
+        <p className="gc-state-sub gc-anim-fade">Esperando al resto...</p>
       </div>
     );
   }
