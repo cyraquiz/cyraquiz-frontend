@@ -12,6 +12,7 @@ export default defineConfig({
           if (id.includes('node_modules/canvas-confetti')) return undefined;
           if (id.includes('node_modules/use-sound')) return undefined;
           if (id.includes('node_modules/howler')) return undefined;
+          if (id.includes('node_modules/@dnd-kit')) return undefined;
           // DiceBear only needed on Join/StudentLobby/GameRoom (all lazy)
           if (id.includes('node_modules/@dicebear')) return 'avatars';
           if (id.includes('node_modules/qrcode')) return 'qr';
