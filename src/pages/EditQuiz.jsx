@@ -5,6 +5,7 @@ import {
   ArrowLeft, Save, Play, Clock, Trophy, ChevronDown,
   Trash2, Plus, Check, FileQuestion,
   X, List, Layers, ToggleLeft,
+  BarChart2, Star, AlignLeft, SlidersHorizontal,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { apiFetch } from "../utils/api";
@@ -14,9 +15,13 @@ import "../styles/EditQuiz.css";
 
 /* ─── Dropdown options ────────────────────────────────── */
 const TYPE_OPTIONS = [
-  { value: "single", label: "Selección simple",   desc: "1 respuesta",        icon: <List size={13} /> },
-  { value: "multi",  label: "Selección múltiple", desc: "Varias respuestas",  icon: <Layers size={13} /> },
-  { value: "tf",     label: "Verdadero / Falso",  desc: "Binaria",            icon: <ToggleLeft size={13} /> },
+  { value: "single",  label: "Selección simple",    desc: "1 respuesta",        icon: <List size={13} /> },
+  { value: "multi",   label: "Selección múltiple",  desc: "Varias respuestas",  icon: <Layers size={13} /> },
+  { value: "tf",      label: "Verdadero / Falso",   desc: "Binaria",            icon: <ToggleLeft size={13} /> },
+  { value: "poll",    label: "Encuesta",            desc: "Sin puntos",         icon: <BarChart2 size={13} /> },
+  { value: "scale",   label: "Escala 1–5",          desc: "Sin puntos",         icon: <Star size={13} /> },
+  { value: "text",    label: "Respuesta escrita",   desc: "Texto libre",        icon: <AlignLeft size={13} /> },
+  { value: "slider",  label: "Deslizador",          desc: "Rango numérico",     icon: <SlidersHorizontal size={13} /> },
 ];
 
 const TIME_OPTIONS = [
@@ -189,11 +194,27 @@ export default function EditQuiz() {
         q.options = ["Verdadero", "Falso"];
         q.answer = "Verdadero";
       } else if (newType === "single") {
-        if (q.options.length === 2) q.options = ["Opción 1", "Opción 2", "Opción 3", "Opción 4"];
+        if (!q.options || q.options.length !== 4) q.options = ["Opción 1", "Opción 2", "Opción 3", "Opción 4"];
         q.answer = q.options[0];
       } else if (newType === "multi") {
-        if (q.options.length === 2) q.options = ["Opción 1", "Opción 2", "Opción 3", "Opción 4"];
+        if (!q.options || q.options.length !== 4) q.options = ["Opción 1", "Opción 2", "Opción 3", "Opción 4"];
         q.answer = [q.options[0], q.options[1]];
+      } else if (newType === "poll") {
+        if (!q.options || q.options.length < 2) q.options = ["Opción A", "Opción B", "Opción C", "Opción D"];
+        q.answer = "__poll__";
+        q.points = 0;
+      } else if (newType === "scale") {
+        q.options = ["1", "2", "3", "4", "5"];
+        q.answer = "__scale__";
+        q.points = 0;
+      } else if (newType === "text") {
+        q.options = [];
+        q.answer = "";
+      } else if (newType === "slider") {
+        q.options = [];
+        q.answer = "50";
+        q.min = 0;
+        q.max = 100;
       }
       updated[qIndex] = q;
       return updated;
@@ -478,13 +499,17 @@ export default function EditQuiz() {
                       onChange={(val) => handleConfigChange(qIndex, "time", Number(val))}
                       ariaLabel="Tiempo límite"
                     />
-                    <CustomDropdown
-                      icon={<Trophy size={12} />}
-                      value={q.points || 100}
-                      options={POINTS_OPTIONS}
-                      onChange={(val) => handleConfigChange(qIndex, "points", Number(val))}
-                      ariaLabel="Puntos"
-                    />
+                    {q.type === "poll" || q.type === "scale" ? (
+                      <span className="eq-no-points-badge">Sin puntos</span>
+                    ) : (
+                      <CustomDropdown
+                        icon={<Trophy size={12} />}
+                        value={q.points || 100}
+                        options={POINTS_OPTIONS}
+                        onChange={(val) => handleConfigChange(qIndex, "points", Number(val))}
+                        ariaLabel="Puntos"
+                      />
+                    )}
                     <button
                       className={`eq-btn-delete${isPendingDelete ? " eq-btn-delete--active" : ""}`}
                       onClick={() => setPendingDeleteIndex(isPendingDelete ? null : qIndex)}
@@ -555,47 +580,156 @@ export default function EditQuiz() {
                     <div className="eq-underline" aria-hidden="true" />
                   </div>
 
-                  {/* Options grid */}
-                  <fieldset className="eq-options-grid">
-                    <legend className="eq-sr-only">Opciones de respuesta</legend>
-                    {q.options && q.options.map((opt, optIndex) => {
-                      const isCorrect = Array.isArray(q.answer)
-                        ? q.answer.includes(opt)
-                        : q.answer === opt;
-                      return (
-                        <div
-                          key={optIndex}
-                          className={`eq-option${isCorrect ? " eq-option--correct" : ""}`}
-                        >
-                          <button
-                            type="button"
-                            className="eq-option-check"
-                            onClick={() => toggleCorrectAnswer(qIndex, opt)}
-                            aria-label={`${isCorrect ? "Quitar como" : "Marcar como"} respuesta correcta`}
-                            aria-pressed={isCorrect}
-                          >
-                            {isCorrect && <Check size={12} aria-hidden="true" />}
-                          </button>
-                          <label
-                            htmlFor={`q-${qIndex}-opt-${optIndex}`}
-                            className="eq-sr-only"
-                          >
-                            Opción {optIndex + 1}
-                          </label>
+                  {/* === single | multi | tf | poll → options grid === */}
+                  {(!q.type || q.type === "single" || q.type === "multi" || q.type === "tf" || q.type === "poll") && (
+                    <>
+                      <fieldset className="eq-options-grid">
+                        <legend className="eq-sr-only">Opciones de respuesta</legend>
+                        {q.options && q.options.map((opt, optIndex) => {
+                          const isCorrect = q.type === "poll"
+                            ? false
+                            : (Array.isArray(q.answer) ? q.answer.includes(opt) : q.answer === opt);
+                          return (
+                            <div
+                              key={optIndex}
+                              className={`eq-option${isCorrect ? " eq-option--correct" : ""}`}
+                            >
+                              {q.type === "poll" ? (
+                                <span className="eq-option-poll-dot" aria-hidden="true" />
+                              ) : (
+                                <button
+                                  type="button"
+                                  className="eq-option-check"
+                                  onClick={() => toggleCorrectAnswer(qIndex, opt)}
+                                  aria-label={`${isCorrect ? "Quitar como" : "Marcar como"} respuesta correcta`}
+                                  aria-pressed={isCorrect}
+                                >
+                                  {isCorrect && <Check size={12} aria-hidden="true" />}
+                                </button>
+                              )}
+                              <label htmlFor={`q-${qIndex}-opt-${optIndex}`} className="eq-sr-only">
+                                Opción {optIndex + 1}
+                              </label>
+                              <input
+                                id={`q-${qIndex}-opt-${optIndex}`}
+                                type="text"
+                                value={opt}
+                                readOnly={q.type === "tf"}
+                                onChange={(e) => handleOptionChange(qIndex, optIndex, e.target.value)}
+                                placeholder={`Opción ${optIndex + 1}`}
+                                className="eq-option-input"
+                                aria-readonly={q.type === "tf" ? "true" : undefined}
+                              />
+                            </div>
+                          );
+                        })}
+                      </fieldset>
+                      {q.type === "poll" && (
+                        <p className="eq-type-note">
+                          <BarChart2 size={12} aria-hidden="true" />
+                          <span>Encuesta — sin respuesta correcta ni puntos</span>
+                        </p>
+                      )}
+                    </>
+                  )}
+
+                  {/* === scale → static 1–5 preview === */}
+                  {q.type === "scale" && (
+                    <div className="eq-scale-preview">
+                      <div className="eq-scale-preview-buttons">
+                        {["1","2","3","4","5"].map(n => (
+                          <div key={n} className="eq-scale-preview-btn">{n}</div>
+                        ))}
+                      </div>
+                      <p className="eq-type-note">
+                        <Star size={12} aria-hidden="true" />
+                        <span>Escala de valoración — sin puntos</span>
+                      </p>
+                    </div>
+                  )}
+
+                  {/* === text → expected answer input === */}
+                  {q.type === "text" && (
+                    <div className="eq-answer-wrap">
+                      <label htmlFor={`q-${qIndex}-answer`} className="eq-answer-label">
+                        Respuesta esperada
+                      </label>
+                      <input
+                        id={`q-${qIndex}-answer`}
+                        type="text"
+                        value={q.answer || ""}
+                        onChange={(e) => handleConfigChange(qIndex, "answer", e.target.value)}
+                        placeholder="Escribe la respuesta correcta exacta..."
+                        className="eq-answer-input"
+                        maxLength={120}
+                        autoComplete="off"
+                      />
+                      <p className="eq-type-note">
+                        <AlignLeft size={12} aria-hidden="true" />
+                        <span>La comparación no distingue mayúsculas</span>
+                      </p>
+                    </div>
+                  )}
+
+                  {/* === slider → min / max / answer config === */}
+                  {q.type === "slider" && (
+                    <div className="eq-slider-config">
+                      <div className="eq-slider-fields">
+                        <div className="eq-slider-field">
+                          <label htmlFor={`q-${qIndex}-min`} className="eq-slider-field-label">Mínimo</label>
                           <input
-                            id={`q-${qIndex}-opt-${optIndex}`}
-                            type="text"
-                            value={opt}
-                            readOnly={q.type === "tf"}
-                            onChange={(e) => handleOptionChange(qIndex, optIndex, e.target.value)}
-                            placeholder={`Opción ${optIndex + 1}`}
-                            className="eq-option-input"
-                            aria-readonly={q.type === "tf" ? "true" : undefined}
+                            id={`q-${qIndex}-min`}
+                            type="number"
+                            value={q.min ?? 0}
+                            onChange={(e) => handleConfigChange(qIndex, "min", Number(e.target.value))}
+                            className="eq-slider-number"
                           />
                         </div>
-                      );
-                    })}
-                  </fieldset>
+                        <div className="eq-slider-field">
+                          <label htmlFor={`q-${qIndex}-max`} className="eq-slider-field-label">Máximo</label>
+                          <input
+                            id={`q-${qIndex}-max`}
+                            type="number"
+                            value={q.max ?? 100}
+                            onChange={(e) => handleConfigChange(qIndex, "max", Number(e.target.value))}
+                            className="eq-slider-number"
+                          />
+                        </div>
+                        <div className="eq-slider-field eq-slider-field--answer">
+                          <label htmlFor={`q-${qIndex}-answer`} className="eq-slider-field-label">Respuesta correcta</label>
+                          <input
+                            id={`q-${qIndex}-answer`}
+                            type="number"
+                            value={q.answer || ""}
+                            onChange={(e) => handleConfigChange(qIndex, "answer", e.target.value)}
+                            className="eq-slider-number"
+                            min={q.min ?? 0}
+                            max={q.max ?? 100}
+                          />
+                        </div>
+                      </div>
+                      <div className="eq-slider-preview">
+                        <span className="eq-slider-preview-val">{q.answer || 50}</span>
+                        <input
+                          type="range"
+                          min={q.min ?? 0}
+                          max={q.max ?? 100}
+                          value={Number(q.answer) || 50}
+                          onChange={(e) => handleConfigChange(qIndex, "answer", e.target.value)}
+                          className="eq-slider-range"
+                          aria-label="Vista previa del deslizador"
+                        />
+                        <div className="eq-slider-range-labels">
+                          <span>{q.min ?? 0}</span>
+                          <span>{q.max ?? 100}</span>
+                        </div>
+                      </div>
+                      <p className="eq-type-note">
+                        <SlidersHorizontal size={12} aria-hidden="true" />
+                        <span>Solo la respuesta exacta otorga puntos</span>
+                      </p>
+                    </div>
+                  )}
 
                 </div>
               </motion.div>

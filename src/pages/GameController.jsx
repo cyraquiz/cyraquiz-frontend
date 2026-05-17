@@ -16,6 +16,9 @@ export default function GameController() {
   const [currentOptions,  setCurrentOptions]  = useState([]);
   const [questionType,    setQuestionType]    = useState("single");
   const [selectedOptions, setSelectedOptions] = useState([]);
+  const [textAnswer,      setTextAnswer]      = useState("");
+  const [sliderValue,     setSliderValue]     = useState(50);
+  const [questionMeta,    setQuestionMeta]    = useState({ min: 0, max: 100 });
   const [resultData,      setResultData]      = useState({ isCorrect: false, pointsEarned: 0, totalScore: 0 });
   const [finalRank,       setFinalRank]       = useState(0);
   const [podiumStep,      setPodiumStep]      = useState(0);
@@ -31,10 +34,19 @@ export default function GameController() {
   // Game events
   useEffect(() => {
     const onNewQuestion = (q) => {
-      if (q?.options && Array.isArray(q.options) && q.options.length > 0) {
-        setCurrentOptions(q.options);
-        setQuestionType(q.type || "single");
+      const type = q?.type || "single";
+      const hasOptions = Array.isArray(q?.options) && q.options.length > 0;
+      const optionless = type === "text" || type === "slider";
+
+      if (hasOptions || optionless) {
+        const min = q.min ?? 0;
+        const max = q.max ?? 100;
+        setCurrentOptions(q.options || []);
+        setQuestionType(type);
         setSelectedOptions([]);
+        setTextAnswer("");
+        setSliderValue(Math.round((min + max) / 2));
+        setQuestionMeta({ min, max });
         setGameState("answering");
       } else {
         setGameState("waiting");
@@ -101,6 +113,110 @@ export default function GameController() {
 
   // ─── Answering ───────────────────────────────────────
   if (gameState === "answering") {
+
+    // ── Respuesta escrita ──────────────────────────────
+    if (questionType === "text") {
+      return (
+        <div className="gc-play">
+          <div className="gc-info-bar">Escribe tu respuesta</div>
+          <div className="gc-text-area">
+            <input
+              className="gc-text-input"
+              type="text"
+              value={textAnswer}
+              onChange={(e) => setTextAnswer(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && textAnswer.trim()) submitToServer(textAnswer.trim());
+              }}
+              placeholder="Escribe aquí..."
+              maxLength={100}
+              autoFocus
+              autoComplete="off"
+            />
+            <motion.button
+              className={`gc-submit${textAnswer.trim() ? " gc-submit--ready" : ""}`}
+              onClick={() => textAnswer.trim() && submitToServer(textAnswer.trim())}
+              disabled={!textAnswer.trim()}
+              initial={{ y: 60, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ duration: 0.36, ease: [0.16, 1, 0.3, 1] }}
+              aria-label="Enviar respuesta"
+            >
+              <Send size={16} aria-hidden="true" />
+              <span>Enviar respuesta</span>
+            </motion.button>
+          </div>
+        </div>
+      );
+    }
+
+    // ── Deslizador numérico ────────────────────────────
+    if (questionType === "slider") {
+      return (
+        <div className="gc-play">
+          <div className="gc-info-bar">Desliza hasta tu respuesta</div>
+          <div className="gc-slider-area">
+            <motion.div
+              className="gc-slider-value"
+              key={sliderValue}
+              initial={{ scale: 0.85, opacity: 0.6 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.1 }}
+              aria-live="polite"
+            >
+              {sliderValue}
+            </motion.div>
+            <input
+              className="gc-slider-input"
+              type="range"
+              min={questionMeta.min}
+              max={questionMeta.max}
+              value={sliderValue}
+              onChange={(e) => setSliderValue(Number(e.target.value))}
+              aria-label={`Valor: ${sliderValue}`}
+            />
+            <div className="gc-slider-labels">
+              <span>{questionMeta.min}</span>
+              <span>{questionMeta.max}</span>
+            </div>
+            <motion.button
+              className="gc-submit gc-submit--ready"
+              onClick={() => submitToServer(String(sliderValue))}
+              initial={{ y: 60, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ duration: 0.36, ease: [0.16, 1, 0.3, 1] }}
+              aria-label="Confirmar valor"
+            >
+              <Send size={16} aria-hidden="true" />
+              <span>Confirmar</span>
+            </motion.button>
+          </div>
+        </div>
+      );
+    }
+
+    // ── Escala 1–5 ────────────────────────────────────
+    if (questionType === "scale") {
+      return (
+        <div className="gc-play">
+          <div className="gc-info-bar">Selecciona tu valoración</div>
+          <div className="gc-scale-grid" role="group" aria-label="Escala de valoración">
+            {["1","2","3","4","5"].map((n) => (
+              <button
+                key={n}
+                className="gc-scale-btn"
+                onPointerDown={() => submitToServer(n)}
+                aria-label={`Valoración ${n} de 5`}
+              >
+                {n}
+              </button>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    // ── Opciones (single | multi | tf | poll) ─────────
     if (!currentOptions.length) {
       return (
         <div className="gc-state gc-state--waiting">
@@ -117,15 +233,15 @@ export default function GameController() {
       <div className="gc-play">
         {/* Instruction bar */}
         <div className="gc-info-bar">
-          {questionType === "multi" ? "Selecciona dos opciones" : "Elige tu respuesta"}
+          {questionType === "multi"
+            ? "Selecciona dos opciones"
+            : questionType === "poll"
+            ? "Comparte tu opinión"
+            : "Elige tu respuesta"}
         </div>
 
         {/* 2×2 button grid */}
-        <div
-          className="gc-grid"
-          role="group"
-          aria-label="Opciones de respuesta"
-        >
+        <div className="gc-grid" role="group" aria-label="Opciones de respuesta">
           {currentOptions.map((opt, i) => {
             const isSelected = selectedOptions.includes(opt);
             const isDimmed   = questionType === "multi" && selectedOptions.length > 0 && !isSelected;
@@ -263,6 +379,42 @@ export default function GameController() {
 
   // ─── Result ──────────────────────────────────────────
   if (gameState === "result") {
+    // Encuesta / escala — pantalla neutra, sin correcto/incorrecto
+    if (questionType === "poll" || questionType === "scale") {
+      return (
+        <div className="gc-state gc-state--waiting" role="status">
+          <div className="gc-bg" aria-hidden="true">
+            <div className="gc-blob gc-blob-1" /><div className="gc-blob gc-blob-2" /><div className="gc-blob gc-blob-3" />
+          </div>
+          <motion.div
+            className="gc-state-icon-wrap gc-state-icon-wrap--primary"
+            initial={{ scale: 0, rotate: -12 }}
+            animate={{ scale: 1, rotate: 0 }}
+            transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1] }}
+            aria-hidden="true"
+          >
+            <Check size={34} strokeWidth={3} />
+          </motion.div>
+          <motion.h1
+            className="gc-state-title"
+            initial={{ opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.16, duration: 0.36 }}
+          >
+            ¡Respuesta registrada!
+          </motion.h1>
+          <motion.p
+            className="gc-total-score"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.32, duration: 0.36 }}
+          >
+            Total: <strong>{resultData.totalScore} pts</strong>
+          </motion.p>
+        </div>
+      );
+    }
+
     const isCorrect = resultData.isCorrect;
     return (
       <div className={`gc-state gc-state--result ${isCorrect ? "gc-state--correct" : "gc-state--incorrect"}`}>

@@ -86,7 +86,7 @@ export default function HostGame() {
     nextLocked.current = false;
     setIsShowingResult(false);
     setAnswersCount(0);
-    setStats([0, 0, 0, 0]);
+    setStats(Array.from({ length: (q.options || []).length }, () => 0));
     setTimeLeft(q.time || 20);
     socket.emit("send_question", {
       roomCode,
@@ -261,94 +261,118 @@ export default function HostGame() {
           </motion.div>
         </div>
 
-        {/* Bar chart (results only) */}
-        <div
-          className={`hg-chart-area${isShowingResult ? " hg-chart-area--visible" : ""}`}
-          aria-hidden={!isShowingResult}
-        >
-          <div className="hg-chart" role="img" aria-label="Distribución de respuestas">
+        {/* Bar chart — solo para tipos con opciones */}
+        {currentQ.options && currentQ.options.length > 0 && (
+          <div
+            className={`hg-chart-area${isShowingResult ? " hg-chart-area--visible" : ""}`}
+            aria-hidden={!isShowingResult}
+          >
+            <div className="hg-chart" role="img" aria-label="Distribución de respuestas">
+              {currentQ.options.map((opt, i) => {
+                const count     = stats[i] ?? 0;
+                const maxVal    = Math.max(...currentQ.options.map((_, j) => stats[j] ?? 0), 1);
+                const heightPct = (count / maxVal) * 100;
+                const isPollType = currentQ.type === "poll" || currentQ.type === "scale";
+                const isCorrect  = isPollType
+                  ? true
+                  : (Array.isArray(currentQ.answer)
+                      ? currentQ.answer.includes(opt)
+                      : currentQ.answer === opt);
+
+                return (
+                  <div key={i} className="hg-chart-col">
+                    <div className="hg-chart-bar-wrap">
+                      {count > 0 && (
+                        <span className="hg-chart-count">{count}</span>
+                      )}
+                      <div
+                        className="hg-chart-bar"
+                        style={{
+                          height:     count > 0 ? `${heightPct}%` : "10px",
+                          background: OPTION_BG[i % OPTION_BG.length],
+                          opacity:    !isCorrect ? 0.28 : 1,
+                        }}
+                      />
+                    </div>
+                    <div className="hg-chart-foot">
+                      <span
+                        className="hg-chart-letter"
+                        style={{ background: OPTION_BG[i % OPTION_BG.length], opacity: !isCorrect ? 0.4 : 1 }}
+                      >
+                        {OPTION_LETTER[i] ?? i + 1}
+                      </span>
+                      {!isPollType && isCorrect && (
+                        <span className="hg-chart-check" aria-label="Correcta">
+                          <Check size={10} strokeWidth={3.5} />
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Options grid — solo para tipos con opciones */}
+        {currentQ.options && currentQ.options.length > 0 && (
+          <div
+            className={`hg-options${isShowingResult ? " hg-options--results" : ""}`}
+            role="list"
+            aria-label="Opciones de respuesta"
+          >
             {currentQ.options.map((opt, i) => {
-              const maxVal    = Math.max(...stats, 1);
-              const heightPct = (stats[i] / maxVal) * 100;
-              const isCorrect = Array.isArray(currentQ.answer)
-                ? currentQ.answer.includes(opt)
-                : currentQ.answer === opt;
+              const isPollType = currentQ.type === "poll" || currentQ.type === "scale";
+              const isCorrect  = isPollType
+                ? false
+                : (Array.isArray(currentQ.answer)
+                    ? currentQ.answer.includes(opt)
+                    : currentQ.answer === opt);
+              const isFaded = isShowingResult && !isPollType && !isCorrect;
 
               return (
-                <div key={i} className="hg-chart-col">
-                  <div className="hg-chart-bar-wrap">
-                    {stats[i] > 0 && (
-                      <span className="hg-chart-count">{stats[i]}</span>
-                    )}
-                    <div
-                      className="hg-chart-bar"
-                      style={{
-                        height:     stats[i] > 0 ? `${heightPct}%` : "10px",
-                        background: OPTION_BG[i],
-                        opacity:    !isCorrect ? 0.28 : 1,
-                      }}
-                    />
-                  </div>
-                  <div className="hg-chart-foot">
-                    <span
-                      className="hg-chart-letter"
-                      style={{ background: OPTION_BG[i], opacity: !isCorrect ? 0.4 : 1 }}
+                <div
+                  key={i}
+                  role="listitem"
+                  className={`hg-option${isFaded ? " hg-option--faded" : ""}`}
+                  style={{
+                    background: OPTION_BG[i % OPTION_BG.length],
+                    boxShadow: `0 6px 0 ${OPTION_SHADOW[i % OPTION_SHADOW.length]}, 0 10px 24px rgba(0,0,0,0.16)`,
+                  }}
+                >
+                  <span className="hg-option-letter" aria-hidden="true">
+                    {OPTION_LETTER[i] ?? i + 1}
+                  </span>
+                  <span className="hg-option-text">{opt}</span>
+                  {isShowingResult && !isPollType && isCorrect && (
+                    <motion.span
+                      className="hg-option-check"
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ delay: 0.1, duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
+                      aria-label="Respuesta correcta"
                     >
-                      {OPTION_LETTER[i]}
-                    </span>
-                    {isCorrect && (
-                      <span className="hg-chart-check" aria-label="Correcta">
-                        <Check size={10} strokeWidth={3.5} />
-                      </span>
-                    )}
-                  </div>
+                      <Check size={16} strokeWidth={3} aria-hidden="true" />
+                    </motion.span>
+                  )}
                 </div>
               );
             })}
           </div>
-        </div>
+        )}
 
-        {/* Options grid */}
-        <div
-          className={`hg-options${isShowingResult ? " hg-options--results" : ""}`}
-          role="list"
-          aria-label="Opciones de respuesta"
-        >
-          {currentQ.options.map((opt, i) => {
-            const isCorrect = Array.isArray(currentQ.answer)
-              ? currentQ.answer.includes(opt)
-              : currentQ.answer === opt;
-            const isFaded = isShowingResult && !isCorrect;
-
-            return (
-              <div
-                key={i}
-                role="listitem"
-                className={`hg-option${isFaded ? " hg-option--faded" : ""}`}
-                style={{
-                  background: OPTION_BG[i],
-                  boxShadow: `0 6px 0 ${OPTION_SHADOW[i]}, 0 10px 24px rgba(0,0,0,0.16)`,
-                }}
-              >
-                <span className="hg-option-letter" aria-hidden="true">
-                  {OPTION_LETTER[i]}
-                </span>
-                <span className="hg-option-text">{opt}</span>
-                {isShowingResult && isCorrect && (
-                  <motion.span
-                    className="hg-option-check"
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ delay: 0.1, duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
-                    aria-label="Respuesta correcta"
-                  >
-                    <Check size={16} strokeWidth={3} aria-hidden="true" />
-                  </motion.span>
-                )}
-              </div>
-            );
-          })}
-        </div>
+        {/* Reveal para text / slider — sin opciones */}
+        {isShowingResult && (!currentQ.options || currentQ.options.length === 0) && (
+          <motion.div
+            className="hg-answer-reveal"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+          >
+            <span className="hg-answer-reveal-label">Respuesta esperada</span>
+            <span className="hg-answer-reveal-value">{currentQ.answer}</span>
+          </motion.div>
+        )}
 
       </main>
 

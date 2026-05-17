@@ -485,3 +485,151 @@
   .gc-dot                      { animation: none; opacity: 0.6; }
   .gc-state-icon-wrap--light   { animation: none; }
 }
+
+/* ===========================
+   NUEVOS TIPOS DE PREGUNTA
+   =========================== */
+
+/* ── Escala 1–5 ───────────────────────────────────────── */
+.gc-scale-grid {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(0.5rem, 2vw, 1rem);
+  padding: 1.5rem;
+  width: 100%;
+}
+
+.gc-scale-btn {
+  flex: 1;
+  max-width: 80px;
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: oklch(0.26 0.14 14);
+  color: white;
+  border: none;
+  border-radius: 18px;
+  font-size: clamp(1.5rem, 5vw, 2rem);
+  font-weight: 800;
+  font-family: var(--font-heading);
+  cursor: pointer;
+  box-shadow: 0 6px 0 oklch(0.18 0.12 14), 0 10px 24px rgba(0,0,0,0.2);
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+
+.gc-scale-btn:active {
+  transform: translateY(4px);
+  box-shadow: 0 2px 0 oklch(0.18 0.12 14), 0 4px 12px rgba(0,0,0,0.2);
+}
+
+/* ── Respuesta escrita ────────────────────────────────── */
+.gc-text-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  gap: 0;
+  padding: 1.5rem;
+  width: 100%;
+}
+
+.gc-text-input {
+  width: 100%;
+  padding: 1.125rem 1.25rem;
+  background: rgba(255, 255, 255, 0.14);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 16px;
+  font-size: clamp(1rem, 3.5vw, 1.25rem);
+  font-family: var(--font-heading);
+  font-weight: 600;
+  color: white;
+  outline: none;
+  text-align: center;
+  transition: border-color 0.2s ease, background 0.2s ease;
+  margin-bottom: 1rem;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.gc-text-input::placeholder {
+  color: rgba(255, 255, 255, 0.45);
+  font-weight: 500;
+}
+
+.gc-text-input:focus {
+  border-color: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* ── Deslizador numérico ─────────────────────────────── */
+.gc-slider-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 1.5rem 2rem;
+  width: 100%;
+}
+
+.gc-slider-value {
+  font-size: clamp(3rem, 12vw, 5rem);
+  font-weight: 800;
+  font-family: var(--font-heading);
+  color: white;
+  line-height: 1;
+  text-shadow: 0 4px 16px rgba(0,0,0,0.25);
+}
+
+.gc-slider-input {
+  width: 100%;
+  height: 8px;
+  accent-color: white;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.gc-slider-labels {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.6);
+  margin-top: -0.25rem;
+}
+
+/* Respuesta correcta en host — HostGame.css override via inline pero por si acaso */
+.hg-answer-reveal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 2rem 1.5rem;
+  margin: 1rem auto;
+  max-width: 480px;
+  background: oklch(0.995 0.004 14 / 0.12);
+  border: 1px solid oklch(0.995 0.004 14 / 0.25);
+  border-radius: 20px;
+}
+
+.hg-answer-reveal-label {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: oklch(0.995 0.004 14 / 0.6);
+}
+
+.hg-answer-reveal-value {
+  font-size: clamp(1.5rem, 4vw, 2.25rem);
+  font-weight: 800;
+  color: white;
+  text-align: center;
+}
