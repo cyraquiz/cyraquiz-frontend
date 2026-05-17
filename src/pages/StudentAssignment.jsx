@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { CheckCircle, AlertCircle, ChevronRight, User, BookOpen, Home } from "lucide-react";
+import { CheckCircle, AlertCircle, ChevronRight, User, BookOpen } from "lucide-react";
 import "../styles/StudentAssignment.css";
 
 const API = import.meta.env.VITE_API_URL;
@@ -363,9 +363,8 @@ export default function StudentAssignment() {
           )}
           <p className="sa-result-name">Entregado por: <strong>{studentName}</strong></p>
           <div className="sa-result-actions">
-            <button className="sa-btn-join" onClick={() => navigate("/join")}>
-              <Home size={16} />
-              <span>Unirme a un juego en vivo</span>
+            <button className="sa-btn-join" onClick={() => navigate("/")}>
+              <span>Salir</span>
             </button>
           </div>
         </motion.div>
