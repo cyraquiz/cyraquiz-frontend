@@ -523,7 +523,33 @@
   font-size: 0.875rem;
   color: var(--text-muted);
   font-family: var(--font-body);
-  margin: 0;
+  margin: 0 0 1.5rem;
+}
+
+.sa-result-actions {
+  display: flex;
+  justify-content: center;
+}
+
+.sa-btn-join {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  background: transparent;
+  border: 1.5px solid rgba(90, 14, 36, 0.25);
+  border-radius: 10px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  font-family: var(--font-heading);
+  color: var(--color-primary);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.sa-btn-join:hover {
+  background: rgba(90, 14, 36, 0.05);
+  border-color: var(--color-primary);
 }
 
 /* ── Responsive ── */

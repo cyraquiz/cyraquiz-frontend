@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { CheckCircle, AlertCircle, ChevronRight, User, BookOpen } from "lucide-react";
+import { CheckCircle, AlertCircle, ChevronRight, User, BookOpen, Home } from "lucide-react";
 import "../styles/StudentAssignment.css";
 
 const API = import.meta.env.VITE_API_URL;
@@ -127,6 +127,7 @@ function QuestionView({ q, answer, onChange }) {
 
 export default function StudentAssignment() {
   const { token } = useParams();
+  const navigate = useNavigate();
   const [phase, setPhase] = useState("loading");
   const [assignment, setAssignment] = useState(null);
   const [error, setError] = useState("");
@@ -361,6 +362,12 @@ export default function StudentAssignment() {
             <p className="sa-result-subtitle">Tus respuestas fueron registradas correctamente.</p>
           )}
           <p className="sa-result-name">Entregado por: <strong>{studentName}</strong></p>
+          <div className="sa-result-actions">
+            <button className="sa-btn-join" onClick={() => navigate("/join")}>
+              <Home size={16} />
+              <span>Unirme a un juego en vivo</span>
+            </button>
+          </div>
         </motion.div>
       </div>
     );
