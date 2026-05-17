@@ -22,9 +22,6 @@ export default function GameController() {
   const [resultData,      setResultData]      = useState({ isCorrect: false, pointsEarned: 0, totalScore: 0 });
   const [finalRank,       setFinalRank]       = useState(0);
   const [podiumStep,      setPodiumStep]      = useState(0);
-  const [streakDisplay,   setStreakDisplay]   = useState(0);
-  const [badges,          setBadges]          = useState([]);
-
   const questionTypeRef   = useRef("single");
   const streakRef         = useRef(0);
   const maxStreakRef      = useRef(0);
@@ -56,7 +53,6 @@ export default function GameController() {
         setTextAnswer("");
         setSliderValue(Math.round((min + max) / 2));
         setQuestionMeta({ min, max });
-        setStreakDisplay(0);
         setGameState("answering");
       } else {
         setGameState("waiting");
@@ -64,7 +60,6 @@ export default function GameController() {
     };
 
     const onAnswerResult = (result) => {
-      setResultData(result);
       const isPollLike = questionTypeRef.current === "poll" || questionTypeRef.current === "scale";
       if (!isPollLike) {
         totalAnsweredRef.current++;
@@ -75,8 +70,8 @@ export default function GameController() {
         } else {
           streakRef.current = 0;
         }
-        setStreakDisplay(streakRef.current);
       }
+      setResultData(result);
     };
     const onRevealResults = () => setGameState("result");
 
@@ -86,18 +81,6 @@ export default function GameController() {
       if (myIndex !== -1) {
         setResultData(prev => ({ ...prev, myTime: sortedList[myIndex].timeAccumulated }));
       }
-
-      const maxStreak = maxStreakRef.current;
-      const correct   = correctCountRef.current;
-      const total     = totalAnsweredRef.current;
-      const earned    = [];
-      if (maxStreak >= 5)      earned.push({ key: "unstoppable", emoji: "⚡", label: "Imparable" });
-      else if (maxStreak >= 3) earned.push({ key: "streak",      emoji: "🔥", label: "En Racha" });
-      if (total > 0 && correct === total)
-        earned.push({ key: "perfect",  emoji: "✨", label: "Sin Errores" });
-      else if (total >= 3 && correct / total >= 0.8)
-        earned.push({ key: "precise",  emoji: "🎯", label: "Preciso" });
-      setBadges(earned);
 
       const [p1, p2, p3] = sortedList;
       const isTripleTie = p1 && p2 && p3 && p1.score === p2.score && p2.score === p3.score && p1.score > 0;
@@ -468,16 +451,16 @@ export default function GameController() {
           }
         </motion.div>
 
-        {isCorrect && streakDisplay >= 2 && (
+        {isCorrect && streakRef.current >= 2 && (
           <motion.div
             className="gc-streak-banner"
             initial={{ scale: 0.7, opacity: 0 }}
             animate={{ scale: 1,   opacity: 1 }}
             transition={{ delay: 0.08, duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-            aria-label={`Racha de ${streakDisplay} respuestas correctas`}
+            aria-label={`Racha de ${streakRef.current} respuestas correctas`}
           >
             <span aria-hidden="true">🔥</span>
-            <span>Racha ×{streakDisplay}</span>
+            <span>Racha ×{streakRef.current}</span>
           </motion.div>
         )}
 
@@ -602,22 +585,30 @@ export default function GameController() {
           )}
         </motion.div>
 
-        {badges.length > 0 && (
-          <motion.div
-            className="gc-badges"
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.52, duration: 0.36 }}
-            aria-label="Insignias ganadas"
-          >
-            {badges.map(b => (
-              <span key={b.key} className="gc-badge">
-                <span aria-hidden="true">{b.emoji}</span>
-                {b.label}
-              </span>
-            ))}
-          </motion.div>
-        )}
+        {(() => {
+          const ms = maxStreakRef.current, c = correctCountRef.current, t = totalAnsweredRef.current;
+          const bs = [];
+          if (ms >= 5)      bs.push({ key: "unstoppable", emoji: "⚡", label: "Imparable" });
+          else if (ms >= 3) bs.push({ key: "streak",      emoji: "🔥", label: "En Racha" });
+          if (t > 0 && c === t)           bs.push({ key: "perfect", emoji: "✨", label: "Sin Errores" });
+          else if (t >= 3 && c / t >= 0.8) bs.push({ key: "precise", emoji: "🎯", label: "Preciso" });
+          return bs.length > 0 ? (
+            <motion.div
+              className="gc-badges"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.52, duration: 0.36 }}
+              aria-label="Insignias ganadas"
+            >
+              {bs.map(b => (
+                <span key={b.key} className="gc-badge">
+                  <span aria-hidden="true">{b.emoji}</span>
+                  {b.label}
+                </span>
+              ))}
+            </motion.div>
+          ) : null;
+        })()}
 
         <motion.button
           className="gc-btn-exit"
