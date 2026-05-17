@@ -3,10 +3,20 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft, Save, Play, Clock, Trophy, ChevronDown,
-  Trash2, Plus, Check, FileQuestion,
+  Trash2, Plus, Check, FileQuestion, Copy, GripVertical,
   X, List, Layers, ToggleLeft,
   BarChart2, Star, AlignLeft, SlidersHorizontal,
 } from "lucide-react";
+import {
+  DndContext, closestCenter,
+  PointerSensor, TouchSensor,
+  useSensor, useSensors,
+} from "@dnd-kit/core";
+import {
+  SortableContext, useSortable,
+  verticalListSortingStrategy, arrayMove,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { useAuth } from "../context/AuthContext";
 import { apiFetch } from "../utils/api";
 import { Toast } from "../components/common/Toast";
@@ -132,6 +142,22 @@ const CustomDropdown = ({ value, options, onChange, icon, ariaLabel }) => {
   );
 };
 
+/* ─── SortableQuestionCard ────────────────────────────── */
+function SortableQuestionCard({ id, children }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
+  return (
+    <div
+      ref={setNodeRef}
+      style={{
+        transform: CSS.Transform.toString(transform),
+        transition: isDragging ? undefined : transition,
+      }}
+    >
+      {children({ listeners, attributes, isDragging })}
+    </div>
+  );
+}
+
 /* ─── Main component ──────────────────────────────────── */
 export default function EditQuiz() {
   const navigate = useNavigate();
@@ -144,10 +170,13 @@ export default function EditQuiz() {
   const [quizTitle, setQuizTitle]           = useState(initialData?.title || "Nuevo Quiz");
   const [questions, setQuestions]           = useState(() => {
     const raw = initialData?.questions ?? initialData?.questionsData ?? [];
+    let arr;
     if (typeof raw === "string") {
-      try { return JSON.parse(raw); } catch { return []; }
+      try { arr = JSON.parse(raw); } catch { arr = []; }
+    } else {
+      arr = Array.isArray(raw) ? raw : [];
     }
-    return Array.isArray(raw) ? raw : [];
+    return arr.map(q => q._uid ? q : { ...q, _uid: crypto.randomUUID() });
   });
   const [isSaving, setIsSaving]             = useState(false);
   const [isStarting, setIsStarting]         = useState(false);
@@ -258,6 +287,7 @@ export default function EditQuiz() {
     setQuestions(prev => [
       ...prev,
       {
+        _uid: crypto.randomUUID(),
         type: "single",
         question: "",
         options: ["Opción 1", "Opción 2", "Opción 3", "Opción 4"],
@@ -271,6 +301,16 @@ export default function EditQuiz() {
   const handleDeleteQuestion = (index) => {
     setPendingDeleteIndex(null);
     setQuestions(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleDuplicateQuestion = (index) => {
+    setQuestions(prev => {
+      const src = prev[index];
+      const copy = { ...src, options: [...(src.options || [])], _uid: crypto.randomUUID() };
+      const updated = [...prev];
+      updated.splice(index + 1, 0, copy);
+      return updated;
+    });
   };
 
   /* ── Save / Start ── */
@@ -287,7 +327,7 @@ export default function EditQuiz() {
         method: isEditing ? "PUT" : "POST",
         body: JSON.stringify({
           title: quizTitle,
-          questions,
+          questions: questions.map(({ _uid, ...q }) => q),
           description: "Creado/Editado en CYRAQuiz",
         }),
       });
@@ -329,10 +369,25 @@ export default function EditQuiz() {
           ...(initialData || {}),
           id: currentId,
           title: quizTitle,
-          questions,
-          questionsData: questions,
+          questions: questions.map(({ _uid, ...q }) => q),
+          questionsData: questions.map(({ _uid, ...q }) => q),
         },
       },
+    });
+  };
+
+  /* ── Drag & drop ── */
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 8 } }),
+  );
+
+  const handleDragEnd = ({ active, over }) => {
+    if (!over || active.id === over.id) return;
+    setQuestions(prev => {
+      const oldIndex = prev.findIndex(q => q._uid === active.id);
+      const newIndex = prev.findIndex(q => q._uid === over.id);
+      return arrayMove(prev, oldIndex, newIndex);
     });
   };
 
@@ -461,23 +516,33 @@ export default function EditQuiz() {
         )}
 
         {/* Question cards */}
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <SortableContext items={questions.map(q => q._uid)} strategy={verticalListSortingStrategy}>
         <AnimatePresence mode="popLayout">
           {questions.map((q, qIndex) => {
             const isPendingDelete = pendingDeleteIndex === qIndex;
             return (
+              <SortableQuestionCard key={q._uid} id={q._uid}>
+                {({ listeners, attributes, isDragging }) => (
               <motion.div
-                key={qIndex}
-                className="eq-question-card"
+                className={`eq-question-card${isDragging ? " eq-question-card--dragging" : ""}`}
                 custom={qIndex}
                 variants={cardVariants}
                 initial="hidden"
                 animate="visible"
                 exit="exit"
-                layout
               >
                 {/* Toolbar */}
                 <div className="eq-card-toolbar">
                   <div className="eq-toolbar-left">
+                    <button
+                      className="eq-btn-drag"
+                      {...listeners}
+                      {...attributes}
+                      aria-label="Arrastrar para reordenar"
+                    >
+                      <GripVertical size={14} aria-hidden="true" />
+                    </button>
                     <span
                       className="eq-question-badge"
                       aria-label={`Pregunta ${qIndex + 1}`}
@@ -510,6 +575,13 @@ export default function EditQuiz() {
                         ariaLabel="Puntos"
                       />
                     )}
+                    <button
+                      className="eq-btn-duplicate"
+                      onClick={() => handleDuplicateQuestion(qIndex)}
+                      aria-label={`Duplicar pregunta ${qIndex + 1}`}
+                    >
+                      <Copy size={14} aria-hidden="true" />
+                    </button>
                     <button
                       className={`eq-btn-delete${isPendingDelete ? " eq-btn-delete--active" : ""}`}
                       onClick={() => setPendingDeleteIndex(isPendingDelete ? null : qIndex)}
@@ -733,9 +805,13 @@ export default function EditQuiz() {
 
                 </div>
               </motion.div>
+                )}
+              </SortableQuestionCard>
             );
           })}
         </AnimatePresence>
+          </SortableContext>
+        </DndContext>
 
         {/* Add question — only visible when there are already questions */}
         {questions.length > 0 && (

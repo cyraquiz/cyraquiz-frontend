@@ -466,6 +466,57 @@
 }
 
 /* Delete button */
+.eq-btn-drag {
+  width: 28px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: #D0D0D0;
+  cursor: grab;
+  touch-action: none;
+  flex-shrink: 0;
+  border-radius: 6px;
+  transition: color 0.15s ease;
+  padding: 0;
+}
+
+.eq-btn-drag:hover { color: var(--text-muted); }
+.eq-btn-drag:active { cursor: grabbing; }
+
+.eq-question-card--dragging {
+  opacity: 0.45;
+  box-shadow: none;
+}
+
+.eq-btn-duplicate {
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1.5px solid #E0E0E0;
+  border-radius: 8px;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.eq-btn-duplicate:hover {
+  background: rgba(90, 14, 36, 0.06);
+  border-color: rgba(90, 14, 36, 0.25);
+  color: var(--color-primary);
+}
+
+.eq-btn-duplicate:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
 .eq-btn-delete {
   width: 34px;
   height: 34px;
