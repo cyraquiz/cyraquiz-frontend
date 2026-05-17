@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Check, X, Eye, Send, Trophy, Loader2, Star } from "lucide-react";
@@ -22,6 +22,14 @@ export default function GameController() {
   const [resultData,      setResultData]      = useState({ isCorrect: false, pointsEarned: 0, totalScore: 0 });
   const [finalRank,       setFinalRank]       = useState(0);
   const [podiumStep,      setPodiumStep]      = useState(0);
+  const [streakDisplay,   setStreakDisplay]   = useState(0);
+  const [badges,          setBadges]          = useState([]);
+
+  const questionTypeRef   = useRef("single");
+  const streakRef         = useRef(0);
+  const maxStreakRef      = useRef(0);
+  const correctCountRef   = useRef(0);
+  const totalAnsweredRef  = useRef(0);
 
   // Reconnect
   useEffect(() => {
@@ -41,19 +49,35 @@ export default function GameController() {
       if (hasOptions || optionless) {
         const min = q.min ?? 0;
         const max = q.max ?? 100;
+        questionTypeRef.current = type;
         setCurrentOptions(q.options || []);
         setQuestionType(type);
         setSelectedOptions([]);
         setTextAnswer("");
         setSliderValue(Math.round((min + max) / 2));
         setQuestionMeta({ min, max });
+        setStreakDisplay(0);
         setGameState("answering");
       } else {
         setGameState("waiting");
       }
     };
 
-    const onAnswerResult  = (result) => setResultData(result);
+    const onAnswerResult = (result) => {
+      setResultData(result);
+      const isPollLike = questionTypeRef.current === "poll" || questionTypeRef.current === "scale";
+      if (!isPollLike) {
+        totalAnsweredRef.current++;
+        if (result.isCorrect) {
+          streakRef.current++;
+          if (streakRef.current > maxStreakRef.current) maxStreakRef.current = streakRef.current;
+          correctCountRef.current++;
+        } else {
+          streakRef.current = 0;
+        }
+        setStreakDisplay(streakRef.current);
+      }
+    };
     const onRevealResults = () => setGameState("result");
 
     const onFinalResults = (sortedList) => {
@@ -62,6 +86,19 @@ export default function GameController() {
       if (myIndex !== -1) {
         setResultData(prev => ({ ...prev, myTime: sortedList[myIndex].timeAccumulated }));
       }
+
+      const maxStreak = maxStreakRef.current;
+      const correct   = correctCountRef.current;
+      const total     = totalAnsweredRef.current;
+      const earned    = [];
+      if (maxStreak >= 5)      earned.push({ key: "unstoppable", emoji: "⚡", label: "Imparable" });
+      else if (maxStreak >= 3) earned.push({ key: "streak",      emoji: "🔥", label: "En Racha" });
+      if (total > 0 && correct === total)
+        earned.push({ key: "perfect",  emoji: "✨", label: "Sin Errores" });
+      else if (total >= 3 && correct / total >= 0.8)
+        earned.push({ key: "precise",  emoji: "🎯", label: "Preciso" });
+      setBadges(earned);
+
       const [p1, p2, p3] = sortedList;
       const isTripleTie = p1 && p2 && p3 && p1.score === p2.score && p2.score === p3.score && p1.score > 0;
       const isDoubleTie = p1 && p2 && p1.score === p2.score && p1.score > 0;
@@ -431,6 +468,19 @@ export default function GameController() {
           }
         </motion.div>
 
+        {isCorrect && streakDisplay >= 2 && (
+          <motion.div
+            className="gc-streak-banner"
+            initial={{ scale: 0.7, opacity: 0 }}
+            animate={{ scale: 1,   opacity: 1 }}
+            transition={{ delay: 0.08, duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+            aria-label={`Racha de ${streakDisplay} respuestas correctas`}
+          >
+            <span aria-hidden="true">🔥</span>
+            <span>Racha ×{streakDisplay}</span>
+          </motion.div>
+        )}
+
         <motion.h1
           className="gc-result-title"
           initial={{ opacity: 0, y: 18 }}
@@ -551,6 +601,23 @@ export default function GameController() {
             </span>
           )}
         </motion.div>
+
+        {badges.length > 0 && (
+          <motion.div
+            className="gc-badges"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.52, duration: 0.36 }}
+            aria-label="Insignias ganadas"
+          >
+            {badges.map(b => (
+              <span key={b.key} className="gc-badge">
+                <span aria-hidden="true">{b.emoji}</span>
+                {b.label}
+              </span>
+            ))}
+          </motion.div>
+        )}
 
         <motion.button
           className="gc-btn-exit"
