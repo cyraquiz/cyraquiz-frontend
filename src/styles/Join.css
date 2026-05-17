@@ -728,15 +728,18 @@
   align-items: center;
   gap: 0.45rem;
   background: none;
-  border: none;
-  color: rgba(255,255,255,0.45);
+  border: 1.5px solid rgba(90,14,36,0.18);
+  color: var(--text-muted);
   font-family: var(--font-heading);
   font-size: 0.82rem;
   font-weight: 600;
   cursor: pointer;
-  padding: 0.4rem 0.75rem;
+  padding: 0.5rem 1rem;
   border-radius: 100px;
-  transition: color 0.18s ease;
+  transition: color 0.18s ease, border-color 0.18s ease;
   touch-action: manipulation;
 }
-.join-ghost-btn:hover { color: rgba(255,255,255,0.75); }
+.join-ghost-btn:hover {
+  color: var(--color-primary);
+  border-color: rgba(90,14,36,0.35);
+}
