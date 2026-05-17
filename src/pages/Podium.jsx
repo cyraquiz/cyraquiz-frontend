@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Trophy, Star } from "lucide-react";
+import { Trophy, Star, Download } from "lucide-react";
 import { socket } from "../socket";
 import { getAvatarSrc } from "../utils/avatars";
+import { exportResultsCSV } from "../utils/exportCsv";
 import confetti from "canvas-confetti";
 import useSound from "use-sound";
 import "../styles/Podium.css";
@@ -25,6 +26,7 @@ export default function Podium() {
   const navigate    = useNavigate();
   const location    = useLocation();
   const hostToken   = location.state?.hostToken;
+  const quizTitle   = location.state?.quizData?.title || "partida";
 
   const [sortedPlayers, setSortedPlayers] = useState([]);
   const [first,         setFirst]         = useState(null);
@@ -304,7 +306,7 @@ export default function Podium() {
         </AnimatePresence>
       </div>
 
-      {/* Return CTA */}
+      {/* Return CTA + Download */}
       <AnimatePresence>
         {step === 3 && (
           <motion.div
@@ -313,6 +315,14 @@ export default function Podium() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: EASE_OUT_EXPO, delay: 0.5 }}
           >
+            <button
+              className="pd-btn-download"
+              onClick={() => exportResultsCSV(sortedPlayers, quizTitle)}
+              aria-label="Descargar resultados en CSV"
+            >
+              <Download size={16} aria-hidden="true" />
+              <span>Descargar resultados</span>
+            </button>
             <button className="pd-btn-return" onClick={() => navigate("/host")}>
               Volver al inicio
             </button>

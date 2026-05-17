@@ -462,8 +462,40 @@
   z-index: 10;
   width: 100%;
   display: flex;
+  align-items: center;
   justify-content: center;
+  gap: 0.75rem;
   padding: 2.5rem 1.5rem 0;
+  flex-wrap: wrap;
+}
+
+.pd-btn-download {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: transparent;
+  color: oklch(0.72 0.01 250);
+  border: 1.5px solid oklch(0.72 0.01 250 / 0.45);
+  border-radius: 100px;
+  padding: 0.875rem 1.75rem;
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  min-height: 52px;
+  transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+}
+
+.pd-btn-download:hover {
+  background: oklch(0.72 0.01 250 / 0.12);
+  border-color: oklch(0.72 0.01 250 / 0.7);
+  color: oklch(0.88 0.01 250);
+}
+.pd-btn-download:active       { opacity: 0.76; }
+.pd-btn-download:focus-visible {
+  outline: 2px solid oklch(0.72 0.01 250);
+  outline-offset: 3px;
 }
 
 .pd-btn-return {
