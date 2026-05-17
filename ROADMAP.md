@@ -33,16 +33,51 @@ Se añadió la capacidad de exportar los resultados finales de cada partida como
 - Columnas exportadas: Posición, Jugador, Puntaje, Tiempo promedio (s)
 - Nombres sanitizados contra inyección CSV y caracteres inválidos en nombres de archivo
 
----
+### 3. Duplicar pregunta + Drag & drop en editor
+**Fecha:** 2026-05-17
+
+- Botón Copy en cada tarjeta del editor para duplicar una pregunta al instante
+- Reordenamiento por arrastre con @dnd-kit (touch + mouse), sin conflicto con Framer Motion
+
+### 4. Ghost Mode — Práctica sin conexión
+**Fecha:** 2026-05-17
+
+- Las preguntas de cada partida se guardan automáticamente en localStorage al terminar
+- `/ghost`: lista de quizzes guardados, reproductor solo con timer, comparación contra récord anterior
+- Botón de acceso directo desde la página de Join
+
+### 5. Generación con IA desde tema, texto y URL
+**Fecha:** 2026-05-17
+
+El modal "Crear con IA" ahora incluye 4 pestañas:
+
+| Modo | Descripción |
+|------|-------------|
+| PDF | Sube un archivo .pdf (comportamiento original) |
+| Tema | Escribe el nombre de una materia o tema |
+| Texto | Pega texto libre del que se extraen preguntas |
+| URL | Ingresa una URL; el backend la descarga y extrae el contenido |
+
+Backend: endpoint `POST /generate-text` con campo `mode` (`topic`\|`text`\|`url`) y `content`.
+
+### 6. Modo Asignación — Tarea asíncrona
+**Fecha:** 2026-05-17
+
+Permite que los estudiantes completen un examen sin necesidad de una sesión en vivo:
+
+- **Botón "Compartir"** en cada quiz card del dashboard del profesor
+- Crea un registro en la tabla `assignments` con token UUID único
+- Enlace público `/asignacion/:token` — estudiante ingresa su nombre y responde a su ritmo
+- Compatible con todos los 7 tipos de pregunta
+- Calcula el puntaje localmente y lo envía al backend (`POST /assignments/student/:token/submit`)
+- Previene doble entrega por nombre (case-insensitive)
+- **Página "Mis Tareas"** (`/tareas`) — lista todas las tareas del profesor con conteo de entregas, copia del enlace y tabla de respuestas expandible
 
 ---
 
-## En progreso / Pendiente
+## Descartado
 
-- [ ] Modo Asignación / Tarea asíncrona
-- [ ] Generación con IA desde URL / tema de texto
-- [ ] Sistema de rachas e insignias
-- [ ] Confidence Mode
-- [ ] Ghost Mode
-- [ ] Branding personalizado por profesor
-- [ ] Team Mode expandido
+- Racha/badges (Streaks system)
+- Confidence Mode
+- Branding personalizado
+- Modo por equipos (Team Mode)

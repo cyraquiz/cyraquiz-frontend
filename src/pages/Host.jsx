@@ -5,6 +5,7 @@ import {
   BookOpen, Search, Plus, Play, Trash2, X,
   Upload, FileText, CheckCircle, LogOut,
   Sparkles, FileQuestion, AlertCircle, Pencil,
+  Share2, ClipboardList, Copy, Check, Link2,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { apiFetch, apiUpload } from "../utils/api";
@@ -49,6 +50,17 @@ export default function Host() {
   const [isDragging, setIsDragging] = useState(false);
   const [toast, setToast] = useState(null);
   const searchRef = useRef(null);
+
+  // AI modal — tab mode
+  const [aiMode, setAiMode] = useState("pdf");
+  const [textContent, setTextContent] = useState("");
+
+  // Assignment modal
+  const [assignmentQuiz, setAssignmentQuiz] = useState(null);
+  const [assignmentTitle, setAssignmentTitle] = useState("");
+  const [assignmentLoading, setAssignmentLoading] = useState(false);
+  const [assignmentLink, setAssignmentLink] = useState(null);
+  const [linkCopied, setLinkCopied] = useState(false);
 
   const showToast = useCallback((message, type = "success") => {
     setToast({ message, type, id: Date.now() });
@@ -134,6 +146,75 @@ export default function Host() {
     setSuccessData(null);
     setIsExtractMode(false);
     setIsDragging(false);
+    setAiMode("pdf");
+    setTextContent("");
+  };
+
+  const handleGenerateText = async () => {
+    if (!textContent.trim()) return;
+    setLoading(true);
+    try {
+      const response = await apiFetch("/generate-text", {
+        method: "POST",
+        body: JSON.stringify({ mode: aiMode, content: textContent.trim() }),
+      });
+      const data = await response.json();
+      if (data.success) {
+        let titleFallback = textContent.trim().slice(0, 50);
+        if (aiMode === "url") {
+          try { titleFallback = new URL(textContent.trim()).hostname; } catch {}
+        }
+        const newQuiz = {
+          id: Date.now(),
+          title: titleFallback,
+          date: new Date().toLocaleDateString("es-MX", { day: "numeric", month: "short", year: "numeric" }),
+          questions: data.questions,
+          totalQuestions: data.questions.length,
+        };
+        setMyQuizzes((prev) => [...prev, newQuiz]);
+        setSuccessData(newQuiz);
+      } else {
+        showToast(data.error || "Error al generar preguntas con IA", "error");
+      }
+    } catch (error) {
+      console.error(error);
+      showToast("No se pudo conectar con el servidor.", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const closeAssignmentModal = () => {
+    setAssignmentQuiz(null);
+    setAssignmentTitle("");
+    setAssignmentLink(null);
+    setLinkCopied(false);
+  };
+
+  const handleCreateAssignment = async () => {
+    if (!assignmentTitle.trim() || !assignmentQuiz) return;
+    setAssignmentLoading(true);
+    try {
+      const res = await apiFetch("/assignments", {
+        method: "POST",
+        body: JSON.stringify({
+          quiz_id: assignmentQuiz.id,
+          title: assignmentTitle.trim(),
+          questions: assignmentQuiz.questions,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setAssignmentLink(`${window.location.origin}/asignacion/${data.assignment.token}`);
+      } else {
+        showToast(data.error || "Error al crear tarea", "error");
+      }
+    } catch (err) {
+      console.error(err);
+      showToast("Error al crear tarea", "error");
+    } finally {
+      setAssignmentLoading(false);
+    }
   };
 
   const handleUpload = async () => {
@@ -274,6 +355,14 @@ export default function Host() {
               </AnimatePresence>
             </div>
             <button
+              className="host-btn-assignments"
+              onClick={() => navigate("/tareas")}
+              aria-label="Ver mis tareas"
+            >
+              <ClipboardList size={17} aria-hidden="true" />
+              <span>Mis Tareas</span>
+            </button>
+            <button
               className="host-btn-ai"
               onClick={() => setShowModal(true)}
               aria-label="Crear examen con inteligencia artificial"
@@ -388,6 +477,20 @@ export default function Host() {
                         <span>Editar</span>
                       </button>
                       <button
+                        className="quiz-card-share"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setAssignmentQuiz(quiz);
+                          setAssignmentTitle(quiz.title);
+                          setAssignmentLink(null);
+                          setLinkCopied(false);
+                        }}
+                        aria-label={`Compartir como tarea: ${quiz.title}`}
+                        title="Compartir como tarea"
+                      >
+                        <Share2 size={13} aria-hidden="true" />
+                      </button>
+                      <button
                         className="quiz-card-play"
                         onClick={(e) => {
                           e.stopPropagation();
@@ -463,71 +566,138 @@ export default function Host() {
                     <div className="host-modal-header">
                       <h2 className="host-modal-title" id="modal-ai-title">Crear con IA</h2>
                       <p className="host-modal-subtitle">
-                        Sube un PDF y generamos las preguntas automáticamente
+                        Genera preguntas desde un PDF, tema, texto o URL
                       </p>
                     </div>
 
-                    <div
-                      className={`host-upload-area${isDragging ? " host-upload-area--drag" : ""}`}
-                      onDragOver={handleDragOver}
-                      onDragLeave={handleDragLeave}
-                      onDrop={handleDrop}
-                    >
-                      <input
-                        type="file"
-                        id="pdf-upload"
-                        accept="application/pdf"
-                        onChange={handleFileChange}
-                        className="host-file-input"
-                      />
-                      {!file ? (
-                        <label htmlFor="pdf-upload" className="host-upload-label">
-                          <Upload size={28} aria-hidden="true" />
-                          <span className="host-upload-text">
-                            {isDragging ? "Suelta aquí el archivo" : "Haz clic o arrastra un PDF"}
-                          </span>
-                          <span className="host-upload-hint">Solo archivos .pdf</span>
-                        </label>
-                      ) : (
-                        <div className="host-file-selected">
-                          <FileText size={20} aria-hidden="true" />
-                          <span className="host-file-name">{file.name}</span>
-                          <button className="host-file-clear" onClick={() => setFile(null)} aria-label="Quitar archivo">
-                            <X size={14} aria-hidden="true" />
-                          </button>
-                        </div>
-                      )}
+                    {/* Mode tabs */}
+                    <div className="host-ai-tabs" role="tablist">
+                      {[["pdf","PDF"],["topic","Tema"],["text","Texto"],["url","URL"]].map(([mode, label]) => (
+                        <button
+                          key={mode}
+                          role="tab"
+                          aria-selected={aiMode === mode}
+                          className={`host-ai-tab${aiMode === mode ? " host-ai-tab--active" : ""}`}
+                          onClick={() => { setAiMode(mode); setTextContent(""); setFile(null); }}
+                        >
+                          {label}
+                        </button>
+                      ))}
                     </div>
 
-                    <label className="host-extract-toggle">
-                      <input
-                        type="checkbox"
-                        checked={isExtractMode}
-                        onChange={(e) => setIsExtractMode(e.target.checked)}
-                        className="host-extract-checkbox"
-                      />
-                      <span className="host-extract-text">
-                        El PDF ya contiene preguntas (extraer en lugar de generar)
-                      </span>
-                    </label>
-
-                    <button
-                      onClick={handleUpload}
-                      disabled={!file || loading}
-                      className="host-btn-generate"
-                    >
-                      {loading ? (
-                        <>
-                          <Spinner className="host-spinner" />
-                          <span>Generando preguntas...</span>
-                        </>
-                      ) : (
-                        <>
-                          <Sparkles size={17} aria-hidden="true" />
-                          <span>Generar preguntas</span>
-                        </>
-                      )}
-                    </button>
+                    {aiMode === "pdf" ? (
+                      <>
+                        <div
+                          className={`host-upload-area${isDragging ? " host-upload-area--drag" : ""}`}
+                          onDragOver={handleDragOver}
+                          onDragLeave={handleDragLeave}
+                          onDrop={handleDrop}
+                        >
+                          <input
+                            type="file"
+                            id="pdf-upload"
+                            accept="application/pdf"
+                            onChange={handleFileChange}
+                            className="host-file-input"
+                          />
+                          {!file ? (
+                            <label htmlFor="pdf-upload" className="host-upload-label">
+                              <Upload size={28} aria-hidden="true" />
+                              <span className="host-upload-text">
+                                {isDragging ? "Suelta aquí el archivo" : "Haz clic o arrastra un PDF"}
+                              </span>
+                              <span className="host-upload-hint">Solo archivos .pdf</span>
+                            </label>
+                          ) : (
+                            <div className="host-file-selected">
+                              <FileText size={20} aria-hidden="true" />
+                              <span className="host-file-name">{file.name}</span>
+                              <button className="host-file-clear" onClick={() => setFile(null)} aria-label="Quitar archivo">
+                                <X size={14} aria-hidden="true" />
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                        <label className="host-extract-toggle">
+                          <input
+                            type="checkbox"
+                            checked={isExtractMode}
+                            onChange={(e) => setIsExtractMode(e.target.checked)}
+                            className="host-extract-checkbox"
+                          />
+                          <span className="host-extract-text">
+                            El PDF ya contiene preguntas (extraer en lugar de generar)
+                          </span>
+                        </label>
+                        <button
+                          onClick={handleUpload}
+                          disabled={!file || loading}
+                          className="host-btn-generate"
+                        >
+                          {loading ? (
+                            <><Spinner className="host-spinner" /><span>Generando preguntas...</span></>
+                          ) : (
+                            <><Sparkles size={17} aria-hidden="true" /><span>Generar preguntas</span></>
+                          )}
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        {aiMode === "topic" && (
+                          <div className="host-form-group">
+                            <label className="host-form-label">Tema o materia</label>
+                            <input
+                              className="host-form-input"
+                              placeholder="ej. La Revolución Francesa, Álgebra lineal…"
+                              value={textContent}
+                              onChange={(e) => setTextContent(e.target.value)}
+                              maxLength={200}
+                              autoFocus
+                            />
+                          </div>
+                        )}
+                        {aiMode === "text" && (
+                          <div className="host-form-group">
+                            <label className="host-form-label">Pega tu texto</label>
+                            <textarea
+                              className="host-form-textarea"
+                              placeholder="Pega aquí el texto del que quieres generar preguntas..."
+                              value={textContent}
+                              onChange={(e) => setTextContent(e.target.value)}
+                              rows={7}
+                              autoFocus
+                            />
+                          </div>
+                        )}
+                        {aiMode === "url" && (
+                          <div className="host-form-group">
+                            <label className="host-form-label">URL de la página</label>
+                            <div className="host-url-input-wrapper">
+                              <Link2 size={16} className="host-url-icon" aria-hidden="true" />
+                              <input
+                                className="host-form-input host-form-input--url"
+                                placeholder="https://..."
+                                value={textContent}
+                                onChange={(e) => setTextContent(e.target.value)}
+                                type="url"
+                                autoFocus
+                              />
+                            </div>
+                          </div>
+                        )}
+                        <button
+                          onClick={handleGenerateText}
+                          disabled={!textContent.trim() || loading}
+                          className="host-btn-generate"
+                        >
+                          {loading ? (
+                            <><Spinner className="host-spinner" /><span>Generando preguntas...</span></>
+                          ) : (
+                            <><Sparkles size={17} aria-hidden="true" /><span>Generar preguntas</span></>
+                          )}
+                        </button>
+                      </>
+                    )}
                   </>
                 ) : (
                   <div className="host-success">
@@ -547,6 +717,111 @@ export default function Host() {
                         onClick={() => navigate(`/edit/${successData.id}`, { state: { quizData: successData } })}
                       >
                         Editar y guardar
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Assignment creation modal */}
+      <AnimatePresence>
+        {assignmentQuiz && (
+          <>
+            <motion.div
+              className="host-modal-backdrop"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={closeAssignmentModal}
+              aria-hidden="true"
+            />
+            <motion.div
+              className="host-modal-container"
+              variants={modalVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="modal-assignment-title"
+            >
+              <div className="host-modal">
+                <button className="host-modal-close" onClick={closeAssignmentModal} aria-label="Cerrar">
+                  <X size={20} aria-hidden="true" />
+                </button>
+                {!assignmentLink ? (
+                  <>
+                    <div className="host-modal-header">
+                      <h2 className="host-modal-title" id="modal-assignment-title">Compartir como tarea</h2>
+                      <p className="host-modal-subtitle">
+                        Los estudiantes podrán completarla a su ritmo con el enlace.
+                      </p>
+                    </div>
+                    <div className="host-form-group">
+                      <label className="host-form-label" htmlFor="assignment-title-input">
+                        Título de la tarea
+                      </label>
+                      <input
+                        id="assignment-title-input"
+                        className="host-form-input"
+                        value={assignmentTitle}
+                        onChange={(e) => setAssignmentTitle(e.target.value)}
+                        onKeyDown={(e) => e.key === "Enter" && handleCreateAssignment()}
+                        maxLength={100}
+                        placeholder="Título de la tarea..."
+                        autoFocus
+                      />
+                    </div>
+                    <div className="host-modal-actions">
+                      <button className="host-btn-secondary" onClick={closeAssignmentModal}>
+                        Cancelar
+                      </button>
+                      <button
+                        className="host-btn-primary"
+                        onClick={handleCreateAssignment}
+                        disabled={!assignmentTitle.trim() || assignmentLoading}
+                      >
+                        {assignmentLoading ? "Creando..." : "Crear tarea"}
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <div className="host-success">
+                    <div className="host-success-icon" aria-hidden="true">
+                      <CheckCircle size={44} />
+                    </div>
+                    <h2 className="host-modal-title">¡Tarea creada!</h2>
+                    <p className="host-modal-subtitle">
+                      Comparte este enlace con tus estudiantes.
+                    </p>
+                    <div className="host-link-box">
+                      <span className="host-link-text">{assignmentLink}</span>
+                      <button
+                        className="host-link-copy"
+                        onClick={() => {
+                          navigator.clipboard.writeText(assignmentLink);
+                          setLinkCopied(true);
+                          setTimeout(() => setLinkCopied(false), 2500);
+                        }}
+                        aria-label="Copiar enlace"
+                        title="Copiar enlace"
+                      >
+                        {linkCopied ? <Check size={16} strokeWidth={2.5} /> : <Copy size={16} />}
+                      </button>
+                    </div>
+                    <div className="host-modal-actions">
+                      <button className="host-btn-secondary" onClick={closeAssignmentModal}>
+                        Cerrar
+                      </button>
+                      <button
+                        className="host-btn-primary"
+                        onClick={() => { closeAssignmentModal(); navigate("/tareas"); }}
+                      >
+                        Ver tareas
                       </button>
                     </div>
                   </div>

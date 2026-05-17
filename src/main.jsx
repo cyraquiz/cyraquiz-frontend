@@ -17,7 +17,9 @@ const GameRoom      = lazy(() => import("./pages/GameRoom.jsx"));
 const HostGame      = lazy(() => import("./pages/HostGame.jsx"));
 const GameController = lazy(() => import("./pages/GameController.jsx"));
 const StudentLobby  = lazy(() => import("./pages/StudentLobby.jsx"));
-const Podium        = lazy(() => import("./pages/Podium.jsx"));
+const Podium             = lazy(() => import("./pages/Podium.jsx"));
+const StudentAssignment  = lazy(() => import("./pages/StudentAssignment.jsx"));
+const AssignmentsPage    = lazy(() => import("./pages/AssignmentsPage.jsx"));
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
@@ -35,6 +37,8 @@ ReactDOM.createRoot(document.getElementById("root")).render(
             <Route path="/host-game/:roomCode" element={<HostGame />} />
             <Route path="/game/:pin" element={<GameController />} />
             <Route path="/podium/:roomCode" element={<Podium />} />
+            <Route path="/asignacion/:token" element={<StudentAssignment />} />
+            <Route path="/tareas" element={<AssignmentsPage />} />
           </Routes>
         </Suspense>
         <AuthModal />
