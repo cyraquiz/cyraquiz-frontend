@@ -340,7 +340,12 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  background: oklch(0.1 0.01 252);
+  background: radial-gradient(
+    ellipse 130% 70% at 50% -5%,
+    oklch(0.24 0.10 14) 0%,
+    oklch(0.13 0.05 14) 50%,
+    oklch(0.08 0.02 14) 100%
+  );
 }
 
 /* ─── Instruction bar ─────────────────────────────────── */
@@ -545,28 +550,29 @@
 .gc-text-input {
   width: 100%;
   padding: 1.125rem 1.25rem;
-  background: rgba(255, 255, 255, 0.14);
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  background: white;
+  border: 2px solid transparent;
   border-radius: 16px;
   font-size: clamp(1rem, 3.5vw, 1.25rem);
   font-family: var(--font-heading);
   font-weight: 600;
-  color: white;
+  color: oklch(0.15 0.04 14);
   outline: none;
   text-align: center;
-  transition: border-color 0.2s ease, background 0.2s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
   margin-bottom: 1rem;
   -webkit-tap-highlight-color: transparent;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
 }
 
 .gc-text-input::placeholder {
-  color: rgba(255, 255, 255, 0.45);
+  color: oklch(0.58 0.02 60);
   font-weight: 500;
 }
 
 .gc-text-input:focus {
-  border-color: rgba(255, 255, 255, 0.7);
-  background: rgba(255, 255, 255, 0.2);
+  border-color: var(--color-primary);
+  box-shadow: 0 4px 20px rgba(90, 14, 36, 0.25);
 }
 
 /* ── Deslizador numérico ─────────────────────────────── */

@@ -13,6 +13,8 @@
   padding-bottom: 80px;
   position: relative;
   overflow: hidden;
+  max-width: 100vw;
+  touch-action: pan-y;
 }
 
 /* ===========================
