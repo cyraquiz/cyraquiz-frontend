@@ -18,7 +18,13 @@ export default defineConfig({
           if (id.includes('node_modules/qrcode')) return 'qr';
           // Fixed chunks
           if (id.includes('node_modules/socket.io-client')) return 'socket';
-          if (id.includes('node_modules/react-dom')) return 'react-dom';
+          // React core together to avoid circular chunk dep (react-dom ↔ scheduler ↔ vendor)
+          if (
+            id.includes('node_modules/react/') ||
+            id.includes('node_modules/react-dom') ||
+            id.includes('node_modules/scheduler') ||
+            id.includes('node_modules/react-is/')
+          ) return 'react-vendor';
           if (id.includes('node_modules')) return 'vendor';
         },
       },
