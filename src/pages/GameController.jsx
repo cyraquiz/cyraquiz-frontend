@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Check, X, Eye, Send, Trophy, Loader2, Star } from "lucide-react";
@@ -22,6 +22,8 @@ export default function GameController() {
   const [resultData,      setResultData]      = useState({ isCorrect: false, pointsEarned: 0, totalScore: 0 });
   const [finalRank,       setFinalRank]       = useState(0);
   const [podiumStep,      setPodiumStep]      = useState(0);
+  const questionTimeRef = useRef(20);
+
   // Reconnect
   useEffect(() => {
     const rejoin = () => socket.emit("join_room", { roomCode: pin, playerName: myName });
@@ -40,6 +42,7 @@ export default function GameController() {
       if (hasOptions || optionless) {
         const min = q.min ?? 0;
         const max = q.max ?? 100;
+        questionTimeRef.current = q.time || 20;
         setCurrentOptions(q.options || []);
         setQuestionType(type);
         setSelectedOptions([]);
@@ -119,6 +122,7 @@ export default function GameController() {
       return (
         <div className="gc-play">
           <div className="gc-info-bar">Escribe tu respuesta</div>
+          <div className="gc-timer-track" aria-hidden="true"><div className="gc-timer-fill" style={{ animationDuration: `${questionTimeRef.current}s` }} /></div>
           <div className="gc-text-area">
             <input
               className="gc-text-input"
@@ -155,6 +159,7 @@ export default function GameController() {
       return (
         <div className="gc-play">
           <div className="gc-info-bar">Desliza hasta tu respuesta</div>
+          <div className="gc-timer-track" aria-hidden="true"><div className="gc-timer-fill" style={{ animationDuration: `${questionTimeRef.current}s` }} /></div>
           <div className="gc-slider-area">
             <motion.div
               className="gc-slider-value"
@@ -200,6 +205,7 @@ export default function GameController() {
       return (
         <div className="gc-play">
           <div className="gc-info-bar">Selecciona tu valoración</div>
+          <div className="gc-timer-track" aria-hidden="true"><div className="gc-timer-fill" style={{ animationDuration: `${questionTimeRef.current}s` }} /></div>
           <div className="gc-scale-grid" role="group" aria-label="Escala de valoración">
             {["1","2","3","4","5"].map((n) => (
               <button
@@ -239,6 +245,8 @@ export default function GameController() {
             ? "Comparte tu opinión"
             : "Elige tu respuesta"}
         </div>
+
+        <div className="gc-timer-track" aria-hidden="true"><div className="gc-timer-fill" style={{ animationDuration: `${questionTimeRef.current}s` }} /></div>
 
         {/* 2×2 button grid */}
         <div className="gc-grid" role="group" aria-label="Opciones de respuesta">

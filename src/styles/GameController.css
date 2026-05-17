@@ -367,6 +367,34 @@
   );
 }
 
+/* ─── Timer bar (CSS-only, zero JS ticks) ────────────── */
+.gc-timer-track {
+  flex-shrink: 0;
+  height: 4px;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.07);
+  overflow: hidden;
+}
+
+.gc-timer-fill {
+  height: 100%;
+  width: 100%;
+  transform-origin: left center;
+  animation: gc-timer-shrink linear forwards;
+  /* green (plenty of time) → red (urgent) — left stays last as bar shrinks right→left */
+  background: linear-gradient(to right,
+    oklch(0.52 0.22 25)  0%,
+    oklch(0.68 0.20 50)  30%,
+    oklch(0.80 0.17 90)  65%,
+    oklch(0.62 0.18 145) 100%
+  );
+}
+
+@keyframes gc-timer-shrink {
+  from { transform: scaleX(1); }
+  to   { transform: scaleX(0); }
+}
+
 /* ─── Instruction bar ─────────────────────────────────── */
 .gc-info-bar {
   flex-shrink: 0;
