@@ -35,20 +35,6 @@ Se añadió la capacidad de exportar los resultados finales de cada partida como
 
 ---
 
-### 3. Sistema de rachas e insignias
-**Fecha:** 2026-05-17
-
-Se añadió feedback visual en tiempo real sobre el desempeño del estudiante, 100% client-side sin cambios en backend:
-
-- **Rachas:** banner de llama animado en la pantalla de resultado cuando se encadenan ≥ 2 respuestas correctas consecutivas
-- **Insignias al final:** se otorgan automáticamente según el desempeño:
-  - ⚡ **Imparable** — racha máxima ≥ 5
-  - 🔥 **En Racha** — racha máxima ≥ 3
-  - ✨ **Sin Errores** — 100% de respuestas correctas
-  - 🎯 **Preciso** — ≥ 80% correctas con al menos 3 preguntas
-
-Implementado con `useRef` para evitar stale closures en los handlers de Socket.IO.
-
 ---
 
 ## En progreso / Pendiente
