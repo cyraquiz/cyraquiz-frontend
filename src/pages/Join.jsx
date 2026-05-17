@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Hash, User, Play, X, Check, AlertCircle, Edit2 } from "lucide-react";
+import { Hash, User, Play, X, Check, AlertCircle, Edit2, Ghost } from "lucide-react";
 import { socket } from "../socket";
 import { AVATAR_SEEDS, getAvatarSrc } from "../utils/avatars";
 import Footer from "../components/landing/Footer";
@@ -265,6 +265,14 @@ export default function Join() {
         </>
       )}
       </main>
+
+      {/* Ghost Mode entry */}
+      <div className="join-ghost-entry">
+        <button className="join-ghost-btn" onClick={() => navigate("/ghost")}>
+          <Ghost size={15} />
+          <span>Practicar solo — Modo Fantasma</span>
+        </button>
+      </div>
 
       {/* Footer */}
       <Footer />

@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { Check, X, Eye, Send, Trophy, Loader2, Star } from "lucide-react";
 import { socket } from "../socket";
 import { OPTION_BG, OPTION_SHADOW, OPTION_LETTER } from "../constants/game";
+import { saveGhostGame } from "../utils/ghostStorage";
 import "../styles/GameController.css";
 
 export default function GameController() {
@@ -22,7 +23,8 @@ export default function GameController() {
   const [resultData,      setResultData]      = useState({ isCorrect: false, pointsEarned: 0, totalScore: 0 });
   const [finalRank,       setFinalRank]       = useState(0);
   const [podiumStep,      setPodiumStep]      = useState(0);
-  const questionTimeRef = useRef(20);
+  const questionTimeRef  = useRef(20);
+  const ghostCaptureRef  = useRef([]);
 
   // Reconnect
   useEffect(() => {
@@ -40,6 +42,7 @@ export default function GameController() {
       const optionless = type === "text" || type === "slider";
 
       if (hasOptions || optionless) {
+        ghostCaptureRef.current.push(q);
         const min = q.min ?? 0;
         const max = q.max ?? 100;
         questionTimeRef.current = q.time || 20;
@@ -59,6 +62,7 @@ export default function GameController() {
     const onRevealResults = () => setGameState("result");
 
     const onFinalResults = (sortedList) => {
+      saveGhostGame(ghostCaptureRef.current);
       const myIndex = sortedList.findIndex(p => p.name === myName);
       setFinalRank(myIndex + 1);
       if (myIndex !== -1) {

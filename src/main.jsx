@@ -10,6 +10,7 @@ import LandingPage from "./pages/LandingPage.jsx";
 import { Spinner } from "./components/common/Spinner.jsx";
 
 const Join          = lazy(() => import("./pages/Join.jsx"));
+const GhostMode     = lazy(() => import("./pages/GhostMode.jsx"));
 const Host          = lazy(() => import("./pages/Host.jsx"));
 const EditQuiz      = lazy(() => import("./pages/EditQuiz.jsx"));
 const GameRoom      = lazy(() => import("./pages/GameRoom.jsx"));
@@ -26,6 +27,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
           <Routes>
             <Route path="/" element={<LandingPage />} />
             <Route path="/join" element={<Join />} />
+            <Route path="/ghost" element={<GhostMode />} />
             <Route path="/host" element={<Host />} />
             <Route path="/student/lobby/:pin" element={<StudentLobby />} />
             <Route path="/edit/:id" element={<EditQuiz />} />
