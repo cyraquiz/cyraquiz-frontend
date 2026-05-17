@@ -369,8 +369,8 @@ export default function HostGame() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
           >
-            <span className="hg-answer-reveal-label">Respuesta esperada</span>
-            <span className="hg-answer-reveal-value">{currentQ.answer}</span>
+            <p className="hg-answer-reveal-label">Respuesta esperada</p>
+            <p className="hg-answer-reveal-value">{currentQ.answer}</p>
           </motion.div>
         )}
 

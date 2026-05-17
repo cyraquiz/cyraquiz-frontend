@@ -126,7 +126,7 @@ export default function GameController() {
               value={textAnswer}
               onChange={(e) => setTextAnswer(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === "Enter" && textAnswer.trim()) submitToServer(textAnswer.trim());
+                if (e.key === "Enter" && textAnswer.trim()) submitToServer(textAnswer.trim().toLowerCase());
               }}
               placeholder="Escribe aquí..."
               maxLength={100}
@@ -135,7 +135,7 @@ export default function GameController() {
             />
             <motion.button
               className={`gc-submit${textAnswer.trim() ? " gc-submit--ready" : ""}`}
-              onClick={() => textAnswer.trim() && submitToServer(textAnswer.trim())}
+              onClick={() => textAnswer.trim() && submitToServer(textAnswer.trim().toLowerCase())}
               disabled={!textAnswer.trim()}
               initial={{ y: 60, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}

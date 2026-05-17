@@ -449,10 +449,12 @@
   to   { transform: scale(1); }
 }
 
-/* ─── Multi submit button ─────────────────────────────── */
+/* ─── Submit button (multi / text / slider) ───────────── */
 .gc-submit {
   flex-shrink: 0;
+  width: 100%;
   height: 62px;
+  border-radius: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -465,8 +467,9 @@
   font-weight: 700;
   letter-spacing: 0.03em;
   cursor: not-allowed;
-  transition: background 0.22s ease, color 0.22s ease;
+  transition: background 0.22s ease, color 0.22s ease, transform 0.08s ease;
   -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 .gc-submit--ready {
@@ -476,7 +479,7 @@
   box-shadow: 0 -4px 20px rgba(90, 14, 36, 0.35);
 }
 
-.gc-submit--ready:active { filter: brightness(0.9); }
+.gc-submit--ready:active { filter: brightness(0.9); transform: scale(0.97); }
 .gc-submit:focus-visible { outline: 2px solid white; outline-offset: -4px; }
 
 /* ─── Reduced motion ──────────────────────────────────── */
@@ -605,34 +608,6 @@
   margin-top: -0.25rem;
 }
 
-/* Respuesta correcta en host — HostGame.css override via inline pero por si acaso */
-.hg-answer-reveal {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 2rem 1.5rem;
-  margin: 1rem auto;
-  max-width: 480px;
-  background: oklch(0.995 0.004 14 / 0.12);
-  border: 1px solid oklch(0.995 0.004 14 / 0.25);
-  border-radius: 20px;
-}
-
-.hg-answer-reveal-label {
-  font-size: 0.8125rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: oklch(0.995 0.004 14 / 0.6);
-}
-
-.hg-answer-reveal-value {
-  font-size: clamp(1.5rem, 4vw, 2.25rem);
-  font-weight: 800;
-  color: white;
-  text-align: center;
-}
 
 /* ─── Streak banner ───────────────────────────────────── */
 .gc-streak-banner {
