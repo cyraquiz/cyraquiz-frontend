@@ -61,23 +61,11 @@ export default function Join() {
   return (
     <>
       <main className="join-page">
-        {/* Background decoration */}
+        {/* Background decoration — plain CSS animations, no framer-motion/WAAPI overhead */}
         <div className="join-background">
-          <motion.div
-            className="join-blob join-blob-1"
-            animate={{ x: [0, 30, 0], y: [0, -30, 0], scale: [1, 1.1, 1] }}
-            transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
-          />
-          <motion.div
-            className="join-blob join-blob-2"
-            animate={{ x: [0, -40, 0], y: [0, 40, 0], scale: [1, 1.15, 1] }}
-            transition={{ duration: 25, repeat: Infinity, ease: "easeInOut" }}
-          />
-          <motion.div
-            className="join-blob join-blob-3"
-            animate={{ x: [0, 20, 0], y: [0, -20, 0], scale: [1, 1.05, 1] }}
-            transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
-          />
+          <div className="join-blob join-blob-1" />
+          <div className="join-blob join-blob-2" />
+          <div className="join-blob join-blob-3" />
         </div>
 
       <motion.div

@@ -9,6 +9,11 @@ import AuthModal from "./components/auth/AuthModal.jsx";
 import LandingPage from "./pages/LandingPage.jsx";
 import { Spinner } from "./components/common/Spinner.jsx";
 
+// Student-critical path: eager imports — zero Suspense/Promise overhead on navigation
+import Join         from "./pages/Join.jsx";
+import StudentLobby from "./pages/StudentLobby.jsx";
+import GameController from "./pages/GameController.jsx";
+
 // Wraps lazy() so a stale-deployment chunk-load failure triggers a hard reload
 // instead of leaving a blank screen. Happens when Vercel re-hashes chunks after
 // a new deploy while the user still has the old HTML cached.
@@ -24,14 +29,11 @@ function lazyWithReload(fn) {
   );
 }
 
-const Join               = lazyWithReload(() => import("./pages/Join.jsx"));
 const GhostMode          = lazyWithReload(() => import("./pages/GhostMode.jsx"));
 const Host               = lazyWithReload(() => import("./pages/Host.jsx"));
 const EditQuiz           = lazyWithReload(() => import("./pages/EditQuiz.jsx"));
 const GameRoom           = lazyWithReload(() => import("./pages/GameRoom.jsx"));
 const HostGame           = lazyWithReload(() => import("./pages/HostGame.jsx"));
-const GameController     = lazyWithReload(() => import("./pages/GameController.jsx"));
-const StudentLobby       = lazyWithReload(() => import("./pages/StudentLobby.jsx"));
 const Podium             = lazyWithReload(() => import("./pages/Podium.jsx"));
 const StudentAssignment  = lazyWithReload(() => import("./pages/StudentAssignment.jsx"));
 const AssignmentsPage    = lazyWithReload(() => import("./pages/AssignmentsPage.jsx"));

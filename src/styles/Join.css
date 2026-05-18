@@ -28,12 +28,26 @@
   pointer-events: none;
 }
 
+/* CSS keyframe blobs — replaced framer-motion animated ones to avoid WAAPI
+   cleanup blocking Safari's main thread on navigation */
+@keyframes join-blob-1-float {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50%       { transform: translate(30px, -30px) scale(1.1); }
+}
+@keyframes join-blob-2-float {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50%       { transform: translate(-40px, 40px) scale(1.15); }
+}
+@keyframes join-blob-3-float {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); }
+  50%       { transform: translate(calc(-50% + 20px), calc(-50% - 20px)) scale(1.05); }
+}
+
 .join-blob {
   position: absolute;
   border-radius: 50%;
   filter: blur(80px);
   opacity: 0.32;
-  will-change: transform;
 }
 
 .join-blob-1 {
@@ -42,6 +56,7 @@
   background: linear-gradient(135deg, oklch(0.26 0.14 14) 0%, oklch(0.72 0.09 72) 100%);
   top: -200px;
   left: -100px;
+  animation: join-blob-1-float 20s ease-in-out infinite;
 }
 
 .join-blob-2 {
@@ -50,6 +65,7 @@
   background: linear-gradient(135deg, oklch(0.88 0.06 72) 0%, oklch(0.72 0.09 72) 100%);
   bottom: -150px;
   right: -150px;
+  animation: join-blob-2-float 25s ease-in-out infinite;
 }
 
 .join-blob-3 {
@@ -59,6 +75,7 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+  animation: join-blob-3-float 18s ease-in-out infinite;
 }
 
 /* ===========================
