@@ -17,6 +17,10 @@ export default function StudentLobby() {
   const [phase, setPhase] = useState("waiting"); // "waiting" | "starting"
 
   useEffect(() => {
+    // Conectar aquí: el lobby ya está renderizado visualmente,
+    // así Safari no bloquea la transición por una conexión pendiente
+    if (!socket.connected) socket.connect();
+
     const joinRoom = () => {
       socket.emit("join_room", { roomCode: pin, playerName: myName, avatar: avatarSeed });
     };

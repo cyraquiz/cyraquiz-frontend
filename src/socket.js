@@ -1,7 +1,7 @@
 import { io } from "socket.io-client";
 
 export const socket = io(import.meta.env.VITE_API_URL, {
-  autoConnect: true,        // conecta en cuanto el módulo carga, no espera el mount
+  autoConnect: false,
   transports: ["websocket", "polling"],
 });
 

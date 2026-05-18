@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Hash, User, Play, X, Check, AlertCircle, Edit2, Ghost } from "lucide-react";
-import { socket } from "../socket";
 import { AVATAR_SEEDS, getAvatarSrc } from "../utils/avatars";
 import Footer from "../components/landing/Footer";
 import "../styles/Join.css";
@@ -18,33 +17,22 @@ export default function Join() {
   const savedAvatar = localStorage.getItem("join_avatar");
   const [selectedAvatar, setSelectedAvatar] = useState((savedAvatar && AVATAR_SEEDS.includes(savedAvatar)) ? savedAvatar : AVATAR_SEEDS[0]);
   const [showAvatarModal, setShowAvatarModal] = useState(false);
+  const [isJoining, setIsJoining] = useState(false);
 
-  const goToLobby = () => {
+  const handleJoin = () => {
+    if (!pin.trim() || !name.trim()) {
+      setError("Por favor llena ambos campos");
+      return;
+    }
+    if (isJoining) return;
+    setIsJoining(true);
+    setError("");
     localStorage.setItem("join_roomCode", pin.trim());
     localStorage.setItem("join_name", name.trim());
     localStorage.setItem("join_avatar", selectedAvatar);
     navigate(`/student/lobby/${pin.trim()}`, {
       state: { name: name.trim(), avatarSeed: selectedAvatar }
     });
-  };
-
-  useEffect(() => {
-    const onError = (msg) => {
-      setError(msg);
-      setTimeout(() => setError(""), 3000);
-    };
-    socket.on("error", onError);
-    return () => socket.off("error", onError);
-  }, []);
-
-
-  const handleJoin = () => {
-    if (!pin || !name) {
-      setError("Por favor llena ambos campos");
-      return;
-    }
-    setError("");
-    goToLobby();
   };
 
   const containerVariants = {
@@ -190,12 +178,18 @@ export default function Join() {
             {/* Join Button */}
             <motion.button
               onClick={handleJoin}
-              className="join-button"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+              className={`join-button${isJoining ? " join-button--loading" : ""}`}
+              whileHover={isJoining ? {} : { scale: 1.02 }}
+              whileTap={isJoining ? {} : { scale: 0.98 }}
+              disabled={isJoining}
+              aria-busy={isJoining}
             >
-              <Play size={20} fill="currentColor" />
-              <span>Unirme al juego</span>
+              {isJoining ? (
+                <span className="join-btn-spinner" aria-hidden="true" />
+              ) : (
+                <Play size={20} fill="currentColor" />
+              )}
+              <span>{isJoining ? "Entrando..." : "Unirme al juego"}</span>
             </motion.button>
           </div>
         </motion.div>

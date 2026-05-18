@@ -339,6 +339,27 @@
   box-shadow: 0 4px 12px oklch(0.26 0.14 14 / 0.25);
 }
 
+.join-button--loading {
+  opacity: 0.75;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.join-btn-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2.5px solid rgba(255,255,255,0.35);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: join-spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes join-spin {
+  to { transform: rotate(360deg); }
+}
+
 /* ===========================
    AVATAR MODAL BACKDROP
    =========================== */
