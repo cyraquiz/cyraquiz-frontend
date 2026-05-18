@@ -1,40 +1,9 @@
-import { createAvatar } from "@dicebear/core";
-import * as avataaars    from "@dicebear/avataaars-neutral";
+const SEEDS = ["A","B","C","D","E","F","G","H","I","J","K","L"];
 
-// 12 hand-crafted avatars — each unique combination of bg + eyes + brows + mouth
-const CONFIGS = [
-  { id: "A", bg: "E74C3C", eyes: "happy",      brows: "raisedExcitedNatural", mouth: "smile"      },
-  { id: "B", bg: "3498DB", eyes: "hearts",     brows: "defaultNatural",       mouth: "twinkle"    },
-  { id: "C", bg: "2ECC71", eyes: "squint",     brows: "flatNatural",          mouth: "tongue"     },
-  { id: "D", bg: "9B59B6", eyes: "wink",       brows: "raisedExcited",        mouth: "eating"     },
-  { id: "E", bg: "F39C12", eyes: "winkWacky",  brows: "angryNatural",         mouth: "disbelief"  },
-  { id: "F", bg: "16A085", eyes: "eyeRoll",    brows: "upDownNatural",        mouth: "serious"    },
-  { id: "G", bg: "E91E63", eyes: "surprised",  brows: "sadConcernedNatural",  mouth: "concerned"  },
-  { id: "H", bg: "27AE60", eyes: "closed",     brows: "unibrowNatural",       mouth: "smile"      },
-  { id: "I", bg: "D35400", eyes: "side",       brows: "default",              mouth: "tongue"     },
-  { id: "J", bg: "8E44AD", eyes: "default",    brows: "frownNatural",         mouth: "twinkle"    },
-  { id: "K", bg: "0097A7", eyes: "happy",      brows: "flatNatural",          mouth: "eating"     },
-  { id: "L", bg: "C0392B", eyes: "squint",     brows: "defaultNatural",       mouth: "disbelief"  },
-];
-
-const CONFIG_MAP = new Map(CONFIGS.map(c => [c.id, c]));
-const AVATAR_CACHE = new Map();
-
-export const AVATAR_SEEDS = CONFIGS.map(c => c.id);
+export const AVATAR_SEEDS = SEEDS;
 
 export function getAvatarSrc(seed) {
-  if (AVATAR_CACHE.has(seed)) return AVATAR_CACHE.get(seed);
-  const cfg = CONFIG_MAP.get(seed);
-  const uri = cfg
-    ? createAvatar(avataaars, {
-        seed:            cfg.id,
-        size:            80,
-        backgroundColor: [cfg.bg],
-        eyes:            [cfg.eyes],
-        eyebrows:        [cfg.brows],
-        mouth:           [cfg.mouth],
-      }).toDataUri()
-    : createAvatar(avataaars, { seed, size: 80 }).toDataUri();
-  AVATAR_CACHE.set(seed, uri);
-  return uri;
+  if (SEEDS.includes(seed)) return `/avatars/${seed}.svg`;
+  // Unknown seed — fallback to first avatar
+  return `/avatars/A.svg`;
 }
