@@ -13,6 +13,8 @@ export default defineConfig({
           if (id.includes('node_modules/use-sound')) return undefined;
           if (id.includes('node_modules/howler')) return undefined;
           if (id.includes('node_modules/@dnd-kit')) return undefined;
+          // Co-bundle Join + StudentLobby: sin descarga extra al navegar al lobby
+          if (id.includes('src/pages/Join') || id.includes('src/pages/StudentLobby')) return 'Join';
           // DiceBear only needed on Join/StudentLobby/GameRoom (all lazy)
           if (id.includes('node_modules/@dicebear')) return 'avatars';
           if (id.includes('node_modules/qrcode')) return 'qr';

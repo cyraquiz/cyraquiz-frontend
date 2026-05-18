@@ -29,21 +29,12 @@ export default function Join() {
   };
 
   useEffect(() => {
-    if (!socket.connected) socket.connect();
-
     const onError = (msg) => {
       setError(msg);
       setTimeout(() => setError(""), 3000);
     };
-
     socket.on("error", onError);
-
-    // Prefetch the StudentLobby chunk while the user fills the form
-    import("./StudentLobby.jsx");
-
-    return () => {
-      socket.off("error", onError);
-    };
+    return () => socket.off("error", onError);
   }, []);
 
 
