@@ -9,17 +9,32 @@ import AuthModal from "./components/auth/AuthModal.jsx";
 import LandingPage from "./pages/LandingPage.jsx";
 import { Spinner } from "./components/common/Spinner.jsx";
 
-const Join          = lazy(() => import("./pages/Join.jsx"));
-const GhostMode     = lazy(() => import("./pages/GhostMode.jsx"));
-const Host          = lazy(() => import("./pages/Host.jsx"));
-const EditQuiz      = lazy(() => import("./pages/EditQuiz.jsx"));
-const GameRoom      = lazy(() => import("./pages/GameRoom.jsx"));
-const HostGame      = lazy(() => import("./pages/HostGame.jsx"));
-const GameController = lazy(() => import("./pages/GameController.jsx"));
-const StudentLobby  = lazy(() => import("./pages/StudentLobby.jsx"));
-const Podium             = lazy(() => import("./pages/Podium.jsx"));
-const StudentAssignment  = lazy(() => import("./pages/StudentAssignment.jsx"));
-const AssignmentsPage    = lazy(() => import("./pages/AssignmentsPage.jsx"));
+// Wraps lazy() so a stale-deployment chunk-load failure triggers a hard reload
+// instead of leaving a blank screen. Happens when Vercel re-hashes chunks after
+// a new deploy while the user still has the old HTML cached.
+function lazyWithReload(fn) {
+  return lazy(() =>
+    fn().catch((err) => {
+      if (!sessionStorage.getItem("chunk_reload")) {
+        sessionStorage.setItem("chunk_reload", "1");
+        window.location.reload();
+      }
+      throw err;
+    })
+  );
+}
+
+const Join               = lazyWithReload(() => import("./pages/Join.jsx"));
+const GhostMode          = lazyWithReload(() => import("./pages/GhostMode.jsx"));
+const Host               = lazyWithReload(() => import("./pages/Host.jsx"));
+const EditQuiz           = lazyWithReload(() => import("./pages/EditQuiz.jsx"));
+const GameRoom           = lazyWithReload(() => import("./pages/GameRoom.jsx"));
+const HostGame           = lazyWithReload(() => import("./pages/HostGame.jsx"));
+const GameController     = lazyWithReload(() => import("./pages/GameController.jsx"));
+const StudentLobby       = lazyWithReload(() => import("./pages/StudentLobby.jsx"));
+const Podium             = lazyWithReload(() => import("./pages/Podium.jsx"));
+const StudentAssignment  = lazyWithReload(() => import("./pages/StudentAssignment.jsx"));
+const AssignmentsPage    = lazyWithReload(() => import("./pages/AssignmentsPage.jsx"));
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
