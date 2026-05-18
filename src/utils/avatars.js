@@ -17,25 +17,24 @@ const CONFIGS = [
   { id: "L", bg: "C0392B", eyes: "squint",     brows: "defaultNatural",       mouth: "disbelief"  },
 ];
 
-// Pre-generate all 12 at module load — zero work when the modal opens
-const AVATAR_MAP = new Map(
-  CONFIGS.map(({ id, bg, eyes, brows, mouth }) => [
-    id,
-    createAvatar(avataaars, {
-      seed:            id,
-      size:            80,
-      backgroundColor: [bg],
-      eyes:            [eyes],
-      eyebrows:        [brows],
-      mouth:           [mouth],
-    }).toDataUri(),
-  ])
-);
+const CONFIG_MAP = new Map(CONFIGS.map(c => [c.id, c]));
+const AVATAR_CACHE = new Map();
 
 export const AVATAR_SEEDS = CONFIGS.map(c => c.id);
 
 export function getAvatarSrc(seed) {
-  if (AVATAR_MAP.has(seed)) return AVATAR_MAP.get(seed);
-  // Fallback for player names received over socket
-  return createAvatar(avataaars, { seed, size: 80 }).toDataUri();
+  if (AVATAR_CACHE.has(seed)) return AVATAR_CACHE.get(seed);
+  const cfg = CONFIG_MAP.get(seed);
+  const uri = cfg
+    ? createAvatar(avataaars, {
+        seed:            cfg.id,
+        size:            80,
+        backgroundColor: [cfg.bg],
+        eyes:            [cfg.eyes],
+        eyebrows:        [cfg.brows],
+        mouth:           [cfg.mouth],
+      }).toDataUri()
+    : createAvatar(avataaars, { seed, size: 80 }).toDataUri();
+  AVATAR_CACHE.set(seed, uri);
+  return uri;
 }
