@@ -320,40 +320,18 @@ export default function GameController() {
         <div className="gc-bg" aria-hidden="true">
           <div className="gc-blob gc-blob-1" /><div className="gc-blob gc-blob-2" /><div className="gc-blob gc-blob-3" />
         </div>
-        <motion.div
-          className="gc-state-icon-wrap gc-state-icon-wrap--neutral"
-          initial={{ scale: 0.7, opacity: 0 }}
-          animate={{ scale: 1,   opacity: 1 }}
-          transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-          aria-hidden="true"
-        >
+        <div className="gc-state-icon-wrap gc-state-icon-wrap--neutral gc-waiting-icon" aria-hidden="true">
           <Eye size={32} />
-        </motion.div>
-        <motion.h2
-          className="gc-state-title"
-          initial={{ opacity: 0, y: 14 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.12, duration: 0.35 }}
-        >
+        </div>
+        <h2 className="gc-state-title gc-waiting-title">
           ¡Atento a la pantalla!
-        </motion.h2>
-        <motion.p
-          className="gc-state-sub"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.22, duration: 0.35 }}
-        >
+        </h2>
+        <p className="gc-state-sub gc-waiting-sub">
           La siguiente pregunta está por salir
-        </motion.p>
-        <motion.div
-          className="gc-name-chip"
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.32, duration: 0.35 }}
-          aria-label={`Jugando como ${myName}`}
-        >
+        </p>
+        <div className="gc-name-chip gc-waiting-chip" aria-label={`Jugando como ${myName}`}>
           {myName}
-        </motion.div>
+        </div>
       </div>
     );
   }
@@ -386,31 +364,15 @@ export default function GameController() {
           <div className="gc-bg" aria-hidden="true">
             <div className="gc-blob gc-blob-1" /><div className="gc-blob gc-blob-2" /><div className="gc-blob gc-blob-3" />
           </div>
-          <motion.div
-            className="gc-state-icon-wrap gc-state-icon-wrap--primary"
-            initial={{ scale: 0, rotate: -12 }}
-            animate={{ scale: 1, rotate: 0 }}
-            transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1] }}
-            aria-hidden="true"
-          >
+          <div className="gc-state-icon-wrap gc-state-icon-wrap--primary gc-anim-pop" aria-hidden="true">
             <Check size={34} strokeWidth={3} />
-          </motion.div>
-          <motion.h1
-            className="gc-state-title"
-            initial={{ opacity: 0, y: 18 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.16, duration: 0.36 }}
-          >
+          </div>
+          <h1 className="gc-state-title gc-result-title-anim">
             ¡Respuesta registrada!
-          </motion.h1>
-          <motion.p
-            className="gc-total-score"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.32, duration: 0.36 }}
-          >
+          </h1>
+          <p className="gc-total-score gc-result-score-anim">
             Total: <strong>{resultData.totalScore} pts</strong>
-          </motion.p>
+          </p>
         </div>
       );
     }
@@ -418,46 +380,25 @@ export default function GameController() {
     const isCorrect = resultData.isCorrect;
     return (
       <div className={`gc-state gc-state--result ${isCorrect ? "gc-state--correct" : "gc-state--incorrect"}`}>
-        <motion.div
-          className="gc-result-circle"
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1] }}
-          aria-hidden="true"
-        >
+        <div className="gc-result-circle gc-result-circle-anim" aria-hidden="true">
           {isCorrect
             ? <Check size={44} strokeWidth={3} />
             : <X     size={44} strokeWidth={3} />
           }
-        </motion.div>
+        </div>
 
-        <motion.h1
-          className="gc-result-title"
-          initial={{ opacity: 0, y: 18 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.16, duration: 0.36 }}
-        >
+        <h1 className="gc-result-title gc-result-title-anim">
           {isCorrect ? "¡Correcto!" : "¡Incorrecto!"}
-        </motion.h1>
+        </h1>
 
-        <motion.div
-          className="gc-points-card"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.28, duration: 0.36 }}
-        >
+        <div className="gc-points-card gc-result-card-anim">
           <span className="gc-points-label">Puntos ganados</span>
           <span className="gc-points-value">+{resultData.pointsEarned}</span>
-        </motion.div>
+        </div>
 
-        <motion.p
-          className="gc-total-score"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.4, duration: 0.36 }}
-        >
+        <p className="gc-total-score gc-result-score-anim">
           Total: <strong>{resultData.totalScore} pts</strong>
-        </motion.p>
+        </p>
       </div>
     );
   }
