@@ -464,6 +464,22 @@
   opacity: 0.42;
 }
 
+/* Locked state after answering — instant visual, no re-render needed */
+.gc-btn--locked {
+  opacity: 0.35;
+  pointer-events: none;
+  cursor: default;
+  transform: none !important;
+}
+.gc-btn--locked-chosen {
+  opacity: 1;
+  pointer-events: none;
+  cursor: default;
+}
+.gc-btn--locked-chosen::after {
+  border-color: white;
+}
+
 .gc-btn:focus-visible::after {
   border-color: rgba(255, 255, 255, 0.7);
 }

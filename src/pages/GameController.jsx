@@ -17,6 +17,7 @@ export default function GameController() {
   const [currentOptions,  setCurrentOptions]  = useState([]);
   const [questionType,    setQuestionType]    = useState("single");
   const [selectedOptions, setSelectedOptions] = useState([]);
+  const [lockedAnswer,    setLockedAnswer]    = useState(null); // immediate visual lock
   const [textAnswer,      setTextAnswer]      = useState("");
   const [sliderValue,     setSliderValue]     = useState(50);
   const [questionMeta,    setQuestionMeta]    = useState({ min: 0, max: 100 });
@@ -25,6 +26,7 @@ export default function GameController() {
   const [podiumStep,      setPodiumStep]      = useState(0);
   const questionTimeRef  = useRef(20);
   const ghostCaptureRef  = useRef([]);
+  const hasAnsweredRef   = useRef(false); // synchronous guard against double-submit
 
   // Reconnect
   useEffect(() => {
@@ -46,6 +48,8 @@ export default function GameController() {
         const min = q.min ?? 0;
         const max = q.max ?? 100;
         questionTimeRef.current = q.time || 20;
+        hasAnsweredRef.current = false;
+        setLockedAnswer(null);
         setCurrentOptions(q.options || []);
         setQuestionType(type);
         setSelectedOptions([]);
@@ -103,19 +107,25 @@ export default function GameController() {
   }, [myName, navigate]);
 
   const handleOptionClick = (option) => {
-    if (gameState !== "answering") return;
+    if (gameState !== "answering" || hasAnsweredRef.current) return;
     if (questionType === "multi") {
       setSelectedOptions(prev =>
         prev.includes(option) ? prev.filter(o => o !== option) : [...prev, option]
       );
     } else {
-      submitToServer(option);
+      hasAnsweredRef.current = true;
+      setLockedAnswer(option); // render 1: lock buttons instantly
+      socket.emit("submit_answer", { roomCode: pin, playerName: myName, answer: option });
+      setTimeout(() => setGameState("submitted"), 50); // render 2: submitted screen
     }
   };
 
   const submitToServer = (answerData) => {
-    setGameState("submitted");
+    if (hasAnsweredRef.current) return;
+    hasAnsweredRef.current = true;
+    setLockedAnswer(String(answerData)); // immediate visual lock for text/slider/scale/multi
     socket.emit("submit_answer", { roomCode: pin, playerName: myName, answer: answerData });
+    setTimeout(() => setGameState("submitted"), 50);
   };
 
   // ─── Answering ───────────────────────────────────────
@@ -257,21 +267,24 @@ export default function GameController() {
           {currentOptions.map((opt, i) => {
             const isSelected = selectedOptions.includes(opt);
             const isDimmed   = questionType === "multi" && selectedOptions.length > 0 && !isSelected;
+            const isChosen   = lockedAnswer === opt;
+            const isLocked   = !!lockedAnswer;
 
             return (
               <button
                 key={i}
-                className={`gc-btn${isSelected ? " gc-btn--selected" : ""}${isDimmed ? " gc-btn--dimmed" : ""}`}
+                className={`gc-btn${isSelected ? " gc-btn--selected" : ""}${isDimmed ? " gc-btn--dimmed" : ""}${isLocked ? (isChosen ? " gc-btn--locked-chosen" : " gc-btn--locked") : ""}`}
                 style={{
                   background: OPTION_BG[i],
                   boxShadow:  `inset 0 -7px 0 ${OPTION_SHADOW[i]}`,
                 }}
                 onPointerDown={() => handleOptionClick(opt)}
                 aria-label={`Opción ${OPTION_LETTER[i]}`}
-                aria-pressed={isSelected}
+                aria-pressed={isSelected || isChosen}
+                disabled={isLocked}
               >
                 <span className="gc-btn-letter">{OPTION_LETTER[i]}</span>
-                {isSelected && (
+                {(isSelected || isChosen) && (
                   <span className="gc-btn-check" aria-hidden="true">
                     <Check size={18} strokeWidth={3} />
                   </span>

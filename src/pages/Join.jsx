@@ -30,8 +30,13 @@ export default function Join() {
     localStorage.setItem("join_roomCode", pin.trim());
     localStorage.setItem("join_name", name.trim());
     localStorage.setItem("join_avatar", selectedAvatar);
-    navigate(`/student/lobby/${pin.trim()}`, {
-      state: { name: name.trim(), avatarSeed: selectedAvatar }
+    // rAF ensures "Entrando..." renders before navigation starts
+    const dest = pin.trim();
+    const n    = name.trim();
+    requestAnimationFrame(() => {
+      navigate(`/student/lobby/${dest}`, {
+        state: { name: n, avatarSeed: selectedAvatar }
+      });
     });
   };
 
