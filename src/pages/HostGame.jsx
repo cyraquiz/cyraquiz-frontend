@@ -124,6 +124,9 @@ export default function HostGame() {
       setAnswersCount(0);
       setCurrentQuestionIndex(prev => prev + 1);
     } else {
+      // Emit game_over while HostGame is still mounted so all sockets are
+      // guaranteed to be in the room before navigating away.
+      socket.emit("game_over", { roomCode, hostToken });
       navigate(`/podium/${roomCode}`, { state: { quizData, players, hostToken } });
     }
   };
