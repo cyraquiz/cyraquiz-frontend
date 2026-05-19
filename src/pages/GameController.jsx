@@ -27,6 +27,7 @@ export default function GameController() {
   const questionTimeRef  = useRef(20);
   const ghostCaptureRef  = useRef([]);
   const hasAnsweredRef   = useRef(false); // synchronous guard against double-submit
+  const pendingSubmitRef = useRef(null);  // timeout handle — cancelled if reveal arrives first
 
   // Reconnect
   useEffect(() => {
@@ -39,6 +40,10 @@ export default function GameController() {
   // Game events
   useEffect(() => {
     const onNewQuestion = (q) => {
+      if (pendingSubmitRef.current) {
+        clearTimeout(pendingSubmitRef.current);
+        pendingSubmitRef.current = null;
+      }
       const type = q?.type || "single";
       const hasOptions = Array.isArray(q?.options) && q.options.length > 0;
       const optionless = type === "text" || type === "slider";
@@ -63,9 +68,19 @@ export default function GameController() {
     };
 
     const onAnswerResult = (result) => setResultData(result);
-    const onRevealResults = () => setGameState("result");
+    const onRevealResults = () => {
+      if (pendingSubmitRef.current) {
+        clearTimeout(pendingSubmitRef.current);
+        pendingSubmitRef.current = null;
+      }
+      setGameState("result");
+    };
 
     const onFinalResults = (sortedList) => {
+      if (pendingSubmitRef.current) {
+        clearTimeout(pendingSubmitRef.current);
+        pendingSubmitRef.current = null;
+      }
       saveGhostGame(ghostCaptureRef.current);
       const myIndex = sortedList.findIndex(p => p.name === myName);
       setFinalRank(myIndex + 1);
@@ -114,18 +129,24 @@ export default function GameController() {
       );
     } else {
       hasAnsweredRef.current = true;
-      setLockedAnswer(option); // render 1: lock buttons instantly
+      setLockedAnswer(option);
       socket.emit("submit_answer", { roomCode: pin, playerName: myName, answer: option });
-      setTimeout(() => setGameState("submitted"), 50); // render 2: submitted screen
+      pendingSubmitRef.current = setTimeout(() => {
+        pendingSubmitRef.current = null;
+        setGameState("submitted");
+      }, 50);
     }
   };
 
   const submitToServer = (answerData) => {
     if (hasAnsweredRef.current) return;
     hasAnsweredRef.current = true;
-    setLockedAnswer(String(answerData)); // immediate visual lock for text/slider/scale/multi
+    setLockedAnswer(String(answerData));
     socket.emit("submit_answer", { roomCode: pin, playerName: myName, answer: answerData });
-    setTimeout(() => setGameState("submitted"), 50);
+    pendingSubmitRef.current = setTimeout(() => {
+      pendingSubmitRef.current = null;
+      setGameState("submitted");
+    }, 50);
   };
 
   // ─── Answering ───────────────────────────────────────
