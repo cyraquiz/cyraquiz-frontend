@@ -108,25 +108,19 @@ export default function AuthModal() {
   };
 
   return (
-    <AnimatePresence>
-      {isAuthModalOpen && (
-        <>
-          <motion.div
-            className="auth-modal-backdrop"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={handleClose}
-          />
-
-          <motion.div
-            className="auth-modal-container"
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-          >
-            <div className="auth-modal">
+    <>
+      <div
+        className={`auth-modal-backdrop${isAuthModalOpen ? " auth-modal-backdrop--open" : ""}`}
+        onClick={handleClose}
+        aria-hidden="true"
+      />
+      <div
+        className={`auth-modal-container${isAuthModalOpen ? " auth-modal-container--open" : ""}`}
+        role="dialog"
+        aria-modal="true"
+        aria-hidden={!isAuthModalOpen}
+      >
+        {isAuthModalOpen && <div className="auth-modal">
               <button className="auth-modal-close" onClick={handleClose}>
                 <X size={24} />
               </button>
@@ -273,10 +267,8 @@ export default function AuthModal() {
                   </button>
                 </p>
               </div>
-            </div>
-          </motion.div>
-        </>
-      )}
-    </AnimatePresence>
+        </div>}
+      </div>
+    </>
   );
 }

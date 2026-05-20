@@ -28,6 +28,7 @@ export default function GameController() {
   const ghostCaptureRef  = useRef([]);
   const hasAnsweredRef   = useRef(false); // synchronous guard against double-submit
   const pendingSubmitRef = useRef(null);  // timeout handle — cancelled if reveal arrives first
+  const hasGameOverRef   = useRef(false); // idempotent guard — server retries final_results
 
   // Reconnect
   useEffect(() => {
@@ -54,6 +55,7 @@ export default function GameController() {
         clearTimeout(pendingSubmitRef.current);
         pendingSubmitRef.current = null;
       }
+      hasGameOverRef.current = false;
       const type = q?.type || "single";
       const hasOptions = Array.isArray(q?.options) && q.options.length > 0;
       const optionless = type === "text" || type === "slider";
@@ -87,6 +89,8 @@ export default function GameController() {
     };
 
     const onFinalResults = (sortedList) => {
+      if (hasGameOverRef.current) return;
+      hasGameOverRef.current = true;
       if (pendingSubmitRef.current) {
         clearTimeout(pendingSubmitRef.current);
         pendingSubmitRef.current = null;
