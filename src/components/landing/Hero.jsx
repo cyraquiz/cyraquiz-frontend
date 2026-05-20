@@ -32,21 +32,9 @@ export default function Hero() {
   return (
     <section className="hero">
       <div className="hero-background">
-        <motion.div
-          className="blob blob-1"
-          animate={{ x: [0, 30, 0], y: [0, -30, 0], scale: [1, 1.1, 1] }}
-          transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
-        />
-        <motion.div
-          className="blob blob-2"
-          animate={{ x: [0, -40, 0], y: [0, 40, 0], scale: [1, 1.15, 1] }}
-          transition={{ duration: 25, repeat: Infinity, ease: "easeInOut" }}
-        />
-        <motion.div
-          className="blob blob-3"
-          animate={{ x: [0, 20, 0], y: [0, -20, 0], scale: [1, 1.05, 1] }}
-          transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
-        />
+        <div className="blob blob-1" />
+        <div className="blob blob-2" />
+        <div className="blob blob-3" />
       </div>
 
       <div className="hero-container">

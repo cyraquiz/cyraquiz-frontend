@@ -37,6 +37,16 @@ export default function GameController() {
     return () => socket.off("connect", rejoin);
   }, [pin, myName]);
 
+  // While in "result" state, poll the server every 1.5 s so that if
+  // final_results was missed (timing/socket issue) we get it on rejoin.
+  useEffect(() => {
+    if (gameState !== "result") return;
+    const id = setInterval(() => {
+      socket.emit("join_room", { roomCode: pin, playerName: myName });
+    }, 1500);
+    return () => clearInterval(id);
+  }, [gameState, pin, myName]);
+
   // Game events
   useEffect(() => {
     const onNewQuestion = (q) => {
