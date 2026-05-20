@@ -5,6 +5,7 @@ import { Check, X, Eye, Send, Trophy, Loader2, Star } from "lucide-react";
 import { socket } from "../socket";
 import { OPTION_BG, OPTION_SHADOW, OPTION_LETTER } from "../constants/game";
 import { saveGhostGame } from "../utils/ghostStorage";
+import { apiFetch } from "../utils/api";
 import "../styles/GameController.css";
 
 export default function GameController() {
@@ -26,9 +27,10 @@ export default function GameController() {
   const [podiumStep,      setPodiumStep]      = useState(0);
   const questionTimeRef  = useRef(20);
   const ghostCaptureRef  = useRef([]);
-  const hasAnsweredRef   = useRef(false); // synchronous guard against double-submit
-  const pendingSubmitRef = useRef(null);  // timeout handle — cancelled if reveal arrives first
-  const hasGameOverRef   = useRef(false); // idempotent guard — server retries final_results
+  const hasAnsweredRef       = useRef(false); // synchronous guard against double-submit
+  const pendingSubmitRef     = useRef(null);  // timeout handle — cancelled if reveal arrives first
+  const hasGameOverRef       = useRef(false); // idempotent guard — server retries final_results
+  const finalResultsHandlerRef = useRef(null); // HTTP polling fallback
 
   // Reconnect
   useEffect(() => {
@@ -47,6 +49,24 @@ export default function GameController() {
     }, 1500);
     return () => clearInterval(id);
   }, [gameState, pin, myName]);
+
+  // HTTP polling fallback — completely independent of Socket.IO.
+  // Polls /game-state/:pin every 800 ms while in "result" state.
+  // If game is over, calls onFinalResults directly.
+  useEffect(() => {
+    if (gameState !== "result") return;
+    const id = setInterval(async () => {
+      try {
+        const res = await apiFetch(`/game-state/${pin}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data.status === "over" && Array.isArray(data.players) && finalResultsHandlerRef.current) {
+          finalResultsHandlerRef.current(data.players);
+        }
+      } catch { /* ignore network errors */ }
+    }, 800);
+    return () => clearInterval(id);
+  }, [gameState, pin]);
 
   // Game events
   useEffect(() => {
@@ -117,6 +137,8 @@ export default function GameController() {
         setTimeout(() => setPodiumStep(3), 10000);
       }
     };
+
+    finalResultsHandlerRef.current = onFinalResults;
 
     const onGameCancelled = () => navigate("/join");
 
