@@ -27,14 +27,13 @@
   z-index: 9999;
   pointer-events: none;
   opacity: 0;
-  transform: scale(0.95) translateY(20px);
-  transition: opacity 0.28s cubic-bezier(0.22, 1, 0.36, 1),
-              transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+  transform: translateY(16px);
+  transition: opacity 0.22s ease, transform 0.22s ease;
 }
 
 .auth-modal-container--open {
   opacity: 1;
-  transform: scale(1) translateY(0);
+  transform: translateY(0);
 }
 
 /* ===========================
