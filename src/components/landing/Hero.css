@@ -26,8 +26,8 @@
 .blob {
   position: absolute;
   border-radius: 50%;
-  filter: blur(80px);
-  opacity: 0.35;
+  filter: blur(20px);
+  opacity: 0.25;
   will-change: transform;
 }
 
@@ -490,7 +490,7 @@
     width: 100%;
   }
 
-  .blob { filter: blur(60px); opacity: 0.25; }
+  .blob { filter: blur(12px); opacity: 0.2; }
 }
 
 @media (max-width: 640px) {

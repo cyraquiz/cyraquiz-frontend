@@ -53,9 +53,15 @@ export default function Podium() {
   }, [stopDrumroll, stopVictory1, stopVictory2]);
 
   useEffect(() => {
-    socket.emit("game_over", { roomCode, hostToken });
+    let retryId = null;
+    let stopId  = null;
 
-    socket.on("final_results", (results) => {
+    const emitGameOver = () => socket.emit("game_over", { roomCode, hostToken });
+
+    const handleResults = (results) => {
+      clearInterval(retryId);
+      clearTimeout(stopId);
+
       setSortedPlayers(results);
       const p1 = results[0];
       const p2 = results[1];
@@ -88,9 +94,21 @@ export default function Podium() {
       setIsTie(tieDetected);
       setTieMessage(tieText);
       startAnimation(tieDetected);
-    });
+    };
 
-    return () => { socket.off("final_results"); };
+    socket.on("final_results", handleResults);
+
+    // Emit immediately, then retry every 1 s for up to 15 s so that students
+    // whose sockets were briefly disconnected still receive final_results.
+    emitGameOver();
+    retryId = setInterval(emitGameOver, 1000);
+    stopId  = setTimeout(() => clearInterval(retryId), 15000);
+
+    return () => {
+      clearInterval(retryId);
+      clearTimeout(stopId);
+      socket.off("final_results", handleResults);
+    };
   }, []);
 
   const startAnimation = (tieDetected) => {
