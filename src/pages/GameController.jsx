@@ -25,6 +25,7 @@ export default function GameController() {
   const [resultData,      setResultData]      = useState({ isCorrect: false, pointsEarned: 0, totalScore: 0 });
   const [finalRank,       setFinalRank]       = useState(0);
   const [podiumStep,      setPodiumStep]      = useState(0);
+  const [pollDebug,       setPollDebug]       = useState("");
   const questionTimeRef  = useRef(20);
   const ghostCaptureRef  = useRef([]);
   const hasAnsweredRef       = useRef(false); // synchronous guard against double-submit
@@ -58,12 +59,13 @@ export default function GameController() {
     const id = setInterval(async () => {
       try {
         const res = await apiFetch(`/game-state/${pin}`);
-        if (!res.ok) return;
+        if (!res.ok) { setPollDebug(`http ${res.status}`); return; }
         const data = await res.json();
+        setPollDebug(data.status);
         if (data.status === "over" && Array.isArray(data.players) && finalResultsHandlerRef.current) {
           finalResultsHandlerRef.current(data.players);
         }
-      } catch { /* ignore network errors */ }
+      } catch(e) { setPollDebug(`err:${e.message}`); console.error('[poll]', e); }
     }, 800);
     return () => clearInterval(id);
   }, [gameState, pin]);
@@ -455,6 +457,11 @@ export default function GameController() {
 
         <p className="gc-total-score gc-result-score-anim">
           Total: <strong>{resultData.totalScore} pts</strong>
+        </p>
+
+        {/* DEBUG — borrar después */}
+        <p style={{position:'fixed',bottom:6,left:6,fontSize:11,fontFamily:'monospace',opacity:0.7,color:'white',background:'rgba(0,0,0,0.4)',padding:'2px 6px',borderRadius:4}}>
+          poll: {pollDebug || '...'}
         </p>
       </div>
     );
