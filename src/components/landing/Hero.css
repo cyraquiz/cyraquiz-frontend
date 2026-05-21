@@ -26,51 +26,54 @@
 .blob {
   position: absolute;
   border-radius: 50%;
-  filter: blur(20px);
-  opacity: 0.25;
+  filter: blur(48px);
+  opacity: 0.18;
   will-change: transform;
 }
 
 .blob-1 {
-  width: 600px;
-  height: 600px;
-  background: linear-gradient(135deg, oklch(0.26 0.14 14) 0%, oklch(0.72 0.09 72) 100%);
-  top: -200px;
-  left: -100px;
-  animation: blob-float-1 20s ease-in-out infinite;
+  width: 780px;
+  height: 780px;
+  background: radial-gradient(circle at 40% 40%, oklch(0.26 0.14 14), oklch(0.72 0.09 72) 70%);
+  top: -260px;
+  left: -160px;
+  animation: blob-float-1 22s ease-in-out infinite;
 }
 
 .blob-2 {
-  width: 500px;
-  height: 500px;
-  background: linear-gradient(135deg, oklch(0.88 0.06 72) 0%, oklch(0.72 0.09 72) 100%);
-  bottom: -150px;
-  right: -150px;
-  animation: blob-float-2 25s ease-in-out infinite;
+  width: 680px;
+  height: 680px;
+  background: radial-gradient(circle at 60% 60%, oklch(0.88 0.08 72), oklch(0.72 0.09 72) 70%);
+  bottom: -200px;
+  right: -180px;
+  animation: blob-float-2 28s ease-in-out infinite;
 }
 
 .blob-3 {
-  width: 400px;
-  height: 400px;
-  background: linear-gradient(135deg, oklch(0.32 0.14 14) 0%, oklch(0.26 0.14 14) 100%);
-  top: 50%;
-  left: 50%;
-  animation: blob-float-3 18s ease-in-out infinite;
+  width: 560px;
+  height: 560px;
+  background: radial-gradient(circle at 50% 50%, oklch(0.38 0.12 14), oklch(0.26 0.14 14) 70%);
+  top: 38%;
+  left: 42%;
+  animation: blob-float-3 19s ease-in-out infinite;
 }
 
 @keyframes blob-float-1 {
   0%, 100% { transform: translate(0, 0) scale(1); }
-  50%       { transform: translate(30px, -30px) scale(1.1); }
+  33%       { transform: translate(40px, -50px) scale(1.08); }
+  66%       { transform: translate(-20px, 20px) scale(0.96); }
 }
 
 @keyframes blob-float-2 {
   0%, 100% { transform: translate(0, 0) scale(1); }
-  50%       { transform: translate(-40px, 40px) scale(1.15); }
+  33%       { transform: translate(-50px, 35px) scale(1.1); }
+  66%       { transform: translate(20px, -20px) scale(0.94); }
 }
 
 @keyframes blob-float-3 {
   0%, 100% { transform: translate(-50%, -50%) scale(1); }
-  50%       { transform: translate(calc(-50% + 20px), calc(-50% - 20px)) scale(1.05); }
+  33%       { transform: translate(calc(-50% + 35px), calc(-50% - 30px)) scale(1.06); }
+  66%       { transform: translate(calc(-50% - 25px), calc(-50% + 15px)) scale(0.97); }
 }
 
 /* ===========================
@@ -490,7 +493,7 @@
     width: 100%;
   }
 
-  .blob { filter: blur(12px); opacity: 0.2; }
+  .blob { filter: blur(28px); opacity: 0.15; }
 }
 
 @media (max-width: 640px) {
