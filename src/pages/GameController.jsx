@@ -118,7 +118,7 @@ export default function GameController() {
         clearTimeout(pendingSubmitRef.current);
         pendingSubmitRef.current = null;
       }
-      saveGhostGame(ghostCaptureRef.current);
+      try { saveGhostGame(ghostCaptureRef.current); } catch { /* no-op en contextos HTTP */ }
       const myIndex = sortedList.findIndex(p => p.name === myName);
       setFinalRank(myIndex + 1);
       if (myIndex !== -1) {

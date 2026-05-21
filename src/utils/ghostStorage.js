@@ -15,7 +15,7 @@ export function saveGhostGame(questions) {
   const saves = loadGhostSaves();
   const now = new Date();
   const save = {
-    id: crypto.randomUUID(),
+    id: (typeof crypto?.randomUUID === "function" ? crypto.randomUUID() : Math.random().toString(36).slice(2) + Date.now().toString(36)),
     savedAt: Date.now(),
     title: `Quiz del ${now.getDate()} ${monthLabel(now)}`,
     questionCount: questions.length,
