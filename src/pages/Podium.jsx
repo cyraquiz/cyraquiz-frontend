@@ -142,7 +142,8 @@ export default function Podium() {
       playVictory1();
       playVictory2();
     }
-  }, [step, playDrumroll, pauseDrumroll, stopDrumroll, playThird, playSecond, playVictory1, playVictory2]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step]);
 
   const triggerConfetti = () => {
     const duration = 3500;
