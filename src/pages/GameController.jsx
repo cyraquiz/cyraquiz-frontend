@@ -103,6 +103,7 @@ export default function GameController() {
 
     const onAnswerResult = (result) => setResultData(result);
     const onRevealResults = () => {
+      if (hasGameOverRef.current) return;
       if (pendingSubmitRef.current) {
         clearTimeout(pendingSubmitRef.current);
         pendingSubmitRef.current = null;
