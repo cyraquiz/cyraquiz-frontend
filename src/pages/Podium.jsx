@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Trophy, Star, Download } from "lucide-react";
@@ -36,6 +36,7 @@ export default function Podium() {
   const [isTie,         setIsTie]         = useState(false);
   const [tieMessage,    setTieMessage]    = useState("");
   const [isTripleTie,   setIsTripleTie]   = useState(false);
+  const hasStartedRef = useRef(false);
 
   const [playDrumroll, { pause: pauseDrumroll, stop: stopDrumroll }] =
     useSound("/redoble.mp3", { loop: true, volume: 0.5 });
@@ -59,6 +60,8 @@ export default function Podium() {
     const emitGameOver = () => socket.emit("game_over", { roomCode, hostToken });
 
     const handleResults = (results) => {
+      if (hasStartedRef.current) return;
+      hasStartedRef.current = true;
       clearInterval(retryId);
       clearTimeout(stopId);
 
