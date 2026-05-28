@@ -102,7 +102,7 @@ export default function Reports() {
 
       {/* Header */}
       <header className="rp-header">
-        <button className="rp-btn-back" onClick={() => navigate(-1)} aria-label="Volver">
+        <button className="rp-btn-back" onClick={() => navigate("/host")} aria-label="Volver al inicio">
           <ArrowLeft size={18} strokeWidth={2.5} />
           <span>Volver</span>
         </button>
