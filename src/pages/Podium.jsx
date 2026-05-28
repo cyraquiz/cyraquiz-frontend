@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Trophy, Star, Download } from "lucide-react";
+import { Trophy, Star, Download, BarChart2 } from "lucide-react";
 import { socket } from "../socket";
 import { getAvatarSrc } from "../utils/avatars";
 import { exportResultsCSV } from "../utils/exportCsv";
@@ -344,6 +344,14 @@ export default function Podium() {
             >
               <Download size={16} aria-hidden="true" />
               <span>Descargar resultados</span>
+            </button>
+            <button
+              className="pd-btn-analytics"
+              onClick={() => navigate(`/reports/${roomCode}`)}
+              aria-label="Ver análisis de la partida"
+            >
+              <BarChart2 size={16} aria-hidden="true" />
+              <span>Ver análisis</span>
             </button>
             <button className="pd-btn-return" onClick={() => navigate("/host")}>
               Volver al inicio

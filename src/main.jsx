@@ -35,6 +35,7 @@ const EditQuiz           = lazyWithReload(() => import("./pages/EditQuiz.jsx"));
 const GameRoom           = lazyWithReload(() => import("./pages/GameRoom.jsx"));
 const HostGame           = lazyWithReload(() => import("./pages/HostGame.jsx"));
 const Podium             = lazyWithReload(() => import("./pages/Podium.jsx"));
+const Reports            = lazyWithReload(() => import("./pages/Reports.jsx"));
 const StudentAssignment  = lazyWithReload(() => import("./pages/StudentAssignment.jsx"));
 const AssignmentsPage    = lazyWithReload(() => import("./pages/AssignmentsPage.jsx"));
 
@@ -54,6 +55,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
             <Route path="/host-game/:roomCode" element={<HostGame />} />
             <Route path="/game/:pin" element={<GameController />} />
             <Route path="/podium/:roomCode" element={<Podium />} />
+            <Route path="/reports/:roomCode" element={<Reports />} />
             <Route path="/asignacion/:token" element={<StudentAssignment />} />
             <Route path="/tareas" element={<AssignmentsPage />} />
           </Routes>

@@ -498,6 +498,31 @@
   outline-offset: 3px;
 }
 
+.pd-btn-analytics {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: transparent;
+  color: oklch(0.72 0.09 72);
+  border: 1.5px solid oklch(0.72 0.09 72 / 0.5);
+  border-radius: 100px;
+  padding: 0.875rem 1.75rem;
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  min-height: 52px;
+  transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+}
+.pd-btn-analytics:hover {
+  background: oklch(0.72 0.09 72 / 0.12);
+  border-color: oklch(0.72 0.09 72 / 0.8);
+  color: oklch(0.85 0.09 72);
+}
+.pd-btn-analytics:active { opacity: 0.76; }
+.pd-btn-analytics:focus-visible { outline: 2px solid oklch(0.72 0.09 72); outline-offset: 3px; }
+
 .pd-btn-return {
   background: var(--color-primary);
   color: oklch(0.96 0.005 60);
