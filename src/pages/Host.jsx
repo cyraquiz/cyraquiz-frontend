@@ -5,7 +5,7 @@ import {
   BookOpen, Search, Plus, Play, Trash2, X,
   Upload, FileText, CheckCircle, LogOut,
   Sparkles, FileQuestion, AlertCircle, Pencil,
-  Share2, ClipboardList, Copy, Check, Link2,
+  Share2, ClipboardList, Copy, Check, Link2, Globe,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { apiFetch, apiUpload } from "../utils/api";
@@ -95,6 +95,7 @@ export default function Host() {
                 }),
                 questions,
                 totalQuestions: questions.length,
+                isPublic: q.is_public || false,
               };
             })
           );
@@ -249,6 +250,26 @@ export default function Host() {
     }
   };
 
+  const handleTogglePublish = async (quiz) => {
+    try {
+      const endpoint = quiz.isPublic
+        ? `/quizzes/${quiz.id}/unpublish`
+        : `/quizzes/${quiz.id}/publish`;
+      const res = await apiFetch(endpoint, { method: "PUT" });
+      if (res.ok) {
+        setMyQuizzes(prev =>
+          prev.map(q => q.id === quiz.id ? { ...q, isPublic: !q.isPublic } : q)
+        );
+        showToast(quiz.isPublic ? "Removido del banco público" : "¡Publicado en el banco público!");
+      } else {
+        showToast("Error al cambiar el estado de publicación", "error");
+      }
+    } catch (err) {
+      console.error(err);
+      showToast("Error de conexión", "error");
+    }
+  };
+
   const executeDelete = async () => {
     if (!quizToDelete) return;
     try {
@@ -354,6 +375,14 @@ export default function Host() {
                 )}
               </AnimatePresence>
             </div>
+            <button
+              className="host-btn-bank"
+              onClick={() => navigate("/banco")}
+              aria-label="Ver banco de quizzes públicos"
+            >
+              <Globe size={17} aria-hidden="true" />
+              <span>Banco</span>
+            </button>
             <button
               className="host-btn-assignments"
               onClick={() => navigate("/tareas")}
@@ -489,6 +518,14 @@ export default function Host() {
                         title="Compartir como tarea"
                       >
                         <Share2 size={13} aria-hidden="true" />
+                      </button>
+                      <button
+                        className={`quiz-card-publish${quiz.isPublic ? " quiz-card-publish--on" : ""}`}
+                        onClick={(e) => { e.stopPropagation(); handleTogglePublish(quiz); }}
+                        aria-label={quiz.isPublic ? `Despublicar: ${quiz.title}` : `Publicar en banco: ${quiz.title}`}
+                        title={quiz.isPublic ? "Publicado — clic para despublicar" : "Publicar en banco público"}
+                      >
+                        <Globe size={13} aria-hidden="true" />
                       </button>
                       <button
                         className="quiz-card-play"

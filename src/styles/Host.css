@@ -477,9 +477,10 @@
   align-items: stretch;
 }
 
-/* Base compartida para los tres botones del footer */
+/* Base compartida para los botones del footer */
 .quiz-card-edit,
 .quiz-card-share,
+.quiz-card-publish,
 .quiz-card-play {
   display: flex;
   align-items: center;
@@ -529,6 +530,37 @@
 }
 
 .quiz-card-share:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.quiz-card-publish {
+  width: 38px;
+  padding: 0;
+  background: transparent;
+  color: var(--text-muted);
+  border: 1.5px solid #E0E0E0;
+}
+
+.quiz-card-publish:hover {
+  background: rgba(90, 14, 36, 0.05);
+  color: var(--color-primary);
+  border-color: rgba(90, 14, 36, 0.25);
+}
+
+.quiz-card-publish--on {
+  background: oklch(0.55 0.18 145 / 0.1);
+  color: oklch(0.38 0.18 145);
+  border-color: oklch(0.55 0.18 145 / 0.4);
+}
+
+.quiz-card-publish--on:hover {
+  background: oklch(0.55 0.18 145 / 0.18);
+  color: oklch(0.30 0.18 145);
+  border-color: oklch(0.55 0.18 145 / 0.6);
+}
+
+.quiz-card-publish:focus-visible {
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
 }
@@ -1117,6 +1149,32 @@
 /* ===========================
    ASSIGNMENT BUTTON
    =========================== */
+
+.host-btn-bank {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.125rem;
+  background: transparent;
+  color: oklch(0.35 0.14 265);
+  border: 1.5px solid oklch(0.35 0.14 265 / 0.3);
+  border-radius: 10px;
+  font-size: 0.875rem;
+  font-weight: 700;
+  font-family: var(--font-heading);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.host-btn-bank:hover {
+  background: oklch(0.35 0.14 265 / 0.07);
+  border-color: oklch(0.35 0.14 265 / 0.6);
+}
+
+.host-btn-bank:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
 
 .host-btn-assignments {
   display: flex;
