@@ -34,15 +34,15 @@ export default function HostGame() {
   // Four music tracks — all hooks always called (Rules of Hooks)
   const [playM1, { stop: stopM1 }] = useSound("/question.mp3", { volume: 0.4, loop: true });
   const [playM2, { stop: stopM2 }] = useSound("/lobby.mp3",    { volume: 0.35, loop: true });
-  const [playM3, { stop: stopM3 }] = useSound("/segundo.mp3",  { volume: 0.4, loop: true });
-  const [playM4, { stop: stopM4 }] = useSound("/tercer.mp3",   { volume: 0.4, loop: true });
+  const [playM3, { stop: stopM3 }] = useSound("/music-arcade.mp3", { volume: 0.4, loop: true });
+  const [playM4, { stop: stopM4 }] = useSound("/music-retro.mp3",  { volume: 0.4, loop: true });
 
   const playQuestionMusic = useCallback(() => {
     stopM1(); stopM2(); stopM3(); stopM4();
-    if (questionMusicUrl === "none")          return;
-    if (questionMusicUrl === "/lobby.mp3")    { playM2(); return; }
-    if (questionMusicUrl === "/segundo.mp3")  { playM3(); return; }
-    if (questionMusicUrl === "/tercer.mp3")   { playM4(); return; }
+    if (questionMusicUrl === "none")               return;
+    if (questionMusicUrl === "/lobby.mp3")         { playM2(); return; }
+    if (questionMusicUrl === "/music-arcade.mp3")  { playM3(); return; }
+    if (questionMusicUrl === "/music-retro.mp3")   { playM4(); return; }
     playM1();
   }, [questionMusicUrl, playM1, playM2, playM3, playM4, stopM1, stopM2, stopM3, stopM4]);
 

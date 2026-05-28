@@ -13,11 +13,11 @@ function Spinner() {
 }
 
 const MUSIC_PRESETS = [
-  { id: "/question.mp3", label: "Clásica",    icon: "🎵" },
-  { id: "/lobby.mp3",    label: "Lobby",      icon: "🎶" },
-  { id: "/segundo.mp3",  label: "Dinámica",   icon: "⚡" },
-  { id: "/tercer.mp3",   label: "Retro",      icon: "🎸" },
-  { id: "none",          label: "Sin música", icon: "🔇" },
+  { id: "/question.mp3",    label: "Clásica",    icon: "🎵" },
+  { id: "/lobby.mp3",       label: "Lobby",      icon: "🎶" },
+  { id: "/music-arcade.mp3",label: "Arcade",     icon: "⚡" },
+  { id: "/music-retro.mp3", label: "Retro",      icon: "🎸" },
+  { id: "none",             label: "Sin música", icon: "🔇" },
 ];
 
 const PRESET_TEAMS = [
