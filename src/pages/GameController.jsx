@@ -26,8 +26,11 @@ export default function GameController() {
   const [finalRank,       setFinalRank]       = useState(0);
   const [podiumStep,      setPodiumStep]      = useState(0);
   const [teamResults,     setTeamResults]     = useState(null); // team mode
+  const [reviewData,      setReviewData]      = useState([]);
+  const [showReview,      setShowReview]      = useState(false);
   const questionTimeRef  = useRef(20);
   const ghostCaptureRef  = useRef([]);
+  const questionLogRef   = useRef([]);
   const hasAnsweredRef       = useRef(false); // synchronous guard against double-submit
   const pendingSubmitRef     = useRef(null);  // timeout handle — cancelled if reveal arrives first
   const hasGameOverRef       = useRef(false); // idempotent guard — server retries final_results
@@ -84,6 +87,16 @@ export default function GameController() {
 
       if (hasOptions || optionless) {
         ghostCaptureRef.current.push(q);
+        questionLogRef.current.push({
+          question: q.question || "",
+          type: q.type || "single",
+          options: q.options || [],
+          answer: q.answer,
+          image: q.image || null,
+          myAnswer: null,
+          isCorrect: false,
+          pointsEarned: 0,
+        });
         const min = q.min ?? 0;
         const max = q.max ?? 100;
         questionTimeRef.current = q.time || 20;
@@ -101,7 +114,14 @@ export default function GameController() {
       }
     };
 
-    const onAnswerResult = (result) => setResultData(result);
+    const onAnswerResult = (result) => {
+      setResultData(result);
+      const ll = questionLogRef.current;
+      if (ll.length > 0) {
+        ll[ll.length - 1].isCorrect   = result.isCorrect   ?? false;
+        ll[ll.length - 1].pointsEarned = result.pointsEarned ?? 0;
+      }
+    };
     const onRevealResults = () => {
       if (hasGameOverRef.current) return;
       if (pendingSubmitRef.current) {
@@ -129,6 +149,7 @@ export default function GameController() {
       const isTripleTie = p1 && p2 && p3 && p1.score === p2.score && p2.score === p3.score && p1.score > 0;
       const isDoubleTie = p1 && p2 && p1.score === p2.score && p1.score > 0;
       setGameState("game_over");
+      setReviewData([...questionLogRef.current]);
       if (isTripleTie) {
         setTimeout(() => setPodiumStep(3), 8000);
       } else if (isDoubleTie) {
@@ -173,6 +194,8 @@ export default function GameController() {
     } else {
       hasAnsweredRef.current = true;
       setLockedAnswer(option);
+      const llc = questionLogRef.current;
+      if (llc.length > 0) llc[llc.length - 1].myAnswer = option;
       socket.emit("submit_answer", { roomCode: pin, playerName: myName, answer: option });
       pendingSubmitRef.current = setTimeout(() => {
         pendingSubmitRef.current = null;
@@ -185,6 +208,8 @@ export default function GameController() {
     if (hasAnsweredRef.current) return;
     hasAnsweredRef.current = true;
     setLockedAnswer(String(answerData));
+    const lls = questionLogRef.current;
+    if (lls.length > 0) lls[lls.length - 1].myAnswer = answerData;
     socket.emit("submit_answer", { roomCode: pin, playerName: myName, answer: answerData });
     pendingSubmitRef.current = setTimeout(() => {
       pendingSubmitRef.current = null;
@@ -469,6 +494,107 @@ export default function GameController() {
     );
   }
 
+  // ─── Review ──────────────────────────────────────────
+  if (showReview) {
+    const correctCount = reviewData.filter(q => q.isCorrect).length;
+    return (
+      <div className="gc-review">
+        <div className="gc-review-header">
+          <button className="gc-review-back" onClick={() => setShowReview(false)}>
+            ← Volver
+          </button>
+          <h1 className="gc-review-title">Mis respuestas</h1>
+          <span className="gc-review-count">{correctCount}/{reviewData.length}</span>
+        </div>
+
+        <div className="gc-review-list">
+          {reviewData.map((item, idx) => {
+            const isPoll      = item.type === "poll" || item.type === "scale";
+            const isOptionless = item.options.length === 0;
+
+            return (
+              <div
+                key={idx}
+                className={`gc-review-card${
+                  isPoll         ? ""
+                  : item.isCorrect ? " gc-review-card--correct"
+                  :                  " gc-review-card--incorrect"
+                }`}
+              >
+                {/* Card header */}
+                <div className="gc-review-card-top">
+                  <span className="gc-review-num">#{idx + 1}</span>
+                  {!isPoll && (
+                    <span className={`gc-review-badge gc-review-badge--${item.myAnswer === null ? "skip" : item.isCorrect ? "correct" : "wrong"}`}>
+                      {item.myAnswer === null ? "Sin respuesta" : item.isCorrect ? "Correcto" : "Incorrecto"}
+                    </span>
+                  )}
+                  {item.pointsEarned > 0 && (
+                    <span className="gc-review-pts">+{item.pointsEarned} pts</span>
+                  )}
+                </div>
+
+                {/* Image */}
+                {item.image && (
+                  <img src={item.image} alt="" className="gc-review-img" loading="lazy" />
+                )}
+
+                {/* Question text */}
+                <p className="gc-review-question">{item.question}</p>
+
+                {/* Options */}
+                {!isOptionless && (
+                  <div className="gc-review-options">
+                    {item.options.map((opt, oi) => {
+                      const isCorrectOpt = !isPoll && (
+                        Array.isArray(item.answer)
+                          ? item.answer.includes(opt)
+                          : item.answer === opt
+                      );
+                      const isMyAnswer = Array.isArray(item.myAnswer)
+                        ? item.myAnswer.includes(opt)
+                        : item.myAnswer === opt;
+
+                      let mod = "";
+                      if (isCorrectOpt && isMyAnswer) mod = " gc-review-opt--chosen-correct";
+                      else if (isCorrectOpt)           mod = " gc-review-opt--correct";
+                      else if (isMyAnswer)             mod = " gc-review-opt--wrong";
+
+                      return (
+                        <div key={oi} className={`gc-review-opt${mod}`}>
+                          <span className="gc-review-opt-letter">{OPTION_LETTER[oi]}</span>
+                          <span className="gc-review-opt-text">{opt}</span>
+                          {isCorrectOpt && <Check size={13} strokeWidth={3} className="gc-review-opt-icon" />}
+                          {isMyAnswer && !isCorrectOpt && <X size={13} strokeWidth={3} className="gc-review-opt-icon gc-review-opt-icon--wrong" />}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* Text / slider / scale */}
+                {isOptionless && (
+                  <div className="gc-review-text-ans">
+                    <div className="gc-review-text-row">
+                      <span className="gc-review-text-label">Tu respuesta</span>
+                      <span className="gc-review-text-val">{item.myAnswer ?? "—"}</span>
+                    </div>
+                    {!isPoll && item.answer !== undefined && (
+                      <div className="gc-review-text-row gc-review-text-row--correct">
+                        <span className="gc-review-text-label">Respuesta correcta</span>
+                        <span className="gc-review-text-val">{item.answer}</span>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
   // ─── Game over ───────────────────────────────────────
   if (gameState === "game_over") {
     // In team mode, find the player's team and use its rank
@@ -578,12 +704,24 @@ export default function GameController() {
           )}
         </motion.div>
 
+        {reviewData.length > 0 && (
+          <motion.button
+            className="gc-btn-review"
+            onClick={() => setShowReview(true)}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.64 }}
+          >
+            Ver mis respuestas
+          </motion.button>
+        )}
+
         <motion.button
           className="gc-btn-exit"
           onClick={() => navigate("/join")}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.56 }}
+          transition={{ delay: 0.78 }}
           aria-label="Salir del juego"
         >
           Salir del juego
