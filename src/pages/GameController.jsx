@@ -26,7 +26,6 @@ export default function GameController() {
   const [finalRank,       setFinalRank]       = useState(0);
   const [podiumStep,      setPodiumStep]      = useState(0);
   const [teamResults,     setTeamResults]     = useState(null); // team mode
-  const [questionImage,   setQuestionImage]   = useState(null);
   const questionTimeRef  = useRef(20);
   const ghostCaptureRef  = useRef([]);
   const hasAnsweredRef       = useRef(false); // synchronous guard against double-submit
@@ -96,7 +95,6 @@ export default function GameController() {
         setTextAnswer("");
         setSliderValue(Math.round((min + max) / 2));
         setQuestionMeta({ min, max });
-        setQuestionImage(q.image || null);
         setGameState("answering");
       } else {
         setGameState("waiting");
@@ -327,12 +325,6 @@ export default function GameController() {
         </div>
 
         <div className="gc-timer-track" aria-hidden="true"><div className="gc-timer-fill" style={{ animationDuration: `${questionTimeRef.current}s` }} /></div>
-
-        {questionImage && (
-          <div className="gc-question-image-wrap">
-            <img src={questionImage} alt="" className="gc-question-image" loading="eager" />
-          </div>
-        )}
 
         {/* 2×2 button grid */}
         <div className="gc-grid" role="group" aria-label="Opciones de respuesta">

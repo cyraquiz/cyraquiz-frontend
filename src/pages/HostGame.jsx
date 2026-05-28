@@ -250,7 +250,7 @@ export default function HostGame() {
       <main className="hg-main" id="main-content">
 
         {/* Question card */}
-        <div className={`hg-question-area${isShowingResult ? " hg-question-area--results" : ""}`}>
+        <div className={`hg-question-area${currentQ.image ? " hg-question-area--has-image" : ""}${isShowingResult ? " hg-question-area--results" : ""}`}>
           <motion.div
             key={currentQuestionIndex}
             className="hg-question-card"
@@ -258,19 +258,23 @@ export default function HostGame() {
             animate={{ opacity: 1, y: 0  }}
             transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
           >
-            {currentQ.image && (
-              <img
-                src={currentQ.image}
-                alt=""
-                className="hg-question-image"
-                loading="eager"
-              />
-            )}
             <h2 className={`hg-question-text${isShowingResult ? " hg-question-text--sm" : ""}`}>
               {currentQ.question}
             </h2>
           </motion.div>
         </div>
+
+        {/* Image slot — below question, hidden during results */}
+        {currentQ.image && (
+          <div className={`hg-image-slot${isShowingResult ? " hg-image-slot--hidden" : ""}`}>
+            <img
+              src={currentQ.image}
+              alt=""
+              className="hg-question-image"
+              loading="eager"
+            />
+          </div>
+        )}
 
         {/* Bar chart — solo para tipos con opciones */}
         {currentQ.options && currentQ.options.length > 0 && (
