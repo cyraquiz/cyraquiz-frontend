@@ -18,7 +18,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useAuth } from "../context/AuthContext";
-import { apiFetch } from "../utils/api";
+import { apiFetch, apiUpload } from "../utils/api";
 import { Toast } from "../components/common/Toast";
 import { Spinner } from "../components/common/Spinner";
 import "../styles/EditQuiz.css";
@@ -202,7 +202,7 @@ export default function EditQuiz() {
     try {
       const fd = new FormData();
       fd.append("image", file);
-      const res = await apiFetch("/upload-image", { method: "POST", body: fd });
+      const res = await apiUpload("/upload-image", fd);
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
         showToast(err.error || "Error al subir imagen", "error");
