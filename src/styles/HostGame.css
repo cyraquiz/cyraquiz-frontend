@@ -292,6 +292,16 @@
   font-size: clamp(1rem, 2vw, 1.625rem);
 }
 
+.hg-question-image {
+  display: block;
+  max-height: 220px;
+  max-width: 100%;
+  object-fit: contain;
+  border-radius: 12px;
+  margin: 0 auto 1rem;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+}
+
 /* ─── Bar chart ───────────────────────────────────────── */
 .hg-chart-area {
   display: flex;

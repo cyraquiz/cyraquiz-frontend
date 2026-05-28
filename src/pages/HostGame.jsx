@@ -258,6 +258,14 @@ export default function HostGame() {
             animate={{ opacity: 1, y: 0  }}
             transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
           >
+            {currentQ.image && (
+              <img
+                src={currentQ.image}
+                alt=""
+                className="hg-question-image"
+                loading="eager"
+              />
+            )}
             <h2 className={`hg-question-text${isShowingResult ? " hg-question-text--sm" : ""}`}>
               {currentQ.question}
             </h2>

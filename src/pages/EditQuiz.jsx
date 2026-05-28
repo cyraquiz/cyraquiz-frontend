@@ -5,7 +5,7 @@ import {
   ArrowLeft, Save, Play, Clock, Trophy, ChevronDown,
   Trash2, Plus, Check, FileQuestion, Copy, GripVertical,
   X, List, Layers, ToggleLeft,
-  BarChart2, Star, AlignLeft, SlidersHorizontal,
+  BarChart2, Star, AlignLeft, SlidersHorizontal, ImageIcon,
 } from "lucide-react";
 import {
   DndContext, closestCenter,
@@ -193,6 +193,42 @@ export default function EditQuiz() {
     setToast({ message, type, id: Date.now() });
   }, []);
 
+  /* ── Image upload ── */
+  const [uploadingIndex, setUploadingIndex] = useState(null);
+
+  const handleImageUpload = async (qIndex, file) => {
+    if (!file) return;
+    setUploadingIndex(qIndex);
+    try {
+      const fd = new FormData();
+      fd.append("image", file);
+      const res = await apiFetch("/upload-image", { method: "POST", body: fd });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        showToast(err.error || "Error al subir imagen", "error");
+        return;
+      }
+      const { url } = await res.json();
+      setQuestions(prev => {
+        const updated = [...prev];
+        updated[qIndex] = { ...updated[qIndex], image: url };
+        return updated;
+      });
+    } catch {
+      showToast("Error de red al subir imagen", "error");
+    } finally {
+      setUploadingIndex(null);
+    }
+  };
+
+  const handleRemoveImage = (qIndex) => {
+    setQuestions(prev => {
+      const updated = [...prev];
+      updated[qIndex] = { ...updated[qIndex], image: null };
+      return updated;
+    });
+  };
+
   /* ── Question handlers ── */
   const handleQuestionTextChange = (index, newText) => {
     setQuestions(prev => {
@@ -300,6 +336,7 @@ export default function EditQuiz() {
         answer: "Opción 1",
         time: 20,
         points: 100,
+        image: null,
       },
     ]);
   };
@@ -656,6 +693,39 @@ export default function EditQuiz() {
                       className="eq-question-textarea"
                     />
                     <div className="eq-underline" aria-hidden="true" />
+                  </div>
+
+                  {/* Image upload */}
+                  <div className="eq-image-area">
+                    {q.image ? (
+                      <div className="eq-image-preview">
+                        <img src={q.image} alt="Imagen de la pregunta" className="eq-image-thumb" />
+                        <button
+                          type="button"
+                          className="eq-image-remove"
+                          onClick={() => handleRemoveImage(qIndex)}
+                          aria-label="Eliminar imagen"
+                        >
+                          <X size={14} />
+                        </button>
+                      </div>
+                    ) : (
+                      <label className={`eq-image-upload${uploadingIndex === qIndex ? " eq-image-upload--loading" : ""}`}>
+                        {uploadingIndex === qIndex ? (
+                          <span className="eq-image-spinner" aria-hidden="true" />
+                        ) : (
+                          <ImageIcon size={15} aria-hidden="true" />
+                        )}
+                        <span>{uploadingIndex === qIndex ? "Subiendo..." : "Añadir imagen"}</span>
+                        <input
+                          type="file"
+                          accept="image/jpeg,image/png,image/webp,image/gif"
+                          className="eq-sr-only"
+                          disabled={uploadingIndex !== null}
+                          onChange={e => handleImageUpload(qIndex, e.target.files?.[0])}
+                        />
+                      </label>
+                    )}
                   </div>
 
                   {/* === single | multi | tf | poll → options grid === */}
