@@ -25,6 +25,7 @@ export default function GameController() {
   const [resultData,      setResultData]      = useState({ isCorrect: false, pointsEarned: 0, totalScore: 0 });
   const [finalRank,       setFinalRank]       = useState(0);
   const [podiumStep,      setPodiumStep]      = useState(0);
+  const [teamResults,     setTeamResults]     = useState(null); // team mode
   const questionTimeRef  = useRef(20);
   const ghostCaptureRef  = useRef([]);
   const hasAnsweredRef       = useRef(false); // synchronous guard against double-submit
@@ -62,6 +63,7 @@ export default function GameController() {
         const data = await res.json();
         if (data.status === "over" && Array.isArray(data.players) && finalResultsHandlerRef.current) {
           finalResultsHandlerRef.current(data.players);
+          if (Array.isArray(data.teams)) setTeamResults(data.teams);
         }
       } catch { /* ignorar errores de red */ }
     }, 800);
@@ -143,10 +145,13 @@ export default function GameController() {
 
     const onGameCancelled = () => navigate("/join");
 
+    const onTeamResults = (teams) => setTeamResults(teams);
+
     socket.on("new_question",   onNewQuestion);
     socket.on("answer_result",  onAnswerResult);
     socket.on("reveal_results", onRevealResults);
     socket.on("final_results",  onFinalResults);
+    socket.on("team_results",   onTeamResults);
     socket.on("game_cancelled", onGameCancelled);
 
     return () => {
@@ -154,6 +159,7 @@ export default function GameController() {
       socket.off("answer_result",  onAnswerResult);
       socket.off("reveal_results", onRevealResults);
       socket.off("final_results",  onFinalResults);
+      socket.off("team_results",   onTeamResults);
       socket.off("game_cancelled", onGameCancelled);
     };
   }, [myName, navigate]);
@@ -465,10 +471,16 @@ export default function GameController() {
 
   // ─── Game over ───────────────────────────────────────
   if (gameState === "game_over") {
+    // In team mode, find the player's team and use its rank
+    const myTeam = teamResults
+      ? teamResults.find(t => t.members.some(m => m.name === myName))
+      : null;
+    const displayRank = myTeam ? teamResults.indexOf(myTeam) + 1 : finalRank;
+
     const isWaiting =
-      (finalRank === 1 && podiumStep < 3) ||
-      (finalRank === 2 && podiumStep < 2) ||
-      (finalRank >= 3 && podiumStep < 1);
+      (displayRank === 1 && podiumStep < 3) ||
+      (displayRank === 2 && podiumStep < 2) ||
+      (displayRank >= 3 && podiumStep < 1);
 
     if (isWaiting) {
       return (
@@ -488,14 +500,14 @@ export default function GameController() {
     }
 
     const rankConfig = {
-      1: { cls: "gc-state--gold",   icon: <Trophy size={48} />, label: "¡CAMPEÓN!" },
-      2: { cls: "gc-state--silver", icon: <Star   size={48} />, label: "¡Subcampeón!" },
-      3: { cls: "gc-state--bronze", icon: <Star   size={40} />, label: "¡Tercer lugar!" },
+      1: { cls: "gc-state--gold",   icon: <Trophy size={48} />, label: myTeam ? "¡Equipo campeón!" : "¡CAMPEÓN!" },
+      2: { cls: "gc-state--silver", icon: <Star   size={48} />, label: myTeam ? "¡Segundo equipo!" : "¡Subcampeón!" },
+      3: { cls: "gc-state--bronze", icon: <Star   size={40} />, label: myTeam ? "¡Tercer equipo!"  : "¡Tercer lugar!" },
     };
-    const cfg = rankConfig[finalRank] || {
+    const cfg = rankConfig[displayRank] || {
       cls: "gc-state--other",
       icon: null,
-      label: finalRank <= 10 ? "¡Top 10!" : "¡Buen trabajo!",
+      label: displayRank <= 10 ? "¡Top 10!" : "¡Buen trabajo!",
     };
 
     return (
@@ -506,7 +518,20 @@ export default function GameController() {
           </div>
         )}
 
-        {cfg.icon && (
+        {myTeam && (
+          <motion.div
+            className="gc-team-badge"
+            style={{ background: myTeam.color }}
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+            aria-hidden="true"
+          >
+            {myTeam.name[0]}
+          </motion.div>
+        )}
+
+        {cfg.icon && !myTeam && (
           <motion.div
             className="gc-rank-icon"
             initial={{ scale: 0, rotate: -20 }}
@@ -519,7 +544,7 @@ export default function GameController() {
         )}
 
         <motion.p className="gc-rank-label" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.15 }}>
-          Quedaste en
+          {myTeam ? `Tu equipo (${myTeam.name}) quedó en` : "Quedaste en"}
         </motion.p>
         <motion.h1
           className="gc-rank-number"
@@ -527,7 +552,7 @@ export default function GameController() {
           animate={{ scale: 1,   opacity: 1 }}
           transition={{ delay: 0.2, duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
         >
-          #{finalRank}
+          #{displayRank}
         </motion.h1>
         <motion.h2
           className="gc-rank-message"

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { LogOut, Play, Users, X, ArrowLeft } from "lucide-react";
+import { LogOut, Play, Users, X, ArrowLeft, Users2, Plus, Minus, Check } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { socket } from "../socket";
 import { getAvatarSrc } from "../utils/avatars";
@@ -11,6 +11,15 @@ import "../styles/GameRoom.css";
 function Spinner() {
   return <span className="gr-spinner" aria-hidden="true" />;
 }
+
+const PRESET_TEAMS = [
+  { id: 0, name: "Equipo Rojo",    color: "#c0392b" },
+  { id: 1, name: "Equipo Azul",    color: "#2471a3" },
+  { id: 2, name: "Equipo Verde",   color: "#1e8449" },
+  { id: 3, name: "Equipo Naranja", color: "#d35400" },
+  { id: 4, name: "Equipo Morado",  color: "#7d3c98" },
+  { id: 5, name: "Equipo Marino",  color: "#1a5276" },
+];
 
 export default function GameRoom() {
   const navigate = useNavigate();
@@ -26,6 +35,14 @@ export default function GameRoom() {
   const [isStarting,  setIsStarting]  = useState(false);
   const [confirmExit, setConfirmExit] = useState(false);
   const hostTokenRef = useRef(null);
+
+  // Team mode state
+  const [teamPanelOpen,   setTeamPanelOpen]   = useState(false);
+  const [teamCount,        setTeamCount]        = useState(2);
+  const [teamNames,        setTeamNames]        = useState(PRESET_TEAMS.map(t => t.name));
+  const [autoAssign,       setAutoAssign]       = useState(false);
+  const [teamsConfirmed,   setTeamsConfirmed]   = useState(false);
+  const [playerTeams,      setPlayerTeams]      = useState({}); // playerName -> {name, color}
 
   const [playLobby, { stop: stopLobby }] = useSound("/lobby.mp3", {
     volume: 0.4,
@@ -69,20 +86,52 @@ export default function GameRoom() {
       });
     });
 
+    socket.on("team_updated", ({ teams }) => {
+      const map = {};
+      teams.forEach(t => t.players.forEach(name => { map[name] = { name: t.name, color: t.color }; }));
+      setPlayerTeams(map);
+    });
+
     return () => {
       socket.off("connect", createRoom);
       socket.off("room_created");
       socket.off("update_player_list");
       socket.off("player_joined");
+      socket.off("team_updated");
     };
   }, []);
+
+  const activeTeams = PRESET_TEAMS.slice(0, teamCount).map((t, i) => ({
+    ...t,
+    name: teamNames[i] || t.name,
+  }));
+
+  const handleConfirmTeams = () => {
+    if (!roomCode || !hostTokenRef.current) return;
+    socket.emit("enable_teams", {
+      roomCode,
+      hostToken: hostTokenRef.current,
+      teams: activeTeams,
+      autoAssign,
+    });
+    setTeamsConfirmed(true);
+    setTeamPanelOpen(false);
+  };
 
   const handleStartGame = () => {
     if (!roomCode || players.length === 0 || isStarting) return;
     setIsStarting(true);
     stopLobby();
     socket.emit("start_game", roomCode);
-    navigate(`/host-game/${roomCode}`, { state: { quizData, players, hostToken: hostTokenRef.current } });
+    navigate(`/host-game/${roomCode}`, {
+      state: {
+        quizData,
+        players,
+        hostToken: hostTokenRef.current,
+        teamMode: teamsConfirmed,
+        teams: teamsConfirmed ? activeTeams : undefined,
+      },
+    });
   };
 
   const handleExit = () => {
@@ -199,7 +248,6 @@ export default function GameRoom() {
 
         {/* QR + PIN — side by side */}
         <div className="gr-entry">
-          {/* QR code */}
           <div className="gr-qr" aria-label="Código QR para unirse">
             {roomCode ? (
               <QRCodeSVG
@@ -214,7 +262,6 @@ export default function GameRoom() {
             )}
           </div>
 
-          {/* PIN hero */}
           <div
             className={`gr-pin${!roomCode ? " gr-pin--loading" : ""}`}
             aria-label={roomCode ? `PIN de sala: ${formattedPin}` : "Generando PIN..."}
@@ -224,6 +271,107 @@ export default function GameRoom() {
             <span className="gr-pin-label">PIN</span>
             <span className="gr-pin-text">{formattedPin}</span>
           </div>
+        </div>
+
+        {/* Team setup panel */}
+        <div className="gr-team-section">
+          <div className="gr-team-bar">
+            <span className="gr-team-bar-label">
+              {teamsConfirmed
+                ? <><Check size={14} style={{ color: "#1e8449" }} /> Modo equipos activo</>
+                : "Modo equipos"}
+            </span>
+            <button
+              className={`gr-team-toggle${teamsConfirmed ? " gr-team-toggle--active" : ""}`}
+              onClick={() => setTeamPanelOpen(v => !v)}
+              aria-expanded={teamPanelOpen}
+            >
+              <Users2 size={14} aria-hidden="true" />
+              <span>{teamsConfirmed ? "Editar" : "Configurar"}</span>
+            </button>
+          </div>
+
+          <AnimatePresence>
+            {teamPanelOpen && (
+              <motion.div
+                className="gr-team-panel"
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+                style={{ overflow: "hidden" }}
+              >
+                <div className="gr-team-panel-inner">
+                  {/* Team count control */}
+                  <div className="gr-team-count-row">
+                    <span className="gr-team-count-label">Número de equipos</span>
+                    <div className="gr-team-count-ctrl">
+                      <button
+                        className="gr-team-count-btn"
+                        onClick={() => setTeamCount(v => Math.max(2, v - 1))}
+                        aria-label="Reducir equipos"
+                        disabled={teamCount <= 2}
+                      >
+                        <Minus size={14} />
+                      </button>
+                      <span className="gr-team-count-val">{teamCount}</span>
+                      <button
+                        className="gr-team-count-btn"
+                        onClick={() => setTeamCount(v => Math.min(6, v + 1))}
+                        aria-label="Añadir equipo"
+                        disabled={teamCount >= 6}
+                      >
+                        <Plus size={14} />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Team names */}
+                  <div className="gr-team-list">
+                    {PRESET_TEAMS.slice(0, teamCount).map((preset, i) => (
+                      <div key={i} className="gr-team-item">
+                        <span className="gr-team-dot" style={{ background: preset.color }} />
+                        <input
+                          type="text"
+                          className="gr-team-name-input"
+                          value={teamNames[i] ?? preset.name}
+                          onChange={e => {
+                            const updated = [...teamNames];
+                            updated[i] = e.target.value;
+                            setTeamNames(updated);
+                          }}
+                          maxLength={20}
+                          placeholder={preset.name}
+                          aria-label={`Nombre del equipo ${i + 1}`}
+                        />
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Auto-assign toggle */}
+                  <label className="gr-auto-assign">
+                    <input
+                      type="checkbox"
+                      checked={autoAssign}
+                      onChange={e => setAutoAssign(e.target.checked)}
+                    />
+                    <span className="gr-auto-assign-text">
+                      Asignar jugadores automáticamente
+                    </span>
+                  </label>
+
+                  {/* Confirm */}
+                  <button
+                    className="gr-team-confirm"
+                    onClick={handleConfirmTeams}
+                    disabled={!roomCode}
+                  >
+                    {teamsConfirmed ? "Actualizar equipos" : "Activar equipos"}
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         {/* Players */}
@@ -253,32 +401,38 @@ export default function GameRoom() {
           ) : (
             <div className="gr-players-grid">
               <AnimatePresence mode="popLayout">
-                {players.map((player) => (
-                  <motion.div
-                    key={player.name}
-                    className="gr-player"
-                    variants={playerVariants}
-                    initial="hidden"
-                    animate="visible"
-                    exit="exit"
-                    layout
-                  >
-                    <div className="gr-player-avatar" aria-hidden="true">
-                      <img
-                        src={getAvatarSrc(player.avatar || player.name)}
-                        alt=""
-                      />
-                    </div>
-                    <span className="gr-player-name">{player.name}</span>
-                  </motion.div>
-                ))}
+                {players.map((player) => {
+                  const team = playerTeams[player.name];
+                  return (
+                    <motion.div
+                      key={player.name}
+                      className="gr-player"
+                      style={team ? { borderColor: team.color + "55" } : {}}
+                      variants={playerVariants}
+                      initial="hidden"
+                      animate="visible"
+                      exit="exit"
+                      layout
+                    >
+                      <div className="gr-player-avatar" aria-hidden="true">
+                        <img src={getAvatarSrc(player.avatar || player.name)} alt="" />
+                      </div>
+                      <span className="gr-player-name">{player.name}</span>
+                      {team && (
+                        <span className="gr-player-team-badge" style={{ background: team.color }}>
+                          {team.name}
+                        </span>
+                      )}
+                    </motion.div>
+                  );
+                })}
               </AnimatePresence>
             </div>
           )}
         </section>
       </main>
 
-      {/* ─ Bottom bar (vino) ────────────────────────── */}
+      {/* ─ Bottom bar ────────────────────────────────── */}
       <div className="gr-bottom" role="toolbar" aria-label="Controles de partida">
         <div className="gr-bottom-inner">
 

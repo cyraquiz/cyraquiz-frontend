@@ -416,6 +416,193 @@
   overflow: hidden;
 }
 
+/* ─── Team mode badge on player chip ─────────────────── */
+.gr-player-team-badge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #fff;
+  padding: 0.15rem 0.5rem;
+  border-radius: 100px;
+  letter-spacing: 0.02em;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ─── Team section (above players, below PIN) ─────────── */
+.gr-team-section {
+  width: 100%;
+  max-width: 1020px;
+  margin-bottom: 1.25rem;
+}
+
+.gr-team-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.625rem 1rem;
+  background: rgba(255,255,255,0.7);
+  border: 1px solid rgba(0,0,0,0.09);
+  border-radius: 12px;
+  backdrop-filter: blur(8px);
+}
+
+.gr-team-bar-label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  font-family: var(--font-heading);
+}
+
+.gr-team-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.4rem 0.875rem;
+  border-radius: 8px;
+  border: 1.5px solid rgba(0,0,0,0.15);
+  background: transparent;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-main);
+  cursor: pointer;
+  font-family: var(--font-heading);
+  transition: background 0.15s, border-color 0.15s;
+}
+.gr-team-toggle:hover { background: rgba(0,0,0,0.05); }
+.gr-team-toggle--active { border-color: #1e8449; color: #1e8449; }
+.gr-team-toggle--active:hover { background: rgba(30,132,73,0.07); }
+
+.gr-team-panel {
+  border: 1px solid rgba(0,0,0,0.1);
+  border-top: none;
+  border-radius: 0 0 12px 12px;
+  background: rgba(255,255,255,0.9);
+  backdrop-filter: blur(8px);
+}
+
+.gr-team-panel-inner {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+}
+
+.gr-team-count-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.gr-team-count-label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-main);
+  font-family: var(--font-heading);
+}
+
+.gr-team-count-ctrl {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+.gr-team-count-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  border: 1.5px solid rgba(0,0,0,0.18);
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text-main);
+  transition: background 0.12s;
+}
+.gr-team-count-btn:hover:not(:disabled) { background: rgba(0,0,0,0.06); }
+.gr-team-count-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+.gr-team-count-val {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-main);
+  font-family: var(--font-heading);
+  min-width: 1.5ch;
+  text-align: center;
+}
+
+.gr-team-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 0.5rem;
+}
+
+.gr-team-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.625rem;
+  border: 1px solid rgba(0,0,0,0.1);
+  border-radius: 8px;
+  background: white;
+}
+
+.gr-team-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.gr-team-name-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-main);
+  font-family: var(--font-heading);
+  min-width: 0;
+}
+
+.gr-auto-assign {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.gr-auto-assign input { cursor: pointer; accent-color: var(--color-primary); }
+
+.gr-auto-assign-text {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--text-main);
+  font-family: var(--font-heading);
+}
+
+.gr-team-confirm {
+  align-self: flex-end;
+  padding: 0.5rem 1.25rem;
+  border-radius: 8px;
+  border: none;
+  background: var(--color-primary);
+  color: white;
+  font-size: 0.875rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: var(--font-heading);
+  transition: opacity 0.15s;
+}
+.gr-team-confirm:hover { opacity: 0.88; }
+.gr-team-confirm:disabled { opacity: 0.4; cursor: not-allowed; }
+
 /* ─── Bottom bar (vino) ───────────────────────────────── */
 .gr-bottom {
   position: fixed;

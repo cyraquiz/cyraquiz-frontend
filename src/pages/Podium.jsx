@@ -38,6 +38,9 @@ export default function Podium() {
   const [isTripleTie,   setIsTripleTie]   = useState(false);
   const hasStartedRef = useRef(false);
 
+  // Team mode
+  const [teamResults,   setTeamResults]   = useState(null); // array of teams or null
+
   const [playDrumroll, { pause: pauseDrumroll, stop: stopDrumroll }] =
     useSound("/redoble.mp3", { loop: true, volume: 0.5 });
   const [playThird]                          = useSound("/tercer.mp3",  { volume: 0.7 });
@@ -99,7 +102,12 @@ export default function Podium() {
       startAnimation(tieDetected);
     };
 
+    const handleTeamResults = (teams) => {
+      setTeamResults(teams);
+    };
+
     socket.on("final_results", handleResults);
+    socket.on("team_results",  handleTeamResults);
 
     // Emit immediately, then retry every 1 s for up to 15 s so that students
     // whose sockets were briefly disconnected still receive final_results.
@@ -111,6 +119,7 @@ export default function Podium() {
       clearInterval(retryId);
       clearTimeout(stopId);
       socket.off("final_results", handleResults);
+      socket.off("team_results",  handleTeamResults);
     };
   }, []);
 
@@ -240,92 +249,133 @@ export default function Podium() {
       {/* Podium stage */}
       <div className="pd-stage" role="region" aria-label="Podio de ganadores">
 
-        {/* 2nd place — left */}
-        <AnimatePresence>
-          {isSecondVisible && second && (
-            <motion.div
-              className="pd-column pd-column--second"
-              variants={slideUp}
-              initial="hidden"
-              animate="visible"
-            >
-              <div className="pd-player">
-                <div className="pd-rank-badge pd-rank-badge--silver">
-                  <Star size={16} strokeWidth={2.5} aria-hidden="true" />
-                </div>
-                <div className="pd-avatar-ring pd-avatar-ring--silver">
-                  <img src={getAvatarSrc(second.avatar || second.name)} alt={second.name} className="pd-avatar" loading="lazy" />
-                </div>
-                <p className="pd-name">{second.name}</p>
-                <div className="pd-stats">
-                  <span className="pd-score">{second.score}<span className="pd-unit"> pts</span></span>
-                  <span className="pd-time">{(second.timeAccumulated / 1000).toFixed(2)}s</span>
-                </div>
-              </div>
-              <div className="pd-block pd-block--second" aria-label="Segundo lugar">
-                <span className="pd-block-num">2</span>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {teamResults ? (
+          /* ── TEAM PODIUM ── */
+          <>
+            {/* 2nd team — left */}
+            <AnimatePresence>
+              {isSecondVisible && teamResults[1] && (
+                <motion.div className="pd-column pd-column--second" variants={slideUp} initial="hidden" animate="visible">
+                  <div className="pd-player">
+                    <div className="pd-rank-badge pd-rank-badge--silver"><Star size={16} strokeWidth={2.5} aria-hidden="true" /></div>
+                    <div className="pd-team-circle" style={{ background: teamResults[1].color }} aria-hidden="true">
+                      {teamResults[1].name[0]}
+                    </div>
+                    <p className="pd-name">{teamResults[1].name}</p>
+                    <div className="pd-stats">
+                      <span className="pd-score">{teamResults[1].avgScore}<span className="pd-unit"> pts prom.</span></span>
+                      <span className="pd-time">{teamResults[1].members.length} miembros</span>
+                    </div>
+                  </div>
+                  <div className="pd-block pd-block--second" aria-label="Segundo lugar"><span className="pd-block-num">2</span></div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
-        {/* 1st place — center */}
-        <AnimatePresence>
-          {isFirstVisible && first && (
-            <motion.div
-              className="pd-column pd-column--first"
-              variants={popIn}
-              initial="hidden"
-              animate="visible"
-            >
-              <div className="pd-player pd-player--first">
-                <div className="pd-rank-badge pd-rank-badge--gold">
-                  <Trophy size={18} strokeWidth={2.5} aria-hidden="true" />
-                </div>
-                <div className="pd-avatar-ring pd-avatar-ring--gold">
-                  <img src={getAvatarSrc(first.avatar || first.name)} alt={first.name} className="pd-avatar pd-avatar--xl" loading="lazy" />
-                </div>
-                <p className="pd-name pd-name--gold">{first.name}</p>
-                <div className="pd-stats pd-stats--gold">
-                  <span className="pd-score">{first.score}<span className="pd-unit"> pts</span></span>
-                  <span className="pd-time">{(first.timeAccumulated / 1000).toFixed(2)}s</span>
-                </div>
-              </div>
-              <div className="pd-block pd-block--first" aria-label="Primer lugar">
-                <span className="pd-block-num">1</span>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+            {/* 1st team — center */}
+            <AnimatePresence>
+              {isFirstVisible && teamResults[0] && (
+                <motion.div className="pd-column pd-column--first" variants={popIn} initial="hidden" animate="visible">
+                  <div className="pd-player pd-player--first">
+                    <div className="pd-rank-badge pd-rank-badge--gold"><Trophy size={18} strokeWidth={2.5} aria-hidden="true" /></div>
+                    <div className="pd-team-circle pd-team-circle--xl" style={{ background: teamResults[0].color }} aria-hidden="true">
+                      {teamResults[0].name[0]}
+                    </div>
+                    <p className="pd-name pd-name--gold">{teamResults[0].name}</p>
+                    <div className="pd-stats pd-stats--gold">
+                      <span className="pd-score">{teamResults[0].avgScore}<span className="pd-unit"> pts prom.</span></span>
+                      <span className="pd-time">{teamResults[0].members.length} miembros</span>
+                    </div>
+                  </div>
+                  <div className="pd-block pd-block--first" aria-label="Primer lugar"><span className="pd-block-num">1</span></div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
-        {/* 3rd place — right */}
-        <AnimatePresence>
-          {isThirdVisible && third && (
-            <motion.div
-              className="pd-column pd-column--third"
-              variants={slideUp}
-              initial="hidden"
-              animate="visible"
-            >
-              <div className="pd-player">
-                <div className="pd-rank-badge pd-rank-badge--bronze">
-                  <Star size={14} strokeWidth={2.5} aria-hidden="true" />
-                </div>
-                <div className="pd-avatar-ring pd-avatar-ring--bronze">
-                  <img src={getAvatarSrc(third.avatar || third.name)} alt={third.name} className="pd-avatar" loading="lazy" />
-                </div>
-                <p className="pd-name">{third.name}</p>
-                <div className="pd-stats">
-                  <span className="pd-score">{third.score}<span className="pd-unit"> pts</span></span>
-                  <span className="pd-time">{(third.timeAccumulated / 1000).toFixed(2)}s</span>
-                </div>
-              </div>
-              <div className="pd-block pd-block--third" aria-label="Tercer lugar">
-                <span className="pd-block-num">3</span>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+            {/* 3rd team — right */}
+            <AnimatePresence>
+              {isThirdVisible && teamResults[2] && (
+                <motion.div className="pd-column pd-column--third" variants={slideUp} initial="hidden" animate="visible">
+                  <div className="pd-player">
+                    <div className="pd-rank-badge pd-rank-badge--bronze"><Star size={14} strokeWidth={2.5} aria-hidden="true" /></div>
+                    <div className="pd-team-circle" style={{ background: teamResults[2].color }} aria-hidden="true">
+                      {teamResults[2].name[0]}
+                    </div>
+                    <p className="pd-name">{teamResults[2].name}</p>
+                    <div className="pd-stats">
+                      <span className="pd-score">{teamResults[2].avgScore}<span className="pd-unit"> pts prom.</span></span>
+                      <span className="pd-time">{teamResults[2].members.length} miembros</span>
+                    </div>
+                  </div>
+                  <div className="pd-block pd-block--third" aria-label="Tercer lugar"><span className="pd-block-num">3</span></div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </>
+        ) : (
+          /* ── INDIVIDUAL PODIUM ── */
+          <>
+            {/* 2nd place — left */}
+            <AnimatePresence>
+              {isSecondVisible && second && (
+                <motion.div className="pd-column pd-column--second" variants={slideUp} initial="hidden" animate="visible">
+                  <div className="pd-player">
+                    <div className="pd-rank-badge pd-rank-badge--silver"><Star size={16} strokeWidth={2.5} aria-hidden="true" /></div>
+                    <div className="pd-avatar-ring pd-avatar-ring--silver">
+                      <img src={getAvatarSrc(second.avatar || second.name)} alt={second.name} className="pd-avatar" loading="lazy" />
+                    </div>
+                    <p className="pd-name">{second.name}</p>
+                    <div className="pd-stats">
+                      <span className="pd-score">{second.score}<span className="pd-unit"> pts</span></span>
+                      <span className="pd-time">{(second.timeAccumulated / 1000).toFixed(2)}s</span>
+                    </div>
+                  </div>
+                  <div className="pd-block pd-block--second" aria-label="Segundo lugar"><span className="pd-block-num">2</span></div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* 1st place — center */}
+            <AnimatePresence>
+              {isFirstVisible && first && (
+                <motion.div className="pd-column pd-column--first" variants={popIn} initial="hidden" animate="visible">
+                  <div className="pd-player pd-player--first">
+                    <div className="pd-rank-badge pd-rank-badge--gold"><Trophy size={18} strokeWidth={2.5} aria-hidden="true" /></div>
+                    <div className="pd-avatar-ring pd-avatar-ring--gold">
+                      <img src={getAvatarSrc(first.avatar || first.name)} alt={first.name} className="pd-avatar pd-avatar--xl" loading="lazy" />
+                    </div>
+                    <p className="pd-name pd-name--gold">{first.name}</p>
+                    <div className="pd-stats pd-stats--gold">
+                      <span className="pd-score">{first.score}<span className="pd-unit"> pts</span></span>
+                      <span className="pd-time">{(first.timeAccumulated / 1000).toFixed(2)}s</span>
+                    </div>
+                  </div>
+                  <div className="pd-block pd-block--first" aria-label="Primer lugar"><span className="pd-block-num">1</span></div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* 3rd place — right */}
+            <AnimatePresence>
+              {isThirdVisible && third && (
+                <motion.div className="pd-column pd-column--third" variants={slideUp} initial="hidden" animate="visible">
+                  <div className="pd-player">
+                    <div className="pd-rank-badge pd-rank-badge--bronze"><Star size={14} strokeWidth={2.5} aria-hidden="true" /></div>
+                    <div className="pd-avatar-ring pd-avatar-ring--bronze">
+                      <img src={getAvatarSrc(third.avatar || third.name)} alt={third.name} className="pd-avatar" loading="lazy" />
+                    </div>
+                    <p className="pd-name">{third.name}</p>
+                    <div className="pd-stats">
+                      <span className="pd-score">{third.score}<span className="pd-unit"> pts</span></span>
+                      <span className="pd-time">{(third.timeAccumulated / 1000).toFixed(2)}s</span>
+                    </div>
+                  </div>
+                  <div className="pd-block pd-block--third" aria-label="Tercer lugar"><span className="pd-block-num">3</span></div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </>
+        )}
       </div>
 
       {/* Return CTA + Download */}
@@ -360,9 +410,9 @@ export default function Podium() {
         )}
       </AnimatePresence>
 
-      {/* Leaderboard — 4th place onward, below the CTA */}
+      {/* Leaderboard — 4th place onward (or full team list), below the CTA */}
       <AnimatePresence>
-        {step >= 3 && sortedPlayers.length > 3 && (
+        {step >= 3 && (teamResults ? teamResults.length > 3 : sortedPlayers.length > 3) && (
           <motion.section
             className="pd-leaderboard"
             aria-label="Clasificación general"
@@ -372,21 +422,38 @@ export default function Podium() {
           >
             <h2 className="pd-lb-heading">Clasificación general</h2>
             <ol className="pd-lb-list">
-              {sortedPlayers.slice(3).map((p, index) => (
-                <motion.li
-                  key={p.name}
-                  className="pd-lb-row"
-                  initial={{ opacity: 0, x: -14 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.4, ease: EASE_OUT_EXPO, delay: 0.75 + index * 0.05 }}
-                >
-                  <span className="pd-lb-rank">{index + 4}</span>
-                  <img src={getAvatarSrc(p.avatar || p.name)} alt={p.name} className="pd-lb-avatar" loading="lazy" />
-                  <span className="pd-lb-name">{p.name}</span>
-                  <span className="pd-lb-score">{p.score} pts</span>
-                  <span className="pd-lb-time">{(p.timeAccumulated / 1000).toFixed(2)}s</span>
-                </motion.li>
-              ))}
+              {teamResults
+                ? teamResults.slice(3).map((t, index) => (
+                    <motion.li
+                      key={t.name}
+                      className="pd-lb-row"
+                      initial={{ opacity: 0, x: -14 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.4, ease: EASE_OUT_EXPO, delay: 0.75 + index * 0.05 }}
+                    >
+                      <span className="pd-lb-rank">{index + 4}</span>
+                      <span className="pd-lb-team-dot" style={{ background: t.color }} />
+                      <span className="pd-lb-name">{t.name}</span>
+                      <span className="pd-lb-score">{t.avgScore} pts prom.</span>
+                      <span className="pd-lb-time">{t.members.length} miembros</span>
+                    </motion.li>
+                  ))
+                : sortedPlayers.slice(3).map((p, index) => (
+                    <motion.li
+                      key={p.name}
+                      className="pd-lb-row"
+                      initial={{ opacity: 0, x: -14 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.4, ease: EASE_OUT_EXPO, delay: 0.75 + index * 0.05 }}
+                    >
+                      <span className="pd-lb-rank">{index + 4}</span>
+                      <img src={getAvatarSrc(p.avatar || p.name)} alt={p.name} className="pd-lb-avatar" loading="lazy" />
+                      <span className="pd-lb-name">{p.name}</span>
+                      <span className="pd-lb-score">{p.score} pts</span>
+                      <span className="pd-lb-time">{(p.timeAccumulated / 1000).toFixed(2)}s</span>
+                    </motion.li>
+                  ))
+              }
             </ol>
           </motion.section>
         )}
