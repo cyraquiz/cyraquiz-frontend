@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { LogOut, Play, Users, X, ArrowLeft, Users2, Plus, Minus, Check } from "lucide-react";
+import { LogOut, Play, Users, X, ArrowLeft, Users2, Plus, Minus, Check, Music2, VolumeX } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { socket } from "../socket";
 import { getAvatarSrc } from "../utils/avatars";
@@ -11,6 +11,14 @@ import "../styles/GameRoom.css";
 function Spinner() {
   return <span className="gr-spinner" aria-hidden="true" />;
 }
+
+const MUSIC_PRESETS = [
+  { id: "/question.mp3", label: "Clásica",    icon: "🎵" },
+  { id: "/lobby.mp3",    label: "Lobby",      icon: "🎶" },
+  { id: "/segundo.mp3",  label: "Dinámica",   icon: "⚡" },
+  { id: "/tercer.mp3",   label: "Retro",      icon: "🎸" },
+  { id: "none",          label: "Sin música", icon: "🔇" },
+];
 
 const PRESET_TEAMS = [
   { id: 0, name: "Equipo Rojo",    color: "#c0392b" },
@@ -35,6 +43,9 @@ export default function GameRoom() {
   const [isStarting,  setIsStarting]  = useState(false);
   const [confirmExit, setConfirmExit] = useState(false);
   const hostTokenRef = useRef(null);
+
+  // Music selector
+  const [selectedMusic, setSelectedMusic] = useState("/question.mp3");
 
   // Team mode state
   const [teamPanelOpen,   setTeamPanelOpen]   = useState(false);
@@ -130,6 +141,7 @@ export default function GameRoom() {
         hostToken: hostTokenRef.current,
         teamMode: teamsConfirmed,
         teams: teamsConfirmed ? activeTeams : undefined,
+        questionMusic: selectedMusic,
       },
     });
   };
@@ -372,6 +384,28 @@ export default function GameRoom() {
               </motion.div>
             )}
           </AnimatePresence>
+        </div>
+
+        {/* Music selector */}
+        <div className="gr-music-section" aria-label="Música durante preguntas">
+          <div className="gr-music-bar">
+            <Music2 size={14} className="gr-music-icon" aria-hidden="true" />
+            <span className="gr-music-label">Música durante preguntas</span>
+          </div>
+          <div className="gr-music-presets" role="radiogroup" aria-label="Selecciona la música">
+            {MUSIC_PRESETS.map(preset => (
+              <button
+                key={preset.id}
+                role="radio"
+                aria-checked={selectedMusic === preset.id}
+                className={`gr-music-preset${selectedMusic === preset.id ? " gr-music-preset--active" : ""}`}
+                onClick={() => setSelectedMusic(preset.id)}
+              >
+                <span className="gr-music-preset-icon" aria-hidden="true">{preset.icon}</span>
+                <span className="gr-music-preset-label">{preset.label}</span>
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Players */}

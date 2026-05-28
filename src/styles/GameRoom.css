@@ -685,6 +685,78 @@
   outline-offset: 3px;
 }
 
+/* ─── Music selector ─────────────────────────────────── */
+.gr-music-section {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 16px;
+  padding: 0.875rem 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.gr-music-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.gr-music-icon { color: rgba(255, 255, 255, 0.7); flex-shrink: 0; }
+
+.gr-music-label {
+  font-family: var(--font-heading);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.75);
+  letter-spacing: 0.01em;
+}
+
+.gr-music-presets {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.gr-music-preset {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 100px;
+  border: 1.5px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.72);
+  font-family: var(--font-heading);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  white-space: nowrap;
+  min-height: 34px;
+}
+
+.gr-music-preset:hover {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.gr-music-preset--active {
+  background: rgba(255, 255, 255, 0.22);
+  border-color: rgba(255, 255, 255, 0.7);
+  color: white;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
+}
+
+.gr-music-preset-icon { font-size: 0.9375rem; line-height: 1; }
+
+.gr-music-preset-label { line-height: 1; }
+
+.gr-music-preset:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.7);
+  outline-offset: 2px;
+}
+
 /* ─── Responsive ──────────────────────────────────────── */
 @media (max-width: 640px) {
   .gr-nav { padding: 0 1rem; }

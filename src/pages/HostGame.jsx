@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -14,10 +14,11 @@ export default function HostGame() {
   const location     = useLocation();
   const navigate     = useNavigate();
 
-  const quizData      = location.state?.quizData;
-  const players       = location.state?.players || [];
-  const hostToken     = location.state?.hostToken;
-  const questionsList = quizData?.questions || quizData?.questionsData || [];
+  const quizData        = location.state?.quizData;
+  const players         = location.state?.players || [];
+  const hostToken       = location.state?.hostToken;
+  const questionsList   = quizData?.questions || quizData?.questionsData || [];
+  const questionMusicUrl = location.state?.questionMusic || "/question.mp3";
 
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [timeLeft,             setTimeLeft]             = useState(null);
@@ -27,9 +28,27 @@ export default function HostGame() {
   const [showCancelModal,      setShowCancelModal]      = useState(false);
   const [stats,                setStats]                = useState([0, 0, 0, 0]);
 
-  const [playCountdown,    { stop: stopCountdown    }] = useSound("/countdown.wav", { volume: 0.6 });
-  const [playQuestionMusic,{ stop: stopQuestionMusic}] = useSound("/question.mp3",  { volume: 0.4, loop: true });
-  const [playResultSound]                              = useSound("/result.mp3",    { volume: 0.7 });
+  const [playCountdown, { stop: stopCountdown }] = useSound("/countdown.wav",  { volume: 0.6 });
+  const [playResultSound]                        = useSound("/result.mp3",      { volume: 0.7 });
+
+  // Four music tracks — all hooks always called (Rules of Hooks)
+  const [playM1, { stop: stopM1 }] = useSound("/question.mp3", { volume: 0.4, loop: true });
+  const [playM2, { stop: stopM2 }] = useSound("/lobby.mp3",    { volume: 0.35, loop: true });
+  const [playM3, { stop: stopM3 }] = useSound("/segundo.mp3",  { volume: 0.4, loop: true });
+  const [playM4, { stop: stopM4 }] = useSound("/tercer.mp3",   { volume: 0.4, loop: true });
+
+  const playQuestionMusic = useCallback(() => {
+    stopM1(); stopM2(); stopM3(); stopM4();
+    if (questionMusicUrl === "none")          return;
+    if (questionMusicUrl === "/lobby.mp3")    { playM2(); return; }
+    if (questionMusicUrl === "/segundo.mp3")  { playM3(); return; }
+    if (questionMusicUrl === "/tercer.mp3")   { playM4(); return; }
+    playM1();
+  }, [questionMusicUrl, playM1, playM2, playM3, playM4, stopM1, stopM2, stopM3, stopM4]);
+
+  const stopQuestionMusic = useCallback(() => {
+    stopM1(); stopM2(); stopM3(); stopM4();
+  }, [stopM1, stopM2, stopM3, stopM4]);
 
   const nextLocked = useRef(false);
 
