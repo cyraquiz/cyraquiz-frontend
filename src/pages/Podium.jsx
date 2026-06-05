@@ -49,6 +49,12 @@ export default function Podium() {
   const [playVictory2, { stop: stopVictory2 }] = useSound("/aplauso.wav",{ volume: 0.7 });
 
   useEffect(() => {
+    const prev = document.body.style.background;
+    document.body.style.background = 'oklch(0.08 0.02 14)';
+    return () => { document.body.style.background = prev; };
+  }, []);
+
+  useEffect(() => {
     return () => {
       stopDrumroll();
       stopVictory1();

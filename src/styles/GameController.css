@@ -412,6 +412,26 @@
     oklch(0.13 0.05 14) 50%,
     oklch(0.08 0.02 14) 100%
   );
+  /* safe area: home bar en iPad/iPhone */
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left:   env(safe-area-inset-left);
+  padding-right:  env(safe-area-inset-right);
+}
+
+/* ─── Landscape iPad/tablet: grid 4 columnas ──────────── */
+@media (orientation: landscape) and (max-height: 600px) {
+  .gc-grid {
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: 1fr;
+  }
+  .gc-info-bar { height: 36px; font-size: 0.8125rem; }
+}
+
+@media (orientation: landscape) and (min-height: 601px) {
+  .gc-grid {
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: 1fr;
+  }
 }
 
 /* ─── Timer bar (CSS-only, zero JS ticks) ────────────── */
