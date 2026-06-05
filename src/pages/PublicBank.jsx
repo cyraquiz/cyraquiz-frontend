@@ -54,7 +54,8 @@ export default function PublicBank() {
     setLoading(true);
     try {
       const res = await apiFetch("/quizzes/public");
-      if (res.ok) {
+      const contentType = res.headers.get("content-type") || "";
+      if (res.ok && contentType.includes("application/json")) {
         const data = await res.json();
         setQuizzes(data.map(q => ({
           id:          q.id,
@@ -66,9 +67,10 @@ export default function PublicBank() {
           authorEmail: q.author_email || "",
           publishedAt: q.published_at,
         })));
+      } else if (!res.ok) {
+        showToast("Error al cargar el banco", "error");
       }
-    } catch (err) {
-      console.error(err);
+    } catch {
       showToast("Error al cargar el banco", "error");
     } finally {
       setLoading(false);

@@ -81,7 +81,7 @@ export default function Join() {
       >
         {/* Logo */}
         <motion.div className="join-logo-wrapper" variants={itemVariants}>
-          <img src="/logo.svg" alt="CYRAQuiz" className="join-logo" />
+          <img src="/logo.svg" alt="CYRAQuiz" className="join-logo" width="129" height="72" />
         </motion.div>
 
         {/* Card */}

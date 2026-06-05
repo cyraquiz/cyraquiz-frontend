@@ -84,7 +84,7 @@ export default function Navbar() {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            <img src="/logo.svg" alt="CYRAQuiz" className="logo-image" />
+            <img src="/logo.svg" alt="CYRAQuiz" className="logo-image" width="129" height="72" fetchpriority="high" />
           </motion.div>
 
           {/* Desktop Links */}

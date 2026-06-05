@@ -57,7 +57,7 @@ export default function Footer() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
-              <img src="/logo.svg" alt="CYRAQuiz" className="footer-logo-image" />
+              <img src="/logo.svg" alt="CYRAQuiz" className="footer-logo-image" width="115" height="64" />
             </motion.div>
             <p className="footer-description">
               Transforma tus evaluaciones en experiencias interactivas que tus estudiantes
@@ -86,9 +86,9 @@ export default function Footer() {
           <div className="footer-links-wrapper">
             {Object.entries(footerLinks).map(([category, links]) => (
               <div key={category} className="footer-links-section">
-                <h4 className="footer-section-title">
+                <p className="footer-section-title">
                   {category.charAt(0).toUpperCase() + category.slice(1)}
-                </h4>
+                </p>
                 <ul className="footer-links-list">
                   {links.map((link) => (
                     <li key={link.label}>
