@@ -1,0 +1,29 @@
+name: Supabase Keep-Alive
+
+on:
+  schedule:
+    # Corre cada 5 días a las 8:00 AM UTC
+    - cron: "0 8 */5 * *"
+  workflow_dispatch: # Permite correrlo manualmente desde GitHub
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            "https://kuvtsmaoolgudvalwhzp.supabase.co/rest/v1/quizzes?select=id&limit=1" \
+            -H "apikey: sb_publishable_bviUjH2_nf3_hdwxgu5VJw_GvBbLD2r" \
+            -H "Authorization: Bearer sb_publishable_bviUjH2_nf3_hdwxgu5VJw_GvBbLD2r")
+          echo "Supabase response: $STATUS"
+          if [ "$STATUS" != "200" ]; then
+            echo "Error: Supabase respondió con status $STATUS"
+            exit 1
+          fi
+          echo "OK — proyecto activo"
+
+      - name: Ping backend Render
+        run: |
+          curl -s -o /dev/null -w "Render status: %{http_code}\n" \
+            https://cyraquiz.onrender.com || true
