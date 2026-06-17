@@ -19,6 +19,7 @@ export function AuthProvider({ children }) {
   const closeAuthModal = () => setIsAuthModalOpen(false);
   const switchToLogin = () => setAuthMode('login');
   const switchToRegister = () => setAuthMode('register');
+  const switchToForgot = () => setAuthMode('forgot');
 
   const login = (token, email) => {
     sessionStorage.setItem("token", token);
@@ -47,6 +48,7 @@ export function AuthProvider({ children }) {
         closeAuthModal,
         switchToLogin,
         switchToRegister,
+        switchToForgot,
         login,
         logout,
         getUser,

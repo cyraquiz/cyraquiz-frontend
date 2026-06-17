@@ -39,6 +39,7 @@ const Reports            = lazyWithReload(() => import("./pages/Reports.jsx"));
 const PublicBank         = lazyWithReload(() => import("./pages/PublicBank.jsx"));
 const StudentAssignment  = lazyWithReload(() => import("./pages/StudentAssignment.jsx"));
 const AssignmentsPage    = lazyWithReload(() => import("./pages/AssignmentsPage.jsx"));
+const ResetPassword      = lazyWithReload(() => import("./pages/ResetPassword.jsx"));
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
@@ -60,6 +61,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
             <Route path="/asignacion/:token" element={<StudentAssignment />} />
             <Route path="/tareas" element={<AssignmentsPage />} />
             <Route path="/banco" element={<PublicBank />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
           </Routes>
         </Suspense>
         <AuthModal />

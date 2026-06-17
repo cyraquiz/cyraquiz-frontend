@@ -7,7 +7,7 @@ import { apiFetch } from "../../utils/api";
 import "./AuthModal.css";
 
 export default function AuthModal() {
-  const { isAuthModalOpen, authMode, closeAuthModal, switchToLogin, switchToRegister, login } = useAuth();
+  const { isAuthModalOpen, authMode, closeAuthModal, switchToLogin, switchToRegister, switchToForgot, login } = useAuth();
   const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
@@ -38,7 +38,38 @@ export default function AuthModal() {
   const handleSwitchMode = (mode) => {
     resetForm();
     if (mode === 'login') switchToLogin();
-    else switchToRegister();
+    else if (mode === 'register') switchToRegister();
+    else switchToForgot();
+  };
+
+  const handleSwitchToForgot = () => {
+    setError('');
+    setSuccessMsg('');
+    setPassword('');
+    setConfirmPassword('');
+    switchToForgot();
+  };
+
+  const handleForgotPassword = async (e) => {
+    e.preventDefault();
+    setError('');
+    setIsLoading(true);
+    try {
+      const response = await apiFetch('/auth/forgot-password', {
+        method: 'POST',
+        body: JSON.stringify({ email }),
+      });
+      const data = await response.json();
+      if (response.ok) {
+        setSuccessMsg(data.message);
+      } else {
+        setError(data.error || 'Error al procesar la solicitud');
+      }
+    } catch {
+      setError('No se pudo conectar con el servidor.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleLogin = async (e) => {
@@ -130,12 +161,14 @@ export default function AuthModal() {
                   <img src="/logo.svg" alt="CYRAQuiz" />
                 </div>
                 <h2 className="auth-modal-title">
-                  {authMode === 'login' ? 'Bienvenido de nuevo' : 'Crear cuenta'}
+                  {authMode === 'login' ? 'Bienvenido de nuevo'
+                    : authMode === 'register' ? 'Crear cuenta'
+                    : 'Recuperar contraseña'}
                 </h2>
                 <p className="auth-modal-subtitle">
-                  {authMode === 'login'
-                    ? 'Ingresa tus credenciales para continuar'
-                    : 'Únete y comienza a crear quizzes interactivos'}
+                  {authMode === 'login' ? 'Ingresa tus credenciales para continuar'
+                    : authMode === 'register' ? 'Únete y comienza a crear quizzes interactivos'
+                    : 'Ingresa tu correo y te enviaremos un enlace'}
                 </p>
               </div>
 
@@ -165,7 +198,11 @@ export default function AuthModal() {
                 )}
               </AnimatePresence>
 
-              <form onSubmit={authMode === 'login' ? handleLogin : handleRegister}>
+              <form onSubmit={
+                authMode === 'login' ? handleLogin
+                  : authMode === 'register' ? handleRegister
+                  : handleForgotPassword
+              }>
                 <div className="auth-form-group">
                   <label className="auth-label">
                     <Mail size={18} />
@@ -182,31 +219,45 @@ export default function AuthModal() {
                   />
                 </div>
 
-                <div className="auth-form-group">
-                  <label className="auth-label">
-                    <Lock size={18} />
-                    <span>Contraseña</span>
-                  </label>
-                  <div className="auth-input-wrapper">
-                    <input
-                      type={showPassword ? "text" : "password"}
-                      className="auth-input"
-                      placeholder={authMode === 'login' ? "••••••••" : "Mínimo 6 caracteres"}
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                      disabled={isLoading || successMsg}
-                    />
-                    <button
-                      type="button"
-                      className="auth-toggle-password"
-                      onClick={() => setShowPassword(!showPassword)}
-                      tabIndex={-1}
-                    >
-                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                    </button>
+                {authMode !== 'forgot' && (
+                  <div className="auth-form-group">
+                    <label className="auth-label">
+                      <Lock size={18} />
+                      <span>Contraseña</span>
+                    </label>
+                    <div className="auth-input-wrapper">
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        className="auth-input"
+                        placeholder={authMode === 'login' ? "••••••••" : "Mínimo 6 caracteres"}
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                        disabled={isLoading || successMsg}
+                      />
+                      <button
+                        type="button"
+                        className="auth-toggle-password"
+                        onClick={() => setShowPassword(!showPassword)}
+                        tabIndex={-1}
+                      >
+                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </button>
+                    </div>
+                    {authMode === 'login' && (
+                      <div className="auth-forgot-link-wrapper">
+                        <button
+                          type="button"
+                          className="auth-forgot-link"
+                          onClick={handleSwitchToForgot}
+                          disabled={isLoading}
+                        >
+                          ¿Olvidaste tu contraseña?
+                        </button>
+                      </div>
+                    )}
                   </div>
-                </div>
+                )}
 
                 {authMode === 'register' && (
                   <div className="auth-form-group">
@@ -246,25 +297,41 @@ export default function AuthModal() {
                   {isLoading ? (
                     <span className="auth-loading">
                       <div className="auth-spinner" />
-                      {authMode === 'login' ? 'Ingresando...' : 'Registrando...'}
+                      {authMode === 'login' ? 'Ingresando...'
+                        : authMode === 'register' ? 'Registrando...'
+                        : 'Enviando...'}
                     </span>
                   ) : (
-                    authMode === 'login' ? 'Ingresar' : 'Crear Cuenta'
+                    authMode === 'login' ? 'Ingresar'
+                      : authMode === 'register' ? 'Crear Cuenta'
+                      : 'Enviar enlace de recuperación'
                   )}
                 </motion.button>
               </form>
 
               <div className="auth-modal-footer">
                 <p className="auth-switch-text">
-                  {authMode === 'login' ? '¿No tienes cuenta?' : '¿Ya tienes cuenta?'}
-                  {' '}
-                  <button
-                    type="button"
-                    className="auth-switch-button"
-                    onClick={() => handleSwitchMode(authMode === 'login' ? 'register' : 'login')}
-                  >
-                    {authMode === 'login' ? 'Regístrate' : 'Inicia sesión'}
-                  </button>
+                  {authMode === 'forgot' ? (
+                    <button
+                      type="button"
+                      className="auth-switch-button"
+                      onClick={() => handleSwitchMode('login')}
+                    >
+                      ← Volver al inicio de sesión
+                    </button>
+                  ) : (
+                    <>
+                      {authMode === 'login' ? '¿No tienes cuenta?' : '¿Ya tienes cuenta?'}
+                      {' '}
+                      <button
+                        type="button"
+                        className="auth-switch-button"
+                        onClick={() => handleSwitchMode(authMode === 'login' ? 'register' : 'login')}
+                      >
+                        {authMode === 'login' ? 'Regístrate' : 'Inicia sesión'}
+                      </button>
+                    </>
+                  )}
                 </p>
               </div>
         </div>}

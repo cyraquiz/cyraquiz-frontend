@@ -266,6 +266,34 @@
 }
 
 /* ===========================
+   FORGOT PASSWORD LINK
+   =========================== */
+
+.auth-forgot-link-wrapper {
+  text-align: right;
+  margin-top: 0.25rem;
+}
+
+.auth-forgot-link {
+  background: none;
+  border: none;
+  color: oklch(0.26 0.14 14);
+  font-size: 0.8125rem;
+  font-family: inherit;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+  text-decoration-color: oklch(0.72 0.09 72);
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 3px;
+  transition: color 0.2s ease;
+}
+
+.auth-forgot-link:hover:not(:disabled) {
+  color: oklch(0.32 0.14 14);
+}
+
+/* ===========================
    SUBMIT BUTTON
    =========================== */
 
