@@ -6,6 +6,7 @@ import "./index.css";
 
 import { AuthProvider } from "./context/AuthContext.jsx";
 import AuthModal from "./components/auth/AuthModal.jsx";
+import { SocketBanner } from "./components/common/SocketBanner.jsx";
 import LandingPage from "./pages/LandingPage.jsx";
 import { Spinner } from "./components/common/Spinner.jsx";
 
@@ -45,6 +46,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <AuthProvider>
       <BrowserRouter>
+        <a href="#main-content" className="skip-link">Saltar al contenido</a>
         <Suspense fallback={<Spinner />}>
           <Routes>
             <Route path="/" element={<LandingPage />} />
@@ -65,6 +67,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
           </Routes>
         </Suspense>
         <AuthModal />
+        <SocketBanner />
       </BrowserRouter>
     </AuthProvider>
   </React.StrictMode>

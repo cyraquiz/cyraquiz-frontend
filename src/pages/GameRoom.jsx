@@ -66,7 +66,9 @@ export default function GameRoom() {
   }, [playLobby, stopLobby]);
 
   useEffect(() => {
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    const buf = new Uint32Array(1);
+    crypto.getRandomValues(buf);
+    const code = (100000 + (buf[0] % 900000)).toString();
     setRoomCode(code);
 
     const createRoom = () => socket.emit("create_room", code);

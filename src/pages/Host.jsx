@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useDeferredValue } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -109,8 +109,10 @@ export default function Host() {
     fetchQuizzes();
   }, []);
 
+  const deferredSearch = useDeferredValue(searchTerm);
+
   const filteredQuizzes = myQuizzes.filter((q) =>
-    q.title.toLowerCase().includes(searchTerm.toLowerCase())
+    q.title.toLowerCase().includes(deferredSearch.toLowerCase())
   );
 
   const totalPages = Math.ceil(filteredQuizzes.length / QUIZZES_PER_PAGE);

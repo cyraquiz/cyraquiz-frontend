@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { socket } from "../socket";
 import useSound from "use-sound";
+import { useFocusTrap } from "../hooks/useFocusTrap";
 import { OPTION_BG, OPTION_SHADOW, OPTION_LETTER } from "../constants/game";
 import "../styles/HostGame.css";
 
@@ -50,7 +51,8 @@ export default function HostGame() {
     stopM1(); stopM2(); stopM3(); stopM4();
   }, [stopM1, stopM2, stopM3, stopM4]);
 
-  const nextLocked = useRef(false);
+  const nextLocked      = useRef(false);
+  const cancelModalRef  = useFocusTrap(showCancelModal);
 
   const currentQ = questionsList[currentQuestionIndex];
 
@@ -474,6 +476,7 @@ export default function HostGame() {
             aria-labelledby="hg-modal-title"
           >
             <motion.div
+              ref={cancelModalRef}
               className="hg-modal"
               initial={{ scale: 0.88, y: 24, opacity: 0 }}
               animate={{ scale: 1,    y: 0,  opacity: 1 }}

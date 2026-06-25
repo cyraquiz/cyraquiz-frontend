@@ -47,7 +47,8 @@ export default function AssignmentsPage() {
       const res = await apiFetch(`/assignments/${id}/submissions`);
       const data = await res.json();
       setSubmissions((prev) => ({ ...prev, [id]: data.submissions || [] }));
-    } catch {
+    } catch (err) {
+      console.error("[AssignmentsPage] loadSubmissions:", err);
       showToast("Error al cargar respuestas", "error");
     } finally {
       setLoadingSubs(null);
@@ -62,7 +63,8 @@ export default function AssignmentsPage() {
         setAssignments((prev) => prev.filter((a) => a.id !== deleteId));
         showToast("Tarea eliminada");
       }
-    } catch {
+    } catch (err) {
+      console.error("[AssignmentsPage] handleDelete:", err);
       showToast("Error al eliminar", "error");
     } finally {
       setDeleteId(null);

@@ -70,7 +70,8 @@ export default function PublicBank() {
       } else if (!res.ok) {
         showToast("Error al cargar el banco", "error");
       }
-    } catch {
+    } catch (err) {
+      console.error("[PublicBank] fetchBank:", err);
       showToast("Error al cargar el banco", "error");
     } finally {
       setLoading(false);
@@ -90,7 +91,8 @@ export default function PublicBank() {
       } else {
         showToast(data.error || "Error al importar", "error");
       }
-    } catch {
+    } catch (err) {
+      console.error("[PublicBank] handleClone:", err);
       showToast("Error de conexión", "error");
     } finally {
       setCloning(null);

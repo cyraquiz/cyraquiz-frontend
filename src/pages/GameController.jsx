@@ -55,7 +55,7 @@ export default function GameController() {
   }, [gameState, pin, myName]);
 
   // HTTP polling fallback — completely independent of Socket.IO.
-  // Polls /game-state/:pin every 800 ms while in "result" state.
+  // Polls /game-state/:pin every 2 s while in "result" state.
   // If game is over, calls onFinalResults directly.
   useEffect(() => {
     if (gameState !== "result") return;
@@ -69,7 +69,7 @@ export default function GameController() {
           if (Array.isArray(data.teams)) setTeamResults(data.teams);
         }
       } catch { /* ignorar errores de red */ }
-    }, 800);
+    }, 2000);
     return () => clearInterval(id);
   }, [gameState, pin]);
 

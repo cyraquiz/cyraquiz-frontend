@@ -144,6 +144,29 @@ a:focus:not(:focus-visible) {
    UTILITY CLASSES
    =========================== */
 
+/* Skip navigation link — visible only on keyboard focus */
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10000;
+  background: #5A0E24;
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 0 0 8px 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: top 0.15s ease;
+}
+
+.skip-link:focus {
+  top: 0;
+  outline: 3px solid #fff;
+  outline-offset: 2px;
+}
+
 .sr-only {
   position: absolute;
   width: 1px;
@@ -154,4 +177,53 @@ a:focus:not(:focus-visible) {
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border-width: 0;
+}
+
+/* ===========================
+   SOCKET STATUS BANNER
+   =========================== */
+
+.socket-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 9999;
+  background: #c0392b;
+  color: #fff;
+  text-align: center;
+  padding: 7px 16px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  animation: socket-banner-in 0.25s ease;
+}
+
+.socket-banner-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #fff;
+  opacity: 0.85;
+  animation: socket-dot-pulse 1.2s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+@keyframes socket-banner-in {
+  from { transform: translateY(-100%); opacity: 0; }
+  to   { transform: translateY(0);     opacity: 1; }
+}
+
+@keyframes socket-dot-pulse {
+  0%, 100% { opacity: 0.85; transform: scale(1); }
+  50%       { opacity: 0.4;  transform: scale(0.75); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .socket-banner        { animation: none; }
+  .socket-banner-dot    { animation: none; }
 }

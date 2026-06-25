@@ -214,7 +214,8 @@ export default function EditQuiz() {
         updated[qIndex] = { ...updated[qIndex], image: url };
         return updated;
       });
-    } catch {
+    } catch (err) {
+      console.error("[EditQuiz] uploadImage:", err);
       showToast("Error de red al subir imagen", "error");
     } finally {
       setUploadingIndex(null);
@@ -388,7 +389,8 @@ export default function EditQuiz() {
         showToast(msg, "error");
       }
       return false;
-    } catch {
+    } catch (err) {
+      console.error("[EditQuiz] saveQuiz:", err);
       showToast("Error de conexión con el servidor", "error");
       return false;
     }

@@ -4,11 +4,13 @@ import { X, Mail, Lock, Eye, EyeOff, CheckCircle, AlertCircle } from "lucide-rea
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { apiFetch } from "../../utils/api";
+import { useFocusTrap } from "../../hooks/useFocusTrap";
 import "./AuthModal.css";
 
 export default function AuthModal() {
   const { isAuthModalOpen, authMode, closeAuthModal, switchToLogin, switchToRegister, switchToForgot, login } = useAuth();
-  const navigate = useNavigate();
+  const navigate   = useNavigate();
+  const modalRef   = useFocusTrap(isAuthModalOpen);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -146,9 +148,11 @@ export default function AuthModal() {
         aria-hidden="true"
       />
       <div
+        ref={modalRef}
         className={`auth-modal-container${isAuthModalOpen ? " auth-modal-container--open" : ""}`}
         role="dialog"
         aria-modal="true"
+        aria-labelledby="auth-modal-title"
         aria-hidden={!isAuthModalOpen}
       >
         {isAuthModalOpen && <div className="auth-modal">
@@ -160,7 +164,7 @@ export default function AuthModal() {
                 <div className="auth-logo">
                   <img src="/logo.svg" alt="CYRAQuiz" />
                 </div>
-                <h2 className="auth-modal-title">
+                <h2 className="auth-modal-title" id="auth-modal-title">
                   {authMode === 'login' ? 'Bienvenido de nuevo'
                     : authMode === 'register' ? 'Crear cuenta'
                     : 'Recuperar contraseña'}

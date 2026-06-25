@@ -36,7 +36,8 @@ export default function Podium() {
   const [isTie,         setIsTie]         = useState(false);
   const [tieMessage,    setTieMessage]    = useState("");
   const [isTripleTie,   setIsTripleTie]   = useState(false);
-  const hasStartedRef = useRef(false);
+  const hasStartedRef   = useRef(false);
+  const confettiRafRef  = useRef(null);
 
   // Team mode
   const [teamResults,   setTeamResults]   = useState(null); // array of teams or null
@@ -59,6 +60,7 @@ export default function Podium() {
       stopDrumroll();
       stopVictory1();
       stopVictory2();
+      if (confettiRafRef.current) cancelAnimationFrame(confettiRafRef.current);
     };
   }, [stopDrumroll, stopVictory1, stopVictory2]);
 
@@ -166,9 +168,11 @@ export default function Podium() {
     const frame = () => {
       confetti({ particleCount: 5, angle: 60,  spread: 55, origin: { x: 0 }, colors: ["#F0BC38", "#ffffff", "#5A0E24"] });
       confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 }, colors: ["#F0BC38", "#ffffff", "#5A0E24"] });
-      if (Date.now() < end) requestAnimationFrame(frame);
+      if (Date.now() < end) {
+        confettiRafRef.current = requestAnimationFrame(frame);
+      }
     };
-    frame();
+    confettiRafRef.current = requestAnimationFrame(frame);
   };
 
   const isThirdVisible  = (step >= 1 && !isTripleTie) || step >= 3;

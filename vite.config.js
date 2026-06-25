@@ -4,6 +4,11 @@ import basicSsl from '@vitejs/plugin-basic-ssl'
 
 export default defineConfig({
   plugins: [react(), basicSsl()],
+  test: {
+    environment: 'happy-dom',
+    globals: true,
+    include: ['src/**/*.test.{js,jsx}'],
+  },
   build: {
     sourcemap: false,
     rollupOptions: {
