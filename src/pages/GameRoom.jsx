@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { LogOut, Play, Users, X, ArrowLeft, Users2, Plus, Minus, Check, Music2, VolumeX } from "lucide-react";
+import { LogOut, Play, Users, X, ArrowLeft, Users2, Plus, Minus, Check, Music2, Zap } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { socket } from "../socket";
 import { getAvatarSrc } from "../utils/avatars";
@@ -18,6 +18,12 @@ const MUSIC_PRESETS = [
   { id: "/music-arcade.mp3",label: "Arcade",     icon: "⚡" },
   { id: "/music-retro.mp3", label: "Retro",      icon: "🎸" },
   { id: "none",             label: "Sin música", icon: "🔇" },
+];
+
+const POWERUP_DEFS = [
+  { icon: "🎯", name: "50/50",        desc: "Elimina 2 opciones incorrectas al instante" },
+  { icon: "⚡", name: "Doble puntos", desc: "Si aciertas, ganas el doble en esa pregunta" },
+  { icon: "🛡️", name: "Escudo",       desc: "Si fallas, igual ganas la mitad de los puntos" },
 ];
 
 const PRESET_TEAMS = [
@@ -46,6 +52,10 @@ export default function GameRoom() {
 
   // Music selector
   const [selectedMusic, setSelectedMusic] = useState("/question.mp3");
+
+  // Power-ups mode state
+  const [powerupPanelOpen,   setPowerupPanelOpen]   = useState(false);
+  const [powerupsConfirmed,  setPowerupsConfirmed]  = useState(false);
 
   // Team mode state
   const [teamPanelOpen,   setTeamPanelOpen]   = useState(false);
@@ -119,6 +129,13 @@ export default function GameRoom() {
     name: teamNames[i] || t.name,
   }));
 
+  const handleConfirmPowerups = () => {
+    if (!roomCode || !hostTokenRef.current) return;
+    socket.emit("enable_powerups", { roomCode, hostToken: hostTokenRef.current });
+    setPowerupsConfirmed(true);
+    setPowerupPanelOpen(false);
+  };
+
   const handleConfirmTeams = () => {
     if (!roomCode || !hostTokenRef.current) return;
     socket.emit("enable_teams", {
@@ -144,6 +161,7 @@ export default function GameRoom() {
         teamMode: teamsConfirmed,
         teams: teamsConfirmed ? activeTeams : undefined,
         questionMusic: selectedMusic,
+        powerUpsEnabled: powerupsConfirmed,
       },
     });
   };
@@ -381,6 +399,62 @@ export default function GameRoom() {
                     disabled={!roomCode}
                   >
                     {teamsConfirmed ? "Actualizar equipos" : "Activar equipos"}
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* Power-ups panel */}
+        <div className="gr-powerup-section">
+          <div className="gr-powerup-bar">
+            <span className="gr-powerup-bar-label">
+              {powerupsConfirmed
+                ? <><Check size={14} style={{ color: "#1e8449" }} aria-hidden="true" /> Power-ups activos</>
+                : "Modo Power-ups"}
+            </span>
+            <button
+              className={`gr-team-toggle${powerupsConfirmed ? " gr-team-toggle--active" : ""}`}
+              onClick={() => setPowerupPanelOpen(v => !v)}
+              aria-expanded={powerupPanelOpen}
+            >
+              <Zap size={14} aria-hidden="true" />
+              <span>{powerupsConfirmed ? "Ver" : "Configurar"}</span>
+            </button>
+          </div>
+
+          <AnimatePresence>
+            {powerupPanelOpen && (
+              <motion.div
+                className="gr-team-panel"
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+                style={{ overflow: "hidden" }}
+              >
+                <div className="gr-team-panel-inner">
+                  <div className="gr-powerup-list">
+                    {POWERUP_DEFS.map(p => (
+                      <div key={p.name} className="gr-powerup-item">
+                        <span className="gr-powerup-icon" aria-hidden="true">{p.icon}</span>
+                        <div className="gr-powerup-text">
+                          <strong className="gr-powerup-name">{p.name}</strong>
+                          <span className="gr-powerup-desc">{p.desc}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="gr-powerup-note">
+                    Cada jugador dispone de 1 uso de cada power-up por partida.
+                  </p>
+                  <button
+                    className="gr-team-confirm"
+                    onClick={powerupsConfirmed ? () => { setPowerupsConfirmed(false); setPowerupPanelOpen(false); } : handleConfirmPowerups}
+                    disabled={!roomCode}
+                  >
+                    {powerupsConfirmed ? "Desactivar power-ups" : "Activar power-ups"}
                   </button>
                 </div>
               </motion.div>

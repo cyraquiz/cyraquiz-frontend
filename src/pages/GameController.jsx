@@ -11,6 +11,12 @@ import "../styles/GameController.css";
 
 const REACTIONS = ["🔥", "❤️", "😮", "😂", "👏"];
 
+const POWERUP_DEFS = [
+  { type: "fifty_fifty", icon: "🎯", label: "50/50"  },
+  { type: "double",      icon: "⚡", label: "2×"      },
+  { type: "shield",      icon: "🛡️", label: "Escudo" },
+];
+
 export default function GameController() {
   const { pin }  = useParams();
   const location = useLocation();
@@ -39,6 +45,11 @@ export default function GameController() {
   const hasGameOverRef       = useRef(false); // idempotent guard — server retries final_results
   const finalResultsHandlerRef = useRef(null); // HTTP polling fallback
   const lastReactionRef      = useRef(0);     // rate-limit: 1 reaction per 2 s
+
+  const [powerUpsEnabled, setPowerUpsEnabled] = useState(false);
+  const [usedPowerups,    setUsedPowerups]    = useState({ fifty_fifty: false, double: false, shield: false });
+  const [eliminatedOpts,  setEliminatedOpts]  = useState([]);
+  const [armedPowerup,    setArmedPowerup]    = useState(null);
 
   // Reconnect
   useEffect(() => {
@@ -112,6 +123,9 @@ export default function GameController() {
         setTextAnswer("");
         setSliderValue(Math.round((min + max) / 2));
         setQuestionMeta({ min, max });
+        setEliminatedOpts([]);
+        setArmedPowerup(null);
+        if (q.powerUpsEnabled) setPowerUpsEnabled(true);
         setGameState("answering");
       } else {
         setGameState("waiting");
@@ -172,20 +186,27 @@ export default function GameController() {
 
     const onTeamResults = (teams) => setTeamResults(teams);
 
-    socket.on("new_question",   onNewQuestion);
-    socket.on("answer_result",  onAnswerResult);
-    socket.on("reveal_results", onRevealResults);
-    socket.on("final_results",  onFinalResults);
-    socket.on("team_results",   onTeamResults);
-    socket.on("game_cancelled", onGameCancelled);
+    const onPowerupApplied = ({ type, eliminated }) => {
+      if (type === "fifty_fifty" && eliminated) setEliminatedOpts(eliminated);
+      else if (type === "double" || type === "shield") setArmedPowerup(type);
+    };
+
+    socket.on("new_question",    onNewQuestion);
+    socket.on("answer_result",   onAnswerResult);
+    socket.on("reveal_results",  onRevealResults);
+    socket.on("final_results",   onFinalResults);
+    socket.on("team_results",    onTeamResults);
+    socket.on("game_cancelled",  onGameCancelled);
+    socket.on("powerup_applied", onPowerupApplied);
 
     return () => {
-      socket.off("new_question",   onNewQuestion);
-      socket.off("answer_result",  onAnswerResult);
-      socket.off("reveal_results", onRevealResults);
-      socket.off("final_results",  onFinalResults);
-      socket.off("team_results",   onTeamResults);
-      socket.off("game_cancelled", onGameCancelled);
+      socket.off("new_question",    onNewQuestion);
+      socket.off("answer_result",   onAnswerResult);
+      socket.off("reveal_results",  onRevealResults);
+      socket.off("final_results",   onFinalResults);
+      socket.off("team_results",    onTeamResults);
+      socket.off("game_cancelled",  onGameCancelled);
+      socket.off("powerup_applied", onPowerupApplied);
     };
   }, [myName, navigate]);
 
@@ -221,12 +242,44 @@ export default function GameController() {
     }, 50);
   };
 
+  const handlePowerup = (type) => {
+    if (usedPowerups[type]) return;
+    setUsedPowerups(prev => ({ ...prev, [type]: true }));
+    socket.emit("use_powerup", { roomCode: pin, playerName: myName, type });
+  };
+
   const handleReaction = (emoji) => {
     const now = Date.now();
     if (now - lastReactionRef.current < 2000) return;
     lastReactionRef.current = now;
     socket.emit("send_reaction", { roomCode: pin, emoji });
   };
+
+  // ─── Power-up bar (visible during answering, option-based questions) ───
+  const powerupBar = powerUpsEnabled && gameState === "answering" && currentOptions.length > 0
+    ? (
+        <div className="gc-powerups" role="group" aria-label="Power-ups">
+          {POWERUP_DEFS.map(({ type, icon, label }) => {
+            const used     = usedPowerups[type];
+            const armed    = armedPowerup === type;
+            const disabled = type === "fifty_fifty" && currentOptions.length < 3;
+            return (
+              <button
+                key={type}
+                className={`gc-powerup-btn${used ? " gc-powerup-btn--used" : ""}${armed ? " gc-powerup-btn--armed" : ""}`}
+                onClick={() => !used && !disabled && handlePowerup(type)}
+                disabled={used || disabled}
+                aria-label={used ? `${label} — ya usado` : `Usar ${label}`}
+                aria-pressed={armed}
+              >
+                <span className="gc-powerup-icon" aria-hidden="true">{icon}</span>
+                <span className="gc-powerup-label">{label}</span>
+              </button>
+            );
+          })}
+        </div>
+      )
+    : null;
 
   // ─── Reaction bar portal (mounts to body, visible during active game) ──
   const isActiveGame = (gameState === "waiting" || gameState === "answering" || gameState === "submitted" || gameState === "result") && !showReview;
@@ -395,15 +448,16 @@ export default function GameController() {
         {/* 2×2 button grid */}
         <div className="gc-grid" role="group" aria-label="Opciones de respuesta">
           {currentOptions.map((opt, i) => {
-            const isSelected = selectedOptions.includes(opt);
-            const isDimmed   = questionType === "multi" && selectedOptions.length > 0 && !isSelected;
-            const isChosen   = lockedAnswer === opt;
-            const isLocked   = !!lockedAnswer;
+            const isSelected   = selectedOptions.includes(opt);
+            const isDimmed     = questionType === "multi" && selectedOptions.length > 0 && !isSelected;
+            const isChosen     = lockedAnswer === opt;
+            const isLocked     = !!lockedAnswer;
+            const isEliminated = eliminatedOpts.includes(i);
 
             return (
               <button
                 key={i}
-                className={`gc-btn${isSelected ? " gc-btn--selected" : ""}${isDimmed ? " gc-btn--dimmed" : ""}${isLocked ? (isChosen ? " gc-btn--locked-chosen" : " gc-btn--locked") : ""}`}
+                className={`gc-btn${isSelected ? " gc-btn--selected" : ""}${isDimmed ? " gc-btn--dimmed" : ""}${isLocked ? (isChosen ? " gc-btn--locked-chosen" : " gc-btn--locked") : ""}${isEliminated ? " gc-btn--eliminated" : ""}`}
                 style={{
                   background: OPTION_BG[i],
                   boxShadow:  `inset 0 -7px 0 ${OPTION_SHADOW[i]}`,
@@ -411,7 +465,7 @@ export default function GameController() {
                 onPointerDown={() => handleOptionClick(opt)}
                 aria-label={`Opción ${OPTION_LETTER[i]}`}
                 aria-pressed={isSelected || isChosen}
-                disabled={isLocked}
+                disabled={isLocked || isEliminated}
               >
                 <span className="gc-btn-letter">{OPTION_LETTER[i]}</span>
                 {(isSelected || isChosen) && (
@@ -439,6 +493,7 @@ export default function GameController() {
             <span>Enviar respuesta</span>
           </motion.button>
         )}
+      {powerupBar}
       </div>
       {reactionPortal}
     </>

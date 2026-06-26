@@ -803,6 +803,80 @@
   .gr-blob-3 { width: 280px; height: 280px; filter: blur(60px); }
 }
 
+/* ─── Power-ups panel ─────────────────────────────────── */
+.gr-powerup-section {
+  width: 100%;
+  max-width: 1020px;
+  margin-bottom: 1.25rem;
+}
+
+.gr-powerup-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.625rem 1rem;
+  background: rgba(255,255,255,0.7);
+  border: 1px solid rgba(0,0,0,0.09);
+  border-radius: 12px;
+  backdrop-filter: blur(8px);
+}
+
+.gr-powerup-bar-label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  font-family: var(--font-heading);
+}
+
+.gr-powerup-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.gr-powerup-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  background: oklch(0.97 0.005 260 / 0.6);
+  border-radius: 10px;
+}
+
+.gr-powerup-icon {
+  font-size: 1.35rem;
+  flex-shrink: 0;
+}
+
+.gr-powerup-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.gr-powerup-name {
+  font-family: var(--font-heading);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.gr-powerup-desc {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.gr-powerup-note {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-align: center;
+  margin: 0 0 0.75rem;
+}
+
 /* ─── Reduced motion ──────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   .gr-pin    { animation: none; }

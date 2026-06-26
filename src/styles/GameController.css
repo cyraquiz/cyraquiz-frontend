@@ -1047,6 +1047,69 @@
   letter-spacing: 0.02em;
 }
 
+/* ─── Power-ups bar ───────────────────────────────────── */
+.gc-powerups {
+  display: flex;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 0.5rem 0 0.25rem;
+  width: 100%;
+}
+
+.gc-powerup-btn {
+  all: unset;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: 14px;
+  background: oklch(0.96 0.005 260 / 0.12);
+  border: 1.5px solid oklch(0.96 0.005 260 / 0.2);
+  transition: transform 0.13s, background 0.13s, opacity 0.13s;
+  min-width: 3.5rem;
+}
+
+.gc-powerup-btn:not(:disabled):hover  { transform: scale(1.08); background: oklch(0.96 0.005 260 / 0.2); }
+.gc-powerup-btn:not(:disabled):active { transform: scale(0.93); }
+
+.gc-powerup-btn--used {
+  opacity: 0.28;
+  cursor: default;
+}
+
+.gc-powerup-btn--armed {
+  background: oklch(0.72 0.19 55 / 0.2);
+  border-color: oklch(0.72 0.19 55 / 0.6);
+  animation: gc-powerup-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes gc-powerup-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 oklch(0.72 0.19 55 / 0.4); }
+  50%       { box-shadow: 0 0 0 6px oklch(0.72 0.19 55 / 0); }
+}
+
+.gc-powerup-icon  { font-size: 1.35rem; line-height: 1; }
+.gc-powerup-label {
+  font-family: var(--font-heading);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: oklch(0.86 0.005 260);
+}
+
+.gc-btn--eliminated {
+  opacity: 0.18 !important;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gc-powerup-btn   { transition: none; }
+  .gc-powerup-btn--armed { animation: none; }
+}
+
 /* ─── Reaction bar ────────────────────────────────────── */
 .gc-reactions {
   position: fixed;
