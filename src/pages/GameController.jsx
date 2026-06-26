@@ -282,7 +282,8 @@ export default function GameController() {
     : null;
 
   // ─── Reaction bar portal (mounts to body, visible during active game) ──
-  const isActiveGame = (gameState === "waiting" || gameState === "answering" || gameState === "submitted" || gameState === "result") && !showReview;
+  // Reacciones solo cuando ya respondió o espera — nunca durante answering
+  const isActiveGame = (gameState === "waiting" || gameState === "submitted" || gameState === "result") && !showReview;
   const reactionPortal = isActiveGame
     ? createPortal(
         <div className="gc-reactions" aria-label="Reacciones en vivo">
