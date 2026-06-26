@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback, useDeferredValue } from "reac
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  BookOpen, Search, Plus, Play, Trash2, X,
+  BookOpen, Search, Plus, Trash2, X,
   Upload, FileText, CheckCircle, LogOut,
   Sparkles, FileQuestion, AlertCircle, Pencil,
   Share2, ClipboardList, Copy, Check, Link2, Globe,
@@ -537,8 +537,7 @@ export default function Host() {
                         }}
                         aria-label={`Iniciar juego con: ${quiz.title}`}
                       >
-                        <Play size={14} fill="currentColor" aria-hidden="true" />
-                        <span>Jugar ahora</span>
+                        Iniciar
                       </button>
                     </div>
                   </motion.article>
