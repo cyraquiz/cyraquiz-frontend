@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -9,6 +9,53 @@ import useSound from "use-sound";
 import { useFocusTrap } from "../hooks/useFocusTrap";
 import { OPTION_BG, OPTION_SHADOW, OPTION_LETTER } from "../constants/game";
 import "../styles/HostGame.css";
+
+const WC_COLORS = [
+  "oklch(0.75 0.20 25)",
+  "oklch(0.72 0.19 55)",
+  "oklch(0.65 0.20 155)",
+  "oklch(0.60 0.22 255)",
+  "oklch(0.65 0.22 295)",
+  "oklch(0.68 0.20 185)",
+];
+
+function WordCloud({ words, correctAnswer }) {
+  const max = Math.max(...words.map(w => w.count), 1);
+
+  if (!words.length) {
+    return (
+      <div className="hg-wordcloud-empty" aria-live="polite">
+        Esperando respuestas…
+      </div>
+    );
+  }
+
+  return (
+    <div className="hg-wordcloud" role="img" aria-label="Nube de respuestas">
+      <AnimatePresence>
+        {words.map(({ text, count }, i) => {
+          const ratio   = count / max;
+          const size    = 1.1 + ratio * 2.4;
+          const isRight = correctAnswer && text.toLowerCase() === correctAnswer.toLowerCase();
+          return (
+            <motion.span
+              key={text}
+              className={`hg-wordcloud-word${isRight ? " hg-wordcloud-word--correct" : ""}`}
+              style={{ fontSize: `${size}rem`, color: isRight ? "oklch(0.85 0.22 145)" : WC_COLORS[i % WC_COLORS.length] }}
+              initial={{ opacity: 0, scale: 0.4 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.4 }}
+              transition={{ duration: 0.38, ease: [0.16, 1, 0.3, 1] }}
+            >
+              {text}
+              {count > 1 && <sup className="hg-wordcloud-sup">{count}</sup>}
+            </motion.span>
+          );
+        })}
+      </AnimatePresence>
+    </div>
+  );
+}
 
 export default function HostGame() {
   const { roomCode } = useParams();
@@ -29,6 +76,7 @@ export default function HostGame() {
   const [showCancelModal,      setShowCancelModal]      = useState(false);
   const [stats,                setStats]                = useState([0, 0, 0, 0]);
   const [reactions,            setReactions]            = useState([]);
+  const [textAnswers,          setTextAnswers]          = useState([]);
 
   const [playCountdown, { stop: stopCountdown }] = useSound("/countdown.wav",  { volume: 0.6 });
   const [playResultSound]                        = useSound("/result.mp3",      { volume: 0.7 });
@@ -109,6 +157,7 @@ export default function HostGame() {
     setIsShowingResult(false);
     setAnswersCount(0);
     setStats(Array.from({ length: (q.options || []).length }, () => 0));
+    setTextAnswers([]);
     setTimeLeft(q.time || 20);
     socket.emit("send_question", {
       roomCode,
@@ -116,13 +165,16 @@ export default function HostGame() {
       time: q.time || 20,
       hostToken,
     });
-    const onPlayerAnswered = () => setAnswersCount(prev => prev + 1);
-    const onUpdateStats    = (s) => setStats(s);
-    socket.on("player_answered", onPlayerAnswered);
-    socket.on("update_stats",    onUpdateStats);
+    const onPlayerAnswered    = () => setAnswersCount(prev => prev + 1);
+    const onUpdateStats       = (s) => setStats(s);
+    const onUpdateTextAnswers = (arr) => setTextAnswers(arr);
+    socket.on("player_answered",     onPlayerAnswered);
+    socket.on("update_stats",        onUpdateStats);
+    socket.on("update_text_answers", onUpdateTextAnswers);
     return () => {
-      socket.off("player_answered", onPlayerAnswered);
-      socket.off("update_stats",    onUpdateStats);
+      socket.off("player_answered",     onPlayerAnswered);
+      socket.off("update_stats",        onUpdateStats);
+      socket.off("update_text_answers", onUpdateTextAnswers);
     };
   }, [currentQuestionIndex, startCountdown, roomCode, questionsList]);
 
@@ -147,6 +199,20 @@ export default function HostGame() {
     socket.on("reaction", onReaction);
     return () => socket.off("reaction", onReaction);
   }, []);
+
+  // Word cloud data (text-type questions)
+  const wordCloudData = useMemo(() => {
+    if (!textAnswers.length) return [];
+    const freq = {};
+    textAnswers.forEach(a => {
+      const word = a.trim();
+      if (word) freq[word] = (freq[word] || 0) + 1;
+    });
+    return Object.entries(freq)
+      .map(([text, count]) => ({ text, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 40);
+  }, [textAnswers]);
 
   const handleNext = () => {
     if (nextLocked.current) return;
@@ -409,8 +475,29 @@ export default function HostGame() {
           </div>
         )}
 
-        {/* Reveal para text / slider — sin opciones */}
-        {isShowingResult && (!currentQ.options || currentQ.options.length === 0) && (
+        {/* Word cloud — preguntas de texto, en tiempo real */}
+        {currentQ.type === "text" && (
+          <div className="hg-wordcloud-area">
+            <WordCloud
+              words={wordCloudData}
+              correctAnswer={isShowingResult ? currentQ.answer : null}
+            />
+            {isShowingResult && (
+              <motion.div
+                className="hg-answer-reveal-badge"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.36, ease: [0.16, 1, 0.3, 1] }}
+              >
+                <Check size={13} strokeWidth={3} aria-hidden="true" />
+                <span>Respuesta correcta: <strong>{currentQ.answer}</strong></span>
+              </motion.div>
+            )}
+          </div>
+        )}
+
+        {/* Reveal para slider — sin opciones, sin tipo text */}
+        {isShowingResult && currentQ.type !== "text" && (!currentQ.options || currentQ.options.length === 0) && (
           <motion.div
             className="hg-answer-reveal"
             initial={{ opacity: 0, y: 20 }}

@@ -751,6 +751,73 @@
   word-break: break-word;
 }
 
+/* ─── Word Cloud ──────────────────────────────────────── */
+.hg-wordcloud-area {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.25rem 1rem 0.5rem;
+}
+
+.hg-wordcloud {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem 1.1rem;
+  min-height: 80px;
+}
+
+.hg-wordcloud-empty {
+  color: oklch(0.62 0.01 260);
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  text-align: center;
+  padding: 1.75rem 1rem;
+  width: 100%;
+}
+
+.hg-wordcloud-word {
+  font-family: var(--font-heading);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  display: inline-block;
+  transition: color 0.3s ease;
+}
+
+.hg-wordcloud-word--correct {
+  text-shadow: 0 0 20px oklch(0.85 0.22 145 / 0.5);
+}
+
+.hg-wordcloud-sup {
+  font-size: 0.52em;
+  font-weight: 700;
+  margin-left: 0.12em;
+  opacity: 0.7;
+  vertical-align: super;
+}
+
+.hg-answer-reveal-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: oklch(0.65 0.20 155 / 0.18);
+  border: 1px solid oklch(0.65 0.20 155 / 0.4);
+  border-radius: 100px;
+  padding: 0.4rem 0.9rem;
+  font-family: var(--font-heading);
+  font-size: 0.875rem;
+  color: oklch(0.85 0.22 145);
+}
+
+.hg-answer-reveal-badge strong {
+  font-weight: 800;
+}
+
 /* ─── Live reactions layer ────────────────────────────── */
 .hg-reactions-layer {
   position: fixed;
