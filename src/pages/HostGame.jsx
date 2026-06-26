@@ -28,6 +28,7 @@ export default function HostGame() {
   const [startCountdown,       setStartCountdown]       = useState(3);
   const [showCancelModal,      setShowCancelModal]      = useState(false);
   const [stats,                setStats]                = useState([0, 0, 0, 0]);
+  const [reactions,            setReactions]            = useState([]);
 
   const [playCountdown, { stop: stopCountdown }] = useSound("/countdown.wav",  { volume: 0.6 });
   const [playResultSound]                        = useSound("/result.mp3",      { volume: 0.7 });
@@ -135,6 +136,17 @@ export default function HostGame() {
       setIsShowingResult(true);
     }
   }, [timeLeft, isShowingResult]);
+
+  // ─── Live reactions ─────────────────────────────────
+  useEffect(() => {
+    const onReaction = ({ emoji }) => {
+      const id = Math.random().toString(36).slice(2);
+      const x  = 4 + Math.random() * 88;
+      setReactions(prev => [...prev, { id, emoji, x }]);
+    };
+    socket.on("reaction", onReaction);
+    return () => socket.off("reaction", onReaction);
+  }, []);
 
   const handleNext = () => {
     if (nextLocked.current) return;
@@ -459,6 +471,20 @@ export default function HostGame() {
           </div>
 
         </div>
+      </div>
+
+      {/* ─ Live reactions layer ──────────────────────── */}
+      <div className="hg-reactions-layer" aria-hidden="true">
+        {reactions.map(r => (
+          <span
+            key={r.id}
+            className="hg-reaction-float"
+            style={{ left: `${r.x}%` }}
+            onAnimationEnd={() => setReactions(prev => prev.filter(x => x.id !== r.id))}
+          >
+            {r.emoji}
+          </span>
+        ))}
       </div>
 
       {/* ─ Cancel modal ─────────────────────────────── */}

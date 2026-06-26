@@ -751,6 +751,35 @@
   word-break: break-word;
 }
 
+/* ─── Live reactions layer ────────────────────────────── */
+.hg-reactions-layer {
+  position: fixed;
+  bottom: 90px; /* above the bottom bar */
+  left: 0;
+  right: 0;
+  height: 0;
+  pointer-events: none;
+  z-index: 60;
+  overflow: visible;
+}
+
+@keyframes hg-reaction-float {
+  0%   { opacity: 1;   transform: translateY(0)     scale(0.7); }
+  15%  { opacity: 1;   transform: translateY(-50px)  scale(1.4); }
+  100% { opacity: 0;   transform: translateY(-300px) scale(1);   }
+}
+
+.hg-reaction-float {
+  position: absolute;
+  bottom: 0;
+  font-size: 2.75rem;
+  line-height: 1;
+  pointer-events: none;
+  user-select: none;
+  animation: hg-reaction-float 2.6s ease-out forwards;
+  will-change: transform, opacity;
+}
+
 /* ─── Reduced motion ──────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   .hg-countdown-num      { animation: none; }
@@ -758,4 +787,5 @@
   .hg-chart-bar          { animation: none; transition: opacity 0.15s; }
   .hg-option             { transition: opacity 0.15s; }
   .hg-bottom-timer-num   { transition: none; }
+  .hg-reaction-float     { display: none; }
 }

@@ -75,9 +75,52 @@ Permite que los estudiantes completen un examen sin necesidad de una sesión en 
 
 ---
 
+## Próximas fases — análisis competitivo
+
+Basado en Kahoot, Quizlet, Mentimeter, Blooket, Quizizz, Gimkit, Socrative, Nearpod y Edpuzzle.
+
+### FASE 1 — Alto impacto, bajo costo (Q3 2026)
+
+| # | Feature | Estado | Inspiración |
+|---|---------|--------|-------------|
+| F1 | **Reacciones en vivo** — emoji flotantes (🔥❤️😮😂👏) durante el juego | ⬜ | Duolingo, Twitch |
+| F2 | **Word Cloud** — visualización para preguntas `poll`/`text` en pantalla del host | ⬜ | Mentimeter |
+
+### FASE 2 — Profundidad de juego (Q4 2026)
+
+| # | Feature | Estado | Inspiración |
+|---|---------|--------|-------------|
+| F3 | **Power-ups** — escudo 🛡️, 2× puntos ⚡, 50/50 🎯 (1 por juego) | ⬜ | Quizizz |
+| F4 | **Speed Round** — mismo quiz con 5 s fijos por pregunta, sin pausa | ⬜ | Gimkit |
+
+### FASE 3 — Ecosistema del profesor (Q1 2027)
+
+| # | Feature | Estado | Inspiración |
+|---|---------|--------|-------------|
+| F5 | **Cuentas de Estudiante** — login opcional, historial de sesiones | ⬜ | Quizlet |
+| F6 | **Modo Examen** — sin feedback inmediato, score revelado al final | ⬜ | Quizizz Exam Mode |
+| F7 | **Draw It** — tipo de pregunta con lienzo táctil (Canvas API) | ⬜ | Nearpod, Formative |
+
+### FASE 4 — Diferenciadores únicos (Q2 2027)
+
+| # | Feature | Estado | Inspiración |
+|---|---------|--------|-------------|
+| F8 | **Modo Torneo** — brackets eliminatorios sobre el mismo quiz | ⬜ | — |
+| F9 | **Video Quiz** — video con preguntas embebidas en timestamps | ⬜ | Edpuzzle |
+| F10 | **IA Adaptativa** — insights de rendimiento por pregunta/alumno | ⬜ | Duolingo, Khan Academy |
+
+### Eventos de backend necesarios
+
+| Feature | Cliente → servidor | Servidor → cliente |
+|---------|-------------------|-------------------|
+| F1 Reacciones | `send_reaction { roomCode, emoji }` | `reaction { emoji }` broadcast a la sala |
+| F3 Power-ups | `use_powerup { roomCode, type }` | `powerup_used { playerName, type }` |
+| F7 Draw It | `submit_drawing { roomCode, dataUrl }` | `new_drawing { playerName, dataUrl }` |
+
+---
+
 ## Descartado
 
 - Racha/badges (Streaks system)
 - Confidence Mode
 - Branding personalizado
-- Modo por equipos (Team Mode)

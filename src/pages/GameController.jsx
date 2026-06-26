@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Check, X, Eye, Send, Trophy, Loader2, Star } from "lucide-react";
@@ -7,6 +8,8 @@ import { OPTION_BG, OPTION_SHADOW, OPTION_LETTER } from "../constants/game";
 import { saveGhostGame } from "../utils/ghostStorage";
 import { apiFetch } from "../utils/api";
 import "../styles/GameController.css";
+
+const REACTIONS = ["🔥", "❤️", "😮", "😂", "👏"];
 
 export default function GameController() {
   const { pin }  = useParams();
@@ -35,6 +38,7 @@ export default function GameController() {
   const pendingSubmitRef     = useRef(null);  // timeout handle — cancelled if reveal arrives first
   const hasGameOverRef       = useRef(false); // idempotent guard — server retries final_results
   const finalResultsHandlerRef = useRef(null); // HTTP polling fallback
+  const lastReactionRef      = useRef(0);     // rate-limit: 1 reaction per 2 s
 
   // Reconnect
   useEffect(() => {
@@ -217,111 +221,147 @@ export default function GameController() {
     }, 50);
   };
 
+  const handleReaction = (emoji) => {
+    const now = Date.now();
+    if (now - lastReactionRef.current < 2000) return;
+    lastReactionRef.current = now;
+    socket.emit("send_reaction", { roomCode: pin, emoji });
+  };
+
+  // ─── Reaction bar portal (mounts to body, visible during active game) ──
+  const isActiveGame = (gameState === "waiting" || gameState === "answering" || gameState === "submitted" || gameState === "result") && !showReview;
+  const reactionPortal = isActiveGame
+    ? createPortal(
+        <div className="gc-reactions" aria-label="Reacciones en vivo">
+          {REACTIONS.map(emoji => (
+            <button
+              key={emoji}
+              className="gc-reaction-btn"
+              onClick={() => handleReaction(emoji)}
+              aria-label={`Reacción ${emoji}`}
+            >
+              {emoji}
+            </button>
+          ))}
+        </div>,
+        document.body
+      )
+    : null;
+
   // ─── Answering ───────────────────────────────────────
   if (gameState === "answering") {
 
     // ── Respuesta escrita ──────────────────────────────
     if (questionType === "text") {
       return (
-        <div className="gc-play">
-          <div className="gc-info-bar">Escribe tu respuesta</div>
-          <div className="gc-timer-track" aria-hidden="true"><div className="gc-timer-fill" style={{ animationDuration: `${questionTimeRef.current}s` }} /></div>
-          <div className="gc-text-area">
-            <input
-              className="gc-text-input"
-              type="text"
-              value={textAnswer}
-              onChange={(e) => setTextAnswer(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && textAnswer.trim()) submitToServer(textAnswer.trim().toLowerCase());
-              }}
-              placeholder="Escribe aquí..."
-              maxLength={100}
-              autoFocus
-              autoComplete="off"
-            />
-            <motion.button
-              className={`gc-submit${textAnswer.trim() ? " gc-submit--ready" : ""}`}
-              onClick={() => textAnswer.trim() && submitToServer(textAnswer.trim().toLowerCase())}
-              disabled={!textAnswer.trim()}
-              initial={{ y: 60, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ duration: 0.36, ease: [0.16, 1, 0.3, 1] }}
-              aria-label="Enviar respuesta"
-            >
-              <Send size={16} aria-hidden="true" />
-              <span>Enviar respuesta</span>
-            </motion.button>
+        <>
+          <div className="gc-play">
+            <div className="gc-info-bar">Escribe tu respuesta</div>
+            <div className="gc-timer-track" aria-hidden="true"><div className="gc-timer-fill" style={{ animationDuration: `${questionTimeRef.current}s` }} /></div>
+            <div className="gc-text-area">
+              <input
+                className="gc-text-input"
+                type="text"
+                value={textAnswer}
+                onChange={(e) => setTextAnswer(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && textAnswer.trim()) submitToServer(textAnswer.trim().toLowerCase());
+                }}
+                placeholder="Escribe aquí..."
+                maxLength={100}
+                autoFocus
+                autoComplete="off"
+              />
+              <motion.button
+                className={`gc-submit${textAnswer.trim() ? " gc-submit--ready" : ""}`}
+                onClick={() => textAnswer.trim() && submitToServer(textAnswer.trim().toLowerCase())}
+                disabled={!textAnswer.trim()}
+                initial={{ y: 60, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ duration: 0.36, ease: [0.16, 1, 0.3, 1] }}
+                aria-label="Enviar respuesta"
+              >
+                <Send size={16} aria-hidden="true" />
+                <span>Enviar respuesta</span>
+              </motion.button>
+            </div>
           </div>
-        </div>
+          {reactionPortal}
+        </>
       );
     }
 
     // ── Deslizador numérico ────────────────────────────
     if (questionType === "slider") {
       return (
-        <div className="gc-play">
-          <div className="gc-info-bar">Desliza hasta tu respuesta</div>
-          <div className="gc-timer-track" aria-hidden="true"><div className="gc-timer-fill" style={{ animationDuration: `${questionTimeRef.current}s` }} /></div>
-          <div className="gc-slider-area">
-            <motion.div
-              className="gc-slider-value"
-              key={sliderValue}
-              initial={{ scale: 0.85, opacity: 0.6 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ duration: 0.1 }}
-              aria-live="polite"
-            >
-              {sliderValue}
-            </motion.div>
-            <input
-              className="gc-slider-input"
-              type="range"
-              min={questionMeta.min}
-              max={questionMeta.max}
-              value={sliderValue}
-              onChange={(e) => setSliderValue(Number(e.target.value))}
-              aria-label={`Valor: ${sliderValue}`}
-            />
-            <div className="gc-slider-labels">
-              <span>{questionMeta.min}</span>
-              <span>{questionMeta.max}</span>
+        <>
+          <div className="gc-play">
+            <div className="gc-info-bar">Desliza hasta tu respuesta</div>
+            <div className="gc-timer-track" aria-hidden="true"><div className="gc-timer-fill" style={{ animationDuration: `${questionTimeRef.current}s` }} /></div>
+            <div className="gc-slider-area">
+              <motion.div
+                className="gc-slider-value"
+                key={sliderValue}
+                initial={{ scale: 0.85, opacity: 0.6 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.1 }}
+                aria-live="polite"
+              >
+                {sliderValue}
+              </motion.div>
+              <input
+                className="gc-slider-input"
+                type="range"
+                min={questionMeta.min}
+                max={questionMeta.max}
+                value={sliderValue}
+                onChange={(e) => setSliderValue(Number(e.target.value))}
+                aria-label={`Valor: ${sliderValue}`}
+              />
+              <div className="gc-slider-labels">
+                <span>{questionMeta.min}</span>
+                <span>{questionMeta.max}</span>
+              </div>
+              <motion.button
+                className="gc-submit gc-submit--ready"
+                onClick={() => submitToServer(String(sliderValue))}
+                initial={{ y: 60, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ duration: 0.36, ease: [0.16, 1, 0.3, 1] }}
+                aria-label="Confirmar valor"
+              >
+                <Send size={16} aria-hidden="true" />
+                <span>Confirmar</span>
+              </motion.button>
             </div>
-            <motion.button
-              className="gc-submit gc-submit--ready"
-              onClick={() => submitToServer(String(sliderValue))}
-              initial={{ y: 60, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ duration: 0.36, ease: [0.16, 1, 0.3, 1] }}
-              aria-label="Confirmar valor"
-            >
-              <Send size={16} aria-hidden="true" />
-              <span>Confirmar</span>
-            </motion.button>
           </div>
-        </div>
+          {reactionPortal}
+        </>
       );
     }
 
     // ── Escala 1–5 ────────────────────────────────────
     if (questionType === "scale") {
       return (
-        <div className="gc-play">
-          <div className="gc-info-bar">Selecciona tu valoración</div>
-          <div className="gc-timer-track" aria-hidden="true"><div className="gc-timer-fill" style={{ animationDuration: `${questionTimeRef.current}s` }} /></div>
-          <div className="gc-scale-grid" role="group" aria-label="Escala de valoración">
-            {["1","2","3","4","5"].map((n) => (
-              <button
-                key={n}
-                className="gc-scale-btn"
-                onPointerDown={() => submitToServer(n)}
-                aria-label={`Valoración ${n} de 5`}
-              >
-                {n}
-              </button>
-            ))}
+        <>
+          <div className="gc-play">
+            <div className="gc-info-bar">Selecciona tu valoración</div>
+            <div className="gc-timer-track" aria-hidden="true"><div className="gc-timer-fill" style={{ animationDuration: `${questionTimeRef.current}s` }} /></div>
+            <div className="gc-scale-grid" role="group" aria-label="Escala de valoración">
+              {["1","2","3","4","5"].map((n) => (
+                <button
+                  key={n}
+                  className="gc-scale-btn"
+                  onPointerDown={() => submitToServer(n)}
+                  aria-label={`Valoración ${n} de 5`}
+                >
+                  {n}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+          {reactionPortal}
+        </>
       );
     }
 
@@ -339,6 +379,7 @@ export default function GameController() {
     }
 
     return (
+      <>
       <div className="gc-play">
         {/* Instruction bar */}
         <div className="gc-info-bar">
@@ -399,48 +440,56 @@ export default function GameController() {
           </motion.button>
         )}
       </div>
+      {reactionPortal}
+    </>
     );
   }
 
   // ─── Waiting (between questions) ─────────────────────
   if (gameState === "waiting") {
     return (
-      <div className="gc-state gc-state--waiting" role="status" aria-live="polite">
-        <div className="gc-bg" aria-hidden="true">
-          <div className="gc-blob gc-blob-1" /><div className="gc-blob gc-blob-2" /><div className="gc-blob gc-blob-3" />
+      <>
+        <div className="gc-state gc-state--waiting" role="status" aria-live="polite">
+          <div className="gc-bg" aria-hidden="true">
+            <div className="gc-blob gc-blob-1" /><div className="gc-blob gc-blob-2" /><div className="gc-blob gc-blob-3" />
+          </div>
+          <div className="gc-state-icon-wrap gc-state-icon-wrap--neutral gc-waiting-icon" aria-hidden="true">
+            <Eye size={32} />
+          </div>
+          <h2 className="gc-state-title gc-waiting-title">
+            ¡Atento a la pantalla!
+          </h2>
+          <p className="gc-state-sub gc-waiting-sub">
+            La siguiente pregunta está por salir
+          </p>
+          <div className="gc-name-chip gc-waiting-chip" aria-label={`Jugando como ${myName}`}>
+            {myName}
+          </div>
         </div>
-        <div className="gc-state-icon-wrap gc-state-icon-wrap--neutral gc-waiting-icon" aria-hidden="true">
-          <Eye size={32} />
-        </div>
-        <h2 className="gc-state-title gc-waiting-title">
-          ¡Atento a la pantalla!
-        </h2>
-        <p className="gc-state-sub gc-waiting-sub">
-          La siguiente pregunta está por salir
-        </p>
-        <div className="gc-name-chip gc-waiting-chip" aria-label={`Jugando como ${myName}`}>
-          {myName}
-        </div>
-      </div>
+        {reactionPortal}
+      </>
     );
   }
 
   // ─── Submitted ───────────────────────────────────────
   if (gameState === "submitted") {
     return (
-      <div className="gc-state gc-state--waiting" role="status" aria-live="polite">
-        <div className="gc-bg" aria-hidden="true">
-          <div className="gc-blob gc-blob-1" /><div className="gc-blob gc-blob-2" /><div className="gc-blob gc-blob-3" />
+      <>
+        <div className="gc-state gc-state--waiting" role="status" aria-live="polite">
+          <div className="gc-bg" aria-hidden="true">
+            <div className="gc-blob gc-blob-1" /><div className="gc-blob gc-blob-2" /><div className="gc-blob gc-blob-3" />
+          </div>
+          <div className="gc-state-icon-wrap gc-state-icon-wrap--primary gc-anim-pop" aria-hidden="true">
+            <Check size={34} strokeWidth={3} />
+          </div>
+          <h2 className="gc-state-title gc-anim-fade-up">¡Respuesta enviada!</h2>
+          <div className="gc-dots gc-anim-fade" aria-hidden="true">
+            <span className="gc-dot" /><span className="gc-dot" /><span className="gc-dot" />
+          </div>
+          <p className="gc-state-sub gc-anim-fade">Esperando al resto...</p>
         </div>
-        <div className="gc-state-icon-wrap gc-state-icon-wrap--primary gc-anim-pop" aria-hidden="true">
-          <Check size={34} strokeWidth={3} />
-        </div>
-        <h2 className="gc-state-title gc-anim-fade-up">¡Respuesta enviada!</h2>
-        <div className="gc-dots gc-anim-fade" aria-hidden="true">
-          <span className="gc-dot" /><span className="gc-dot" /><span className="gc-dot" />
-        </div>
-        <p className="gc-state-sub gc-anim-fade">Esperando al resto...</p>
-      </div>
+        {reactionPortal}
+      </>
     );
   }
 
@@ -449,25 +498,29 @@ export default function GameController() {
     // Encuesta / escala — pantalla neutra, sin correcto/incorrecto
     if (questionType === "poll" || questionType === "scale") {
       return (
-        <div className="gc-state gc-state--waiting" role="status">
-          <div className="gc-bg" aria-hidden="true">
-            <div className="gc-blob gc-blob-1" /><div className="gc-blob gc-blob-2" /><div className="gc-blob gc-blob-3" />
+        <>
+          <div className="gc-state gc-state--waiting" role="status">
+            <div className="gc-bg" aria-hidden="true">
+              <div className="gc-blob gc-blob-1" /><div className="gc-blob gc-blob-2" /><div className="gc-blob gc-blob-3" />
+            </div>
+            <div className="gc-state-icon-wrap gc-state-icon-wrap--primary gc-anim-pop" aria-hidden="true">
+              <Check size={34} strokeWidth={3} />
+            </div>
+            <h1 className="gc-state-title gc-result-title-anim">
+              ¡Respuesta registrada!
+            </h1>
+            <p className="gc-total-score gc-result-score-anim">
+              Total: <strong>{resultData.totalScore} pts</strong>
+            </p>
           </div>
-          <div className="gc-state-icon-wrap gc-state-icon-wrap--primary gc-anim-pop" aria-hidden="true">
-            <Check size={34} strokeWidth={3} />
-          </div>
-          <h1 className="gc-state-title gc-result-title-anim">
-            ¡Respuesta registrada!
-          </h1>
-          <p className="gc-total-score gc-result-score-anim">
-            Total: <strong>{resultData.totalScore} pts</strong>
-          </p>
-        </div>
+          {reactionPortal}
+        </>
       );
     }
 
     const isCorrect = resultData.isCorrect;
     return (
+      <>
       <div className={`gc-state gc-state--result ${isCorrect ? "gc-state--correct" : "gc-state--incorrect"}`}>
         <div className="gc-result-circle gc-result-circle-anim" aria-hidden="true">
           {isCorrect
@@ -489,8 +542,9 @@ export default function GameController() {
           Total: <strong>{resultData.totalScore} pts</strong>
         </p>
 
-
       </div>
+      {reactionPortal}
+      </>
     );
   }
 
