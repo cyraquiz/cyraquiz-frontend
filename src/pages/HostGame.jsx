@@ -79,6 +79,7 @@ export default function HostGame() {
   const [stats,                setStats]                = useState([0, 0, 0, 0]);
   const [reactions,            setReactions]            = useState([]);
   const [textAnswers,          setTextAnswers]          = useState([]);
+  const [drawings,             setDrawings]             = useState([]);
 
   const [playCountdown, { stop: stopCountdown }] = useSound("/countdown.wav",  { volume: 0.6 });
   const [playResultSound]                        = useSound("/result.mp3",      { volume: 0.7 });
@@ -160,6 +161,7 @@ export default function HostGame() {
     setAnswersCount(0);
     setStats(Array.from({ length: (q.options || []).length }, () => 0));
     setTextAnswers([]);
+    setDrawings([]);
     const questionTime = speedMode ? 5 : (q.time || 20);
     setTimeLeft(questionTime);
     socket.emit("send_question", {
@@ -201,6 +203,13 @@ export default function HostGame() {
     };
     socket.on("reaction", onReaction);
     return () => socket.off("reaction", onReaction);
+  }, []);
+
+  // ─── Draw It drawings ────────────────────────────────
+  useEffect(() => {
+    const onDrawing = (drawing) => setDrawings(prev => [...prev, drawing]);
+    socket.on("drawing_received", onDrawing);
+    return () => socket.off("drawing_received", onDrawing);
   }, []);
 
   // Word cloud data (text-type questions)
@@ -510,8 +519,38 @@ export default function HostGame() {
           </div>
         )}
 
+        {/* Draw It — galería de dibujos */}
+        {currentQ.type === "draw" && (
+          <div className="hg-draw-area">
+            {!isShowingResult && (
+              <p className="hg-draw-waiting">
+                ✏️ Esperando dibujos… {drawings.length > 0 && `(${drawings.length} recibido${drawings.length !== 1 ? "s" : ""})`}
+              </p>
+            )}
+            {(isShowingResult || drawings.length > 0) && (
+              <div className="hg-draw-gallery">
+                {drawings.map((d, i) => (
+                  <motion.div
+                    key={i}
+                    className="hg-draw-card"
+                    initial={{ opacity: 0, scale: 0.88 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.3, delay: i * 0.04 }}
+                  >
+                    <img src={d.imageData} alt={`Dibujo de ${d.playerName}`} className="hg-draw-img" />
+                    <span className="hg-draw-name">{d.playerName}</span>
+                  </motion.div>
+                ))}
+                {isShowingResult && drawings.length === 0 && (
+                  <p className="hg-draw-empty">Ningún estudiante envió un dibujo.</p>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Reveal para slider — sin opciones, sin tipo text */}
-        {isShowingResult && currentQ.type !== "text" && (!currentQ.options || currentQ.options.length === 0) && (
+        {isShowingResult && currentQ.type !== "text" && currentQ.type !== "draw" && (!currentQ.options || currentQ.options.length === 0) && (
           <motion.div
             className="hg-answer-reveal"
             initial={{ opacity: 0, y: 20 }}

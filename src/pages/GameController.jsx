@@ -53,8 +53,27 @@ export default function GameController() {
   const [usedPowerups,    setUsedPowerups]    = useState({ fifty_fifty: false, double: false, shield: false });
   const [examMode,        setExamMode]        = useState(false);
   const examModeRef = useRef(false);
+
+  // Draw It
+  const canvasRef       = useRef(null);
+  const isDrawingRef    = useRef(false);
+  const [drawColor,  setDrawColor]  = useState("#1a1a1a");
+  const [isEraser,   setIsEraser]   = useState(false);
+  const [hasDrawn,   setHasDrawn]   = useState(false);
   const [eliminatedOpts,  setEliminatedOpts]  = useState([]);
   const [armedPowerup,    setArmedPowerup]    = useState(null);
+
+  // Init draw canvas white background when draw question appears
+  useEffect(() => {
+    if (questionType !== "draw" || gameState !== "answering") return;
+    setHasDrawn(false);
+    setIsEraser(false);
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  }, [questionType, gameState]);
 
   // Reconnect
   useEffect(() => {
@@ -103,7 +122,7 @@ export default function GameController() {
       hasGameOverRef.current = false;
       const type = q?.type || "single";
       const hasOptions = Array.isArray(q?.options) && q.options.length > 0;
-      const optionless = type === "text" || type === "slider";
+      const optionless = type === "text" || type === "slider" || type === "draw";
 
       if (hasOptions || optionless) {
         ghostCaptureRef.current.push(q);
@@ -366,6 +385,141 @@ export default function GameController() {
               >
                 <Send size={16} aria-hidden="true" />
                 <span>Enviar respuesta</span>
+              </motion.button>
+            </div>
+          </div>
+          {reactionPortal}
+        </>
+      );
+    }
+
+    // ── Dibujo libre ───────────────────────────────────
+    if (questionType === "draw") {
+      const DRAW_COLORS = ["#1a1a1a","#e74c3c","#2980b9","#27ae60","#f39c12","#8e44ad"];
+
+      const getPos = (e, canvas) => {
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width  / rect.width;
+        const scaleY = canvas.height / rect.height;
+        const src = e.touches ? e.touches[0] : e;
+        return { x: (src.clientX - rect.left) * scaleX, y: (src.clientY - rect.top) * scaleY };
+      };
+
+      const onStartDraw = (e) => {
+        e.preventDefault();
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        const pos = getPos(e, canvas);
+        const ctx = canvas.getContext("2d");
+        isDrawingRef.current = true;
+        ctx.beginPath();
+        ctx.moveTo(pos.x, pos.y);
+      };
+
+      const onDraw = (e) => {
+        if (!isDrawingRef.current) return;
+        e.preventDefault();
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        const ctx = canvas.getContext("2d");
+        const pos = getPos(e, canvas);
+        ctx.strokeStyle = isEraser ? "#ffffff" : drawColor;
+        ctx.lineWidth   = isEraser ? 28 : 5;
+        ctx.lineCap     = "round";
+        ctx.lineJoin    = "round";
+        ctx.lineTo(pos.x, pos.y);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(pos.x, pos.y);
+        if (!hasDrawn) setHasDrawn(true);
+      };
+
+      const onEndDraw = () => { isDrawingRef.current = false; };
+
+      const clearCanvas = () => {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        const ctx = canvas.getContext("2d");
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        setHasDrawn(false);
+      };
+
+      const submitDraw = () => {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        const imageData = canvas.toDataURL("image/jpeg", 0.72);
+        socket.emit("submit_draw", {
+          roomCode: pin,
+          playerName: myName,
+          avatar: localStorage.getItem("join_avatar") || "",
+          imageData,
+        });
+        setGameState("submitted");
+      };
+
+      return (
+        <>
+          <div className="gc-play gc-play--draw">
+            <div className="gc-info-bar">✏️ Dibuja tu respuesta</div>
+            <div className="gc-timer-track" aria-hidden="true">
+              <div className="gc-timer-fill" style={{ animationDuration: `${questionTimeRef.current}s` }} />
+            </div>
+
+            <div className="gc-draw-wrap">
+              <canvas
+                ref={canvasRef}
+                width={560}
+                height={340}
+                className="gc-draw-canvas"
+                onMouseDown={onStartDraw}
+                onMouseMove={onDraw}
+                onMouseUp={onEndDraw}
+                onMouseLeave={onEndDraw}
+                onTouchStart={onStartDraw}
+                onTouchMove={onDraw}
+                onTouchEnd={onEndDraw}
+                aria-label="Lienzo de dibujo"
+                style={{ background: "#fff" }}
+              />
+
+              <div className="gc-draw-tools">
+                <div className="gc-draw-colors">
+                  {DRAW_COLORS.map(c => (
+                    <button
+                      key={c}
+                      className={`gc-draw-color${drawColor === c && !isEraser ? " gc-draw-color--active" : ""}`}
+                      style={{ background: c }}
+                      onClick={() => { setDrawColor(c); setIsEraser(false); }}
+                      aria-label={`Color ${c}`}
+                    />
+                  ))}
+                </div>
+                <div className="gc-draw-actions">
+                  <button
+                    className={`gc-draw-tool-btn${isEraser ? " gc-draw-tool-btn--active" : ""}`}
+                    onClick={() => setIsEraser(v => !v)}
+                    aria-pressed={isEraser}
+                  >
+                    Borrador
+                  </button>
+                  <button className="gc-draw-tool-btn" onClick={clearCanvas}>
+                    Limpiar
+                  </button>
+                </div>
+              </div>
+
+              <motion.button
+                className={`gc-submit${hasDrawn ? " gc-submit--ready" : ""}`}
+                onClick={submitDraw}
+                disabled={!hasDrawn}
+                initial={{ y: 40, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ duration: 0.36, ease: [0.16, 1, 0.3, 1] }}
+                aria-label="Enviar dibujo"
+              >
+                <Send size={16} aria-hidden="true" />
+                <span>Enviar dibujo</span>
               </motion.button>
             </div>
           </div>

@@ -5,7 +5,7 @@ import {
   ArrowLeft, Save, Play, Clock, Trophy, ChevronDown,
   Trash2, Plus, Check, FileQuestion, Copy, GripVertical,
   X, List, Layers, ToggleLeft,
-  BarChart2, Star, AlignLeft, SlidersHorizontal, ImageIcon,
+  BarChart2, Star, AlignLeft, SlidersHorizontal, ImageIcon, Pencil,
 } from "lucide-react";
 import {
   DndContext, closestCenter,
@@ -32,6 +32,7 @@ const TYPE_OPTIONS = [
   { value: "scale",   label: "Escala 1–5",          desc: "Sin puntos",         icon: <Star size={13} /> },
   { value: "text",    label: "Respuesta escrita",   desc: "Texto libre",        icon: <AlignLeft size={13} /> },
   { value: "slider",  label: "Deslizador",          desc: "Rango numérico",     icon: <SlidersHorizontal size={13} /> },
+  { value: "draw",    label: "Dibujo libre",         desc: "Canvas táctil",      icon: <Pencil size={13} /> },
 ];
 
 const TIME_OPTIONS = [
@@ -287,6 +288,10 @@ export default function EditQuiz() {
         q.answer = "50";
         q.min = 0;
         q.max = 100;
+      } else if (newType === "draw") {
+        q.options = [];
+        q.answer = "__draw__";
+        q.points = 0;
       }
       updated[qIndex] = q;
       return updated;
@@ -878,6 +883,14 @@ export default function EditQuiz() {
                         <SlidersHorizontal size={12} aria-hidden="true" />
                         <span>Solo la respuesta exacta otorga puntos</span>
                       </p>
+                    </div>
+                  )}
+
+                  {/* === draw → canvas note === */}
+                  {q.type === "draw" && (
+                    <div className="eq-draw-note">
+                      <Pencil size={14} aria-hidden="true" />
+                      <p>Los estudiantes dibujan en un lienzo táctil. Sin corrección automática — los dibujos aparecen en pantalla del profesor al revelar.</p>
                     </div>
                   )}
 

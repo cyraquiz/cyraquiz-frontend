@@ -1192,3 +1192,79 @@
   letter-spacing: 0.02em;
   white-space: nowrap;
 }
+
+/* ─── Draw It ─────────────────────────────────────────── */
+.gc-play--draw {
+  padding-bottom: 1rem;
+}
+
+.gc-draw-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0 0.5rem;
+  width: 100%;
+}
+
+.gc-draw-canvas {
+  width: 100%;
+  max-width: 560px;
+  height: auto;
+  aspect-ratio: 560 / 340;
+  border-radius: 12px;
+  border: 2px solid rgba(0,0,0,0.12);
+  touch-action: none;
+  cursor: crosshair;
+  display: block;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.10);
+}
+
+.gc-draw-tools {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.gc-draw-colors {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.gc-draw-color {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: transform 0.14s, border-color 0.14s;
+}
+
+.gc-draw-color:hover { transform: scale(1.18); }
+.gc-draw-color--active {
+  border-color: #fff;
+  box-shadow: 0 0 0 2px rgba(0,0,0,0.35);
+  transform: scale(1.12);
+}
+
+.gc-draw-actions {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.gc-draw-tool-btn {
+  padding: 0.35rem 0.85rem;
+  border-radius: 8px;
+  border: 1.5px solid rgba(255,255,255,0.22);
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.gc-draw-tool-btn:hover    { background: rgba(255,255,255,0.2); }
+.gc-draw-tool-btn--active  { background: rgba(255,255,255,0.28); border-color: rgba(255,255,255,0.5); }
