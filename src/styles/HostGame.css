@@ -1010,3 +1010,182 @@
 .hg-main--hidden {
   display: none;
 }
+
+/* ─── Tournament Badge ────────────────────────────────── */
+.hg-tournament-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.55rem;
+  background: oklch(0.52 0.22 55);
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  border-radius: 999px;
+  text-transform: uppercase;
+  line-height: 1;
+  margin-left: 0.4rem;
+}
+
+/* ─── Round Over button variant ──────────────────────── */
+.hg-btn-round-over {
+  background: oklch(0.52 0.22 55) !important;
+}
+
+/* ─── Bracket overlay ─────────────────────────────────── */
+.hg-bracket-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(0,0,0,0.72);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+.hg-bracket-modal {
+  background: var(--surface);
+  border-radius: 20px;
+  padding: 2rem 1.75rem;
+  max-width: 520px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.35);
+}
+
+.hg-bracket-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.hg-bracket-trophy { font-size: 1.5rem; }
+
+.hg-bracket-title {
+  font-size: 1.2rem;
+  font-weight: 800;
+  font-family: var(--font-heading);
+  color: var(--text-main);
+  margin: 0;
+}
+
+.hg-bracket-champion {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 1rem;
+  background: oklch(0.98 0.06 55);
+  border-radius: 14px;
+  border: 2px solid oklch(0.85 0.18 55);
+}
+
+.hg-bracket-champion-crown { font-size: 2.5rem; }
+
+.hg-bracket-champion-name {
+  font-size: 1.5rem;
+  font-weight: 900;
+  font-family: var(--font-heading);
+  color: oklch(0.40 0.20 55);
+}
+
+.hg-bracket-matches {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.hg-bracket-match {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: oklch(0.97 0.004 252);
+  border-radius: 12px;
+  padding: 0.6rem 0.75rem;
+}
+
+.hg-bracket-player {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.6rem;
+  border-radius: 8px;
+  transition: background 0.15s;
+}
+
+.hg-bracket-player--winner {
+  background: oklch(0.92 0.10 145);
+  color: oklch(0.35 0.18 145);
+  font-weight: 700;
+}
+
+.hg-bracket-player--loser {
+  opacity: 0.45;
+}
+
+.hg-bracket-player--bye {
+  opacity: 0.3;
+  font-style: italic;
+}
+
+.hg-bracket-player-name {
+  flex: 1;
+  font-size: 0.9rem;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hg-bracket-player-score {
+  font-size: 0.85rem;
+  font-weight: 800;
+  font-family: var(--font-mono, monospace);
+}
+
+.hg-bracket-win-mark {
+  font-size: 0.8rem;
+  color: oklch(0.50 0.20 145);
+  font-weight: 900;
+}
+
+.hg-bracket-vs {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0 0.1rem;
+  flex-shrink: 0;
+}
+
+.hg-bracket-btn {
+  padding: 0.75rem 1.5rem;
+  background: oklch(0.52 0.22 258);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.12s;
+  align-self: flex-end;
+}
+
+.hg-bracket-btn:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.hg-bracket-btn--champion {
+  background: oklch(0.52 0.22 55);
+  align-self: center;
+  width: 100%;
+  text-align: center;
+  font-size: 1rem;
+  padding: 0.85rem;
+}

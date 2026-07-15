@@ -54,6 +54,11 @@ export default function GameController() {
   const [examMode,        setExamMode]        = useState(false);
   const examModeRef = useRef(false);
 
+  // Tournament state
+  const [opponent,          setOpponent]          = useState(null); // { name, avatar }
+  const [tournamentResult,  setTournamentResult]  = useState(null); // "advancing" | "eliminated"
+  const [tournamentRound,   setTournamentRound]   = useState(null);
+
   // Draw It
   const canvasRef       = useRef(null);
   const isDrawingRef    = useRef(false);
@@ -239,22 +244,36 @@ export default function GameController() {
       else if (type === "double" || type === "shield") setArmedPowerup(type);
     };
 
-    socket.on("new_question",    onNewQuestion);
-    socket.on("answer_result",   onAnswerResult);
-    socket.on("reveal_results",  onRevealResults);
-    socket.on("final_results",   onFinalResults);
-    socket.on("team_results",    onTeamResults);
-    socket.on("game_cancelled",  onGameCancelled);
-    socket.on("powerup_applied", onPowerupApplied);
+    const onTournamentOpponent = ({ opponent: opp, round }) => {
+      setOpponent(opp);
+      setTournamentRound(round);
+      setTournamentResult(null); // clear result from previous round
+    };
+
+    const onTournamentRoundResult = ({ result, round }) => {
+      setTournamentResult(result); // "advancing" | "eliminated"
+    };
+
+    socket.on("new_question",             onNewQuestion);
+    socket.on("answer_result",            onAnswerResult);
+    socket.on("reveal_results",           onRevealResults);
+    socket.on("final_results",            onFinalResults);
+    socket.on("team_results",             onTeamResults);
+    socket.on("game_cancelled",           onGameCancelled);
+    socket.on("powerup_applied",          onPowerupApplied);
+    socket.on("tournament_opponent",      onTournamentOpponent);
+    socket.on("tournament_round_result",  onTournamentRoundResult);
 
     return () => {
-      socket.off("new_question",    onNewQuestion);
-      socket.off("answer_result",   onAnswerResult);
-      socket.off("reveal_results",  onRevealResults);
-      socket.off("final_results",   onFinalResults);
-      socket.off("team_results",    onTeamResults);
-      socket.off("game_cancelled",  onGameCancelled);
-      socket.off("powerup_applied", onPowerupApplied);
+      socket.off("new_question",             onNewQuestion);
+      socket.off("answer_result",            onAnswerResult);
+      socket.off("reveal_results",           onRevealResults);
+      socket.off("final_results",            onFinalResults);
+      socket.off("team_results",             onTeamResults);
+      socket.off("game_cancelled",           onGameCancelled);
+      socket.off("powerup_applied",          onPowerupApplied);
+      socket.off("tournament_opponent",      onTournamentOpponent);
+      socket.off("tournament_round_result",  onTournamentRoundResult);
     };
   }, [myName, navigate]);
 
@@ -686,12 +705,45 @@ export default function GameController() {
 
   // ─── Waiting (between questions) ─────────────────────
   if (gameState === "waiting") {
+    // Tournament round result screen
+    if (tournamentResult) {
+      const advancing = tournamentResult === "advancing";
+      return (
+        <div className={`gc-state ${advancing ? "gc-state--correct" : "gc-state--wrong"}`} role="status">
+          <div className="gc-bg" aria-hidden="true">
+            <div className="gc-blob gc-blob-1" /><div className="gc-blob gc-blob-2" /><div className="gc-blob gc-blob-3" />
+          </div>
+          <div className={`gc-state-icon-wrap ${advancing ? "gc-state-icon-wrap--correct gc-anim-pop" : "gc-state-icon-wrap--wrong"}`} aria-hidden="true">
+            {advancing ? <Trophy size={34} strokeWidth={2.5} /> : <X size={34} strokeWidth={3} />}
+          </div>
+          <h2 className="gc-state-title">
+            {advancing ? "¡Avanzas!" : "Eliminado"}
+          </h2>
+          <p className="gc-state-sub">
+            {advancing ? "Sigues en el torneo — espera la siguiente ronda" : "Has sido eliminado de la competencia"}
+          </p>
+          {opponent && (
+            <div className="gc-tournament-rival gc-tournament-rival--result">
+              <span className="gc-tournament-rival-label">Tu rival era:</span>
+              <span className="gc-tournament-rival-name">{opponent.name}</span>
+            </div>
+          )}
+        </div>
+      );
+    }
+
     return (
       <>
         <div className="gc-state gc-state--waiting" role="status" aria-live="polite">
           <div className="gc-bg" aria-hidden="true">
             <div className="gc-blob gc-blob-1" /><div className="gc-blob gc-blob-2" /><div className="gc-blob gc-blob-3" />
           </div>
+          {opponent && (
+            <div className="gc-tournament-rival" aria-label={`Tu rival: ${opponent.name}`}>
+              <span className="gc-tournament-rival-label">🏆 Tu rival:</span>
+              <span className="gc-tournament-rival-name">{opponent.name}</span>
+            </div>
+          )}
           <div className="gc-state-icon-wrap gc-state-icon-wrap--neutral gc-waiting-icon" aria-hidden="true">
             <Eye size={32} />
           </div>

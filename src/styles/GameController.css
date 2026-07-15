@@ -1268,3 +1268,33 @@
 
 .gc-draw-tool-btn:hover    { background: rgba(255,255,255,0.2); }
 .gc-draw-tool-btn--active  { background: rgba(255,255,255,0.28); border-color: rgba(255,255,255,0.5); }
+
+/* ─── Tournament rival banner ────────────────────────── */
+.gc-tournament-rival {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0.85rem;
+  background: rgba(255,255,255,0.18);
+  border: 1.5px solid rgba(255,255,255,0.30);
+  border-radius: 999px;
+  font-size: 0.82rem;
+  color: #fff;
+  font-weight: 600;
+  backdrop-filter: blur(6px);
+  margin-bottom: 0.25rem;
+}
+
+.gc-tournament-rival--result {
+  margin-top: 1rem;
+  background: rgba(0,0,0,0.15);
+}
+
+.gc-tournament-rival-label {
+  opacity: 0.8;
+  font-weight: 500;
+}
+
+.gc-tournament-rival-name {
+  font-weight: 800;
+}

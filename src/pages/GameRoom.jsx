@@ -63,6 +63,10 @@ export default function GameRoom() {
   // Exam Mode
   const [examMode, setExamMode] = useState(false);
 
+  // Tournament Mode
+  const [tournamentMode,        setTournamentMode]        = useState(false);
+  const [questionsPerRound,     setQuestionsPerRound]     = useState(3);
+
   // Team mode state
   const [teamPanelOpen,   setTeamPanelOpen]   = useState(false);
   const [teamCount,        setTeamCount]        = useState(2);
@@ -159,6 +163,11 @@ export default function GameRoom() {
     setIsStarting(true);
     stopLobby();
     if (examMode) socket.emit("enable_exam", { roomCode, hostToken: hostTokenRef.current });
+    if (tournamentMode) socket.emit("enable_tournament", {
+      roomCode,
+      hostToken: hostTokenRef.current,
+      questionsPerRound,
+    });
     socket.emit("start_game", roomCode);
     navigate(`/host-game/${roomCode}`, {
       state: {
@@ -171,6 +180,8 @@ export default function GameRoom() {
         powerUpsEnabled: powerupsConfirmed,
         speedMode,
         examMode,
+        tournamentMode,
+        questionsPerRound,
       },
     });
   };
@@ -508,6 +519,42 @@ export default function GameRoom() {
             {examMode ? "Activado" : "Activar"}
           </button>
         </div>
+
+        {/* Tournament Mode */}
+        <div className="gr-speed-bar">
+          <div className="gr-speed-info">
+            <span className="gr-speed-icon" aria-hidden="true">🏆</span>
+            <div>
+              <strong className="gr-speed-name">Modo Torneo</strong>
+              <span className="gr-speed-desc">Brackets eliminatorios · rival asignado por pregunta</span>
+            </div>
+          </div>
+          <button
+            className={`gr-team-toggle${tournamentMode ? " gr-team-toggle--active" : ""}`}
+            onClick={() => setTournamentMode(v => !v)}
+            aria-pressed={tournamentMode}
+          >
+            {tournamentMode ? <Check size={14} /> : <Zap size={14} />}
+            {tournamentMode ? "Activado" : "Activar"}
+          </button>
+        </div>
+
+        {tournamentMode && (
+          <div className="gr-tournament-config">
+            <span className="gr-tournament-config-label">Preguntas por ronda:</span>
+            <div className="gr-tournament-config-btns">
+              {[2, 3, 5, 10].map(n => (
+                <button
+                  key={n}
+                  className={`gr-tournament-config-btn${questionsPerRound === n ? " gr-tournament-config-btn--active" : ""}`}
+                  onClick={() => setQuestionsPerRound(n)}
+                >
+                  {n}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Music selector */}
         <div className="gr-music-section" aria-label="Música durante preguntas">

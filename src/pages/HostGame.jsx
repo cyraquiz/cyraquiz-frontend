@@ -73,8 +73,10 @@ export default function HostGame() {
   const hostToken       = location.state?.hostToken;
   const questionsList   = quizData?.questions || quizData?.questionsData || [];
   const questionMusicUrl = location.state?.questionMusic || "/question.mp3";
-  const speedMode        = location.state?.speedMode || false;
-  const examMode         = location.state?.examMode  || false;
+  const speedMode          = location.state?.speedMode        || false;
+  const examMode           = location.state?.examMode         || false;
+  const tournamentMode     = location.state?.tournamentMode   || false;
+  const questionsPerRound  = location.state?.questionsPerRound || 3;
 
   const videoUrl  = quizData?.video_url || "";
   const videoMode = !!extractYouTubeId(videoUrl);
@@ -100,6 +102,14 @@ export default function HostGame() {
   const [textAnswers,          setTextAnswers]          = useState([]);
   const [drawings,             setDrawings]             = useState([]);
   const [videoPhase,           setVideoPhase]           = useState(videoMode ? "playing" : "idle");
+
+  // Tournament state
+  const [bracket,              setBracket]              = useState([]);
+  const [roundResults,         setRoundResults]         = useState(null); // null = no round over yet
+  const [currentTRound,        setCurrentTRound]        = useState(1);
+  const [questionsInRound,     setQuestionsInRound]     = useState(0);
+  const [isChampion,           setIsChampion]           = useState(false);
+  const [champion,             setChampion]             = useState(null);
 
   const videoPlayerRef = useRef(null);
   const videoQIndexRef = useRef(0);
@@ -185,6 +195,7 @@ export default function HostGame() {
     nextLocked.current = false;
     setIsShowingResult(false);
     setAnswersCount(0);
+    if (tournamentMode) setQuestionsInRound(prev => prev + 1);
     setStats(Array.from({ length: (q.options || []).length }, () => 0));
     setTextAnswers([]);
     setDrawings([]);
@@ -363,6 +374,43 @@ export default function HostGame() {
     return () => clearTimeout(t);
   }, [isShowingResult, videoMode, currentQuestionIndex, videoTimedQuestions.length]);
 
+  // ─── Tournament socket listeners ──────────────────────
+  useEffect(() => {
+    if (!tournamentMode) return;
+    const onBracket = ({ bracket: b, round, questionsPerRound: qpr }) => {
+      setBracket(b);
+      setCurrentTRound(round);
+    };
+    const onRoundOver = (data) => {
+      setRoundResults(data);
+      if (data.isChampion) { setIsChampion(true); setChampion(data.champion); }
+      else { setBracket(data.nextBracket); }
+    };
+    const onNextRound = ({ bracket: b, round }) => {
+      setBracket(b);
+      setCurrentTRound(round);
+      setRoundResults(null);
+      setQuestionsInRound(0);
+    };
+    socket.on("tournament_bracket", onBracket);
+    socket.on("round_over",         onRoundOver);
+    socket.on("tournament_next_round", onNextRound);
+    return () => {
+      socket.off("tournament_bracket",    onBracket);
+      socket.off("round_over",            onRoundOver);
+      socket.off("tournament_next_round", onNextRound);
+    };
+  }, [tournamentMode]);
+
+  const handleEndRound = () => {
+    socket.emit("end_round", { roomCode, hostToken });
+  };
+
+  const handleStartNextRound = () => {
+    socket.emit("start_next_round", { roomCode, hostToken });
+    nextLocked.current = false;
+  };
+
   const formatTime = (s) => {
     if (s === null) return "···";
     if (s < 60) return s;
@@ -456,24 +504,44 @@ export default function HostGame() {
             {videoMode && (
               <span className="hg-video-badge" aria-label="Video Quiz activo">🎬 VIDEO</span>
             )}
+            {tournamentMode && (
+              <span className="hg-tournament-badge" aria-label="Modo Torneo activo">
+                🏆 R{currentTRound}
+              </span>
+            )}
           </div>
         </div>
 
         <div className="hg-nav-right">
           <AnimatePresence>
             {isShowingResult && !speedMode && !videoMode && (
-              <motion.button
-                className="hg-btn-next"
-                onClick={handleNext}
-                initial={{ opacity: 0, x: 18, scale: 0.88 }}
-                animate={{ opacity: 1, x: 0,  scale: 1    }}
-                exit={{    opacity: 0, x: 12, scale: 0.92 }}
-                transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-                aria-label={isLastQuestion ? "Ver podio final" : "Siguiente pregunta"}
-              >
-                <span>{isLastQuestion ? "Ver podio" : "Siguiente"}</span>
-                <ChevronRight size={15} aria-hidden="true" />
-              </motion.button>
+              tournamentMode && questionsInRound >= questionsPerRound ? (
+                <motion.button
+                  className="hg-btn-next hg-btn-round-over"
+                  onClick={handleEndRound}
+                  initial={{ opacity: 0, x: 18, scale: 0.88 }}
+                  animate={{ opacity: 1, x: 0,  scale: 1    }}
+                  exit={{    opacity: 0, x: 12, scale: 0.92 }}
+                  transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                  aria-label="Ver resultados de la ronda"
+                >
+                  <span>Fin de Ronda</span>
+                  <ChevronRight size={15} aria-hidden="true" />
+                </motion.button>
+              ) : (
+                <motion.button
+                  className="hg-btn-next"
+                  onClick={handleNext}
+                  initial={{ opacity: 0, x: 18, scale: 0.88 }}
+                  animate={{ opacity: 1, x: 0,  scale: 1    }}
+                  exit={{    opacity: 0, x: 12, scale: 0.92 }}
+                  transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                  aria-label={isLastQuestion ? "Ver podio final" : "Siguiente pregunta"}
+                >
+                  <span>{isLastQuestion ? "Ver podio" : "Siguiente"}</span>
+                  <ChevronRight size={15} aria-hidden="true" />
+                </motion.button>
+              )
             )}
           </AnimatePresence>
         </div>
@@ -699,6 +767,77 @@ export default function HostGame() {
 
       </>)}
       </main>
+
+      {/* ─ Tournament bracket overlay ───────────────── */}
+      <AnimatePresence>
+        {roundResults && (
+          <motion.div
+            className="hg-bracket-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+          >
+            <motion.div
+              className="hg-bracket-modal"
+              initial={{ scale: 0.88, y: 30 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.92, y: 20 }}
+              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <div className="hg-bracket-header">
+                <span className="hg-bracket-trophy">🏆</span>
+                {isChampion ? (
+                  <h2 className="hg-bracket-title">¡Tenemos un campeón!</h2>
+                ) : (
+                  <h2 className="hg-bracket-title">Ronda {roundResults.round} — Resultados</h2>
+                )}
+              </div>
+
+              {isChampion && champion && (
+                <div className="hg-bracket-champion">
+                  <span className="hg-bracket-champion-crown">👑</span>
+                  <span className="hg-bracket-champion-name">{champion}</span>
+                </div>
+              )}
+
+              <div className="hg-bracket-matches">
+                {roundResults.matchResults.map((m, i) => (
+                  <div key={i} className="hg-bracket-match">
+                    <div className={`hg-bracket-player${m.winner === m.p1 ? " hg-bracket-player--winner" : " hg-bracket-player--loser"}`}>
+                      <span className="hg-bracket-player-name">{m.p1}</span>
+                      <span className="hg-bracket-player-score">{m.score1}</span>
+                      {m.winner === m.p1 && <span className="hg-bracket-win-mark">✓</span>}
+                    </div>
+                    <span className="hg-bracket-vs">vs</span>
+                    {m.p2 ? (
+                      <div className={`hg-bracket-player${m.winner === m.p2 ? " hg-bracket-player--winner" : " hg-bracket-player--loser"}`}>
+                        <span className="hg-bracket-player-name">{m.p2}</span>
+                        <span className="hg-bracket-player-score">{m.score2}</span>
+                        {m.winner === m.p2 && <span className="hg-bracket-win-mark">✓</span>}
+                      </div>
+                    ) : (
+                      <div className="hg-bracket-player hg-bracket-player--bye">
+                        <span className="hg-bracket-player-name">BYE</span>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {isChampion ? (
+                <button className="hg-bracket-btn hg-bracket-btn--champion" onClick={handleNext}>
+                  Ver podio final
+                </button>
+              ) : (
+                <button className="hg-bracket-btn" onClick={handleStartNextRound}>
+                  Siguiente Ronda →
+                </button>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ─ Bottom bar ───────────────────────────────── */}
       <div className="hg-bottom" role="toolbar" aria-label="Estado del juego">
