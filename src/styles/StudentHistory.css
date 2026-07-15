@@ -1,0 +1,246 @@
+/* ============================================
+   StudentHistory — historial del estudiante
+   ============================================ */
+
+.sh-page {
+  min-height: 100dvh;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, oklch(0.14 0.04 14) 0%, oklch(0.10 0.02 252) 100%);
+  padding: 1.5rem 1rem 3rem;
+}
+
+/* ─── Background blobs ────────────────────────────────── */
+.sh-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.sh-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(90px);
+  opacity: 0.15;
+}
+
+.sh-blob-1 {
+  width: 500px;
+  height: 500px;
+  background: oklch(0.55 0.24 30);
+  top: -150px;
+  left: -150px;
+}
+
+.sh-blob-2 {
+  width: 350px;
+  height: 350px;
+  background: oklch(0.45 0.18 255);
+  bottom: -100px;
+  right: -100px;
+}
+
+/* ─── Inner wrapper ───────────────────────────────────── */
+.sh-inner {
+  position: relative;
+  z-index: 1;
+  max-width: 640px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.4rem;
+}
+
+/* ─── Header ──────────────────────────────────────────── */
+.sh-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid oklch(1 0 0 / 0.08);
+}
+
+.sh-back,
+.sh-logout {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 0.35rem 0.7rem;
+  border-radius: 8px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.sh-back  { color: oklch(0.72 0.04 14); }
+.sh-back:hover  { background: oklch(1 0 0 / 0.06); color: #fff; }
+.sh-logout { color: oklch(0.65 0.18 30); }
+.sh-logout:hover { background: oklch(1 0 0 / 0.06); color: oklch(0.80 0.18 30); }
+
+.sh-header-center { text-align: center; }
+
+.sh-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+}
+
+.sh-sub {
+  font-size: 0.78rem;
+  color: oklch(0.65 0.04 14);
+  margin: 0.15rem 0 0;
+}
+
+/* ─── Stats row ───────────────────────────────────────── */
+.sh-stats {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.sh-stat {
+  flex: 1;
+  min-width: 90px;
+  background: oklch(1 0 0 / 0.06);
+  border: 1px solid oklch(1 0 0 / 0.09);
+  border-radius: 12px;
+  padding: 0.9rem 0.75rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.sh-stat strong {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1;
+}
+
+.sh-stat span {
+  font-size: 0.7rem;
+  color: oklch(0.6 0.04 14);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ─── Loading / error / empty ─────────────────────────── */
+.sh-loading,
+.sh-error {
+  text-align: center;
+  font-size: 0.9rem;
+  color: oklch(0.68 0.04 14);
+  padding: 2rem 0;
+}
+
+.sh-error { color: oklch(0.72 0.22 30); }
+
+.sh-empty {
+  text-align: center;
+  padding: 2.5rem 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.sh-empty p { color: oklch(0.68 0.04 14); margin: 0; }
+
+.sh-play-btn {
+  padding: 0.65rem 1.5rem;
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.18s;
+}
+
+.sh-play-btn:hover { background: var(--color-primary-light); }
+
+/* ─── Session list ────────────────────────────────────── */
+.sh-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.sh-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 1rem;
+  background: oklch(1 0 0 / 0.055);
+  border: 1px solid oklch(1 0 0 / 0.08);
+  border-radius: 12px;
+  gap: 0.75rem;
+  transition: background 0.15s;
+}
+
+.sh-card:hover { background: oklch(1 0 0 / 0.09); }
+
+.sh-card-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.sh-rank-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.2rem;
+  padding: 0.18em 0.4em;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  background: oklch(1 0 0 / 0.08);
+  color: oklch(0.7 0.04 14);
+  flex-shrink: 0;
+}
+
+.sh-rank-badge--top1 { background: oklch(0.82 0.20 88);  color: #1a1200; }
+.sh-rank-badge--top2 { background: oklch(0.72 0.01 252); color: #fff; }
+.sh-rank-badge--top3 { background: oklch(0.58 0.12 50);  color: #fff; }
+
+.sh-card-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.18rem;
+}
+
+.sh-room {
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.sh-date {
+  font-size: 0.72rem;
+  color: oklch(0.58 0.04 14);
+}
+
+.sh-card-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.15rem;
+}
+
+.sh-score {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1;
+}
+
+.sh-accuracy {
+  font-size: 0.7rem;
+  color: oklch(0.6 0.04 14);
+}

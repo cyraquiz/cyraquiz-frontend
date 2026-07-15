@@ -67,6 +67,8 @@ export default function HostGame() {
   const hostToken       = location.state?.hostToken;
   const questionsList   = quizData?.questions || quizData?.questionsData || [];
   const questionMusicUrl = location.state?.questionMusic || "/question.mp3";
+  const speedMode        = location.state?.speedMode || false;
+  const examMode         = location.state?.examMode  || false;
 
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [timeLeft,             setTimeLeft]             = useState(null);
@@ -158,11 +160,12 @@ export default function HostGame() {
     setAnswersCount(0);
     setStats(Array.from({ length: (q.options || []).length }, () => 0));
     setTextAnswers([]);
-    setTimeLeft(q.time || 20);
+    const questionTime = speedMode ? 5 : (q.time || 20);
+    setTimeLeft(questionTime);
     socket.emit("send_question", {
       roomCode,
       question: q,
-      time: q.time || 20,
+      time: questionTime,
       hostToken,
     });
     const onPlayerAnswered    = () => setAnswersCount(prev => prev + 1);
@@ -214,7 +217,7 @@ export default function HostGame() {
       .slice(0, 40);
   }, [textAnswers]);
 
-  const handleNext = () => {
+  const handleNext = useCallback(() => {
     if (nextLocked.current) return;
     nextLocked.current = true;
     if (currentQuestionIndex < questionsList.length - 1) {
@@ -223,12 +226,17 @@ export default function HostGame() {
       setAnswersCount(0);
       setCurrentQuestionIndex(prev => prev + 1);
     } else {
-      // Emit game_over while HostGame is still mounted so all sockets are
-      // guaranteed to be in the room before navigating away.
       socket.emit("game_over", { roomCode, hostToken });
       navigate(`/podium/${roomCode}`, { state: { quizData, players, hostToken } });
     }
-  };
+  }, [currentQuestionIndex, questionsList.length, roomCode, hostToken, quizData, players, navigate]);
+
+  // ─── Speed Round auto-advance ────────────────────────
+  useEffect(() => {
+    if (!speedMode || !isShowingResult) return;
+    const t = setTimeout(handleNext, 1500);
+    return () => clearTimeout(t);
+  }, [isShowingResult, speedMode, handleNext]);
 
   const formatTime = (s) => {
     if (s === null) return "···";
@@ -238,7 +246,7 @@ export default function HostGame() {
     return `${m}:${r < 10 ? "0" : ""}${r}`;
   };
 
-  const timerMax = currentQ?.time || 20;
+  const timerMax = speedMode ? 5 : (currentQ?.time || 20);
   const timerPct = timeLeft !== null ? (timeLeft / timerMax) * 100 : 100;
 
   const timerUrgency =
@@ -314,12 +322,18 @@ export default function HostGame() {
                 </span>
               </>
             )}
+            {speedMode && (
+              <span className="hg-speed-badge" aria-label="Speed Round activo">⚡ SPEED</span>
+            )}
+            {examMode && (
+              <span className="hg-exam-badge" aria-label="Modo Examen activo">📋 EXAMEN</span>
+            )}
           </div>
         </div>
 
         <div className="hg-nav-right">
           <AnimatePresence>
-            {isShowingResult && (
+            {isShowingResult && !speedMode && (
               <motion.button
                 className="hg-btn-next"
                 onClick={handleNext}

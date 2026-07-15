@@ -770,6 +770,25 @@
 .gc-btn-review:hover { opacity: 1; }
 .gc-btn-review:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
 
+.gc-btn-history {
+  margin-top: 0.5rem;
+  padding: 0.6rem 1.75rem;
+  border-radius: 100px;
+  border: none;
+  background: rgba(255,255,255,0.15);
+  font-family: var(--font-heading);
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  color: inherit;
+  opacity: 0.85;
+  transition: opacity 0.18s, background 0.18s;
+  min-height: 44px;
+}
+
+.gc-btn-history:hover { opacity: 1; background: rgba(255,255,255,0.22); }
+.gc-btn-history:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
+
 /* ─── Post-game review screen ────────────────────────── */
 .gc-review {
   min-height: 100dvh;

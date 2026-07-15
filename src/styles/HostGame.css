@@ -847,6 +847,45 @@
   will-change: transform, opacity;
 }
 
+/* ─── Speed badge ─────────────────────────────────────── */
+.hg-speed-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2em;
+  padding: 0.18em 0.55em;
+  background: oklch(0.58 0.24 30);
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  border-radius: 999px;
+  text-transform: uppercase;
+  line-height: 1;
+  margin-left: 0.4rem;
+  animation: hg-speed-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes hg-speed-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.65; }
+}
+
+.hg-exam-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2em;
+  padding: 0.18em 0.55em;
+  background: oklch(0.42 0.18 255);
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  border-radius: 999px;
+  text-transform: uppercase;
+  line-height: 1;
+  margin-left: 0.4rem;
+}
+
 /* ─── Reduced motion ──────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   .hg-countdown-num      { animation: none; }
@@ -855,4 +894,5 @@
   .hg-option             { transition: opacity 0.15s; }
   .hg-bottom-timer-num   { transition: none; }
   .hg-reaction-float     { display: none; }
+  .hg-speed-badge        { animation: none; }
 }

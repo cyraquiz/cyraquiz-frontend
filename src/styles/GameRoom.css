@@ -877,6 +877,45 @@
   margin: 0 0 0.75rem;
 }
 
+/* ─── Speed Round toggle ──────────────────────────────── */
+.gr-speed-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  margin-bottom: 0.75rem;
+}
+
+.gr-speed-info {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.gr-speed-icon {
+  font-size: 1.1rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.gr-speed-name {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-inverted);
+}
+
+.gr-speed-desc {
+  display: block;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-top: 0.1rem;
+}
+
 /* ─── Reduced motion ──────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   .gr-pin    { animation: none; }

@@ -57,6 +57,12 @@ export default function GameRoom() {
   const [powerupPanelOpen,   setPowerupPanelOpen]   = useState(false);
   const [powerupsConfirmed,  setPowerupsConfirmed]  = useState(false);
 
+  // Speed Round mode
+  const [speedMode, setSpeedMode] = useState(false);
+
+  // Exam Mode
+  const [examMode, setExamMode] = useState(false);
+
   // Team mode state
   const [teamPanelOpen,   setTeamPanelOpen]   = useState(false);
   const [teamCount,        setTeamCount]        = useState(2);
@@ -152,6 +158,7 @@ export default function GameRoom() {
     if (!roomCode || players.length === 0 || isStarting) return;
     setIsStarting(true);
     stopLobby();
+    if (examMode) socket.emit("enable_exam", { roomCode, hostToken: hostTokenRef.current });
     socket.emit("start_game", roomCode);
     navigate(`/host-game/${roomCode}`, {
       state: {
@@ -162,6 +169,8 @@ export default function GameRoom() {
         teams: teamsConfirmed ? activeTeams : undefined,
         questionMusic: selectedMusic,
         powerUpsEnabled: powerupsConfirmed,
+        speedMode,
+        examMode,
       },
     });
   };
@@ -460,6 +469,44 @@ export default function GameRoom() {
               </motion.div>
             )}
           </AnimatePresence>
+        </div>
+
+        {/* Speed Round toggle */}
+        <div className="gr-speed-bar">
+          <div className="gr-speed-info">
+            <span className="gr-speed-icon" aria-hidden="true">⚡</span>
+            <div>
+              <strong className="gr-speed-name">Speed Round</strong>
+              <span className="gr-speed-desc">5 s por pregunta · sin pausa entre preguntas</span>
+            </div>
+          </div>
+          <button
+            className={`gr-team-toggle${speedMode ? " gr-team-toggle--active" : ""}`}
+            onClick={() => setSpeedMode(v => !v)}
+            aria-pressed={speedMode}
+          >
+            {speedMode ? <Check size={14} /> : <Zap size={14} />}
+            {speedMode ? "Activado" : "Activar"}
+          </button>
+        </div>
+
+        {/* Exam Mode toggle */}
+        <div className="gr-speed-bar">
+          <div className="gr-speed-info">
+            <span className="gr-speed-icon" aria-hidden="true">📋</span>
+            <div>
+              <strong className="gr-speed-name">Modo Examen</strong>
+              <span className="gr-speed-desc">Sin feedback inmediato · puntaje revelado al final</span>
+            </div>
+          </div>
+          <button
+            className={`gr-team-toggle${examMode ? " gr-team-toggle--active" : ""}`}
+            onClick={() => setExamMode(v => !v)}
+            aria-pressed={examMode}
+          >
+            {examMode ? <Check size={14} /> : <Zap size={14} />}
+            {examMode ? "Activado" : "Activar"}
+          </button>
         </div>
 
         {/* Music selector */}

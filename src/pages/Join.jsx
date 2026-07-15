@@ -12,7 +12,13 @@ export default function Join() {
   const [pin, setPin] = useState(
     searchParams.get("pin") || localStorage.getItem("join_roomCode") || ""
   );
-  const [name, setName] = useState(localStorage.getItem("join_name") || "");
+
+  const studentName      = localStorage.getItem("studentName");
+  const isStudentLoggedIn = !!localStorage.getItem("studentToken");
+
+  const [name, setName] = useState(
+    studentName || localStorage.getItem("join_name") || ""
+  );
   const [error, setError] = useState("");
   const savedAvatar = localStorage.getItem("join_avatar");
   const [selectedAvatar, setSelectedAvatar] = useState((savedAvatar && AVATAR_SEEDS.includes(savedAvatar)) ? savedAvatar : AVATAR_SEEDS[0]);
@@ -93,6 +99,41 @@ export default function Join() {
               Ingresa el código PIN y elige tu personaje
             </p>
           </div>
+
+          {/* Student account banner */}
+          {isStudentLoggedIn ? (
+            <div className="join-student-bar join-student-bar--logged">
+              <span className="join-student-info">👤 {studentName}</span>
+              <div className="join-student-actions">
+                <button
+                  className="join-student-btn"
+                  onClick={() => navigate("/student-history")}
+                >
+                  Mi historial
+                </button>
+                <button
+                  className="join-student-btn join-student-btn--exit"
+                  onClick={() => {
+                    localStorage.removeItem("studentToken");
+                    localStorage.removeItem("studentName");
+                    window.location.reload();
+                  }}
+                >
+                  Salir
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="join-student-bar">
+              <span className="join-student-info">¿Tienes cuenta?</span>
+              <button
+                className="join-student-btn"
+                onClick={() => navigate("/student-login")}
+              >
+                Iniciar sesión
+              </button>
+            </div>
+          )}
 
           {/* Avatar Selection */}
           <div className="join-avatar-section">

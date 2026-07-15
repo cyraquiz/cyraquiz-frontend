@@ -1,0 +1,167 @@
+/* ============================================
+   StudentAuth — login / registro de estudiante
+   Fondo oscuro con blobs, card centrada
+   ============================================ */
+
+/* ─── Page shell ──────────────────────────────────────── */
+.sa-page {
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, oklch(0.14 0.04 14) 0%, oklch(0.10 0.02 252) 100%);
+}
+
+/* ─── Background blobs ────────────────────────────────── */
+.sa-bg {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.sa-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.18;
+}
+
+.sa-blob-1 {
+  width: 420px;
+  height: 420px;
+  background: oklch(0.55 0.24 30);
+  top: -100px;
+  left: -120px;
+}
+
+.sa-blob-2 {
+  width: 320px;
+  height: 320px;
+  background: oklch(0.45 0.18 255);
+  bottom: -80px;
+  right: -80px;
+}
+
+/* ─── Card ────────────────────────────────────────────── */
+.sa-card {
+  position: relative;
+  z-index: 1;
+  background: oklch(0.18 0.04 14 / 0.85);
+  border: 1px solid oklch(1 0 0 / 0.1);
+  backdrop-filter: blur(16px);
+  border-radius: 20px;
+  padding: 2.2rem 2rem 1.8rem;
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* ─── Logo ────────────────────────────────────────────── */
+.sa-logo {
+  height: 44px;
+  width: auto;
+  margin-bottom: 0.1rem;
+}
+
+.sa-heading {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: oklch(0.96 0.004 14);
+  margin: 0;
+  text-align: center;
+}
+
+/* ─── Tabs ────────────────────────────────────────────── */
+.sa-tabs {
+  display: flex;
+  width: 100%;
+  background: oklch(1 0 0 / 0.06);
+  border-radius: 10px;
+  padding: 3px;
+  gap: 3px;
+}
+
+.sa-tab {
+  flex: 1;
+  padding: 0.48rem 0;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  color: oklch(0.75 0.04 14);
+  background: transparent;
+  transition: background 0.18s, color 0.18s;
+}
+
+.sa-tab--active {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+/* ─── Form ────────────────────────────────────────────── */
+.sa-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.sa-input {
+  width: 100%;
+  padding: 0.72rem 1rem;
+  background: oklch(1 0 0 / 0.07);
+  border: 1px solid oklch(1 0 0 / 0.12);
+  border-radius: 10px;
+  color: #fff;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.16s;
+  box-sizing: border-box;
+}
+
+.sa-input::placeholder { color: oklch(0.6 0.02 14); }
+.sa-input:focus { border-color: var(--color-primary-light); }
+
+.sa-error {
+  font-size: 0.78rem;
+  color: oklch(0.75 0.22 30);
+  margin: 0;
+  text-align: center;
+}
+
+.sa-btn {
+  width: 100%;
+  padding: 0.78rem;
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.18s, opacity 0.18s;
+}
+
+.sa-btn:hover:not(:disabled) { background: var(--color-primary-light); }
+.sa-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+
+/* ─── Guest link ──────────────────────────────────────── */
+.sa-guest-link {
+  background: none;
+  border: none;
+  color: oklch(0.62 0.04 14);
+  font-size: 0.8rem;
+  cursor: pointer;
+  padding: 0.2rem;
+  transition: color 0.15s;
+}
+
+.sa-guest-link:hover { color: #fff; }

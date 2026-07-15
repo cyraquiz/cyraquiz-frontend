@@ -7,6 +7,9 @@ import { socket } from "../socket";
 import { OPTION_BG, OPTION_SHADOW, OPTION_LETTER } from "../constants/game";
 import { saveGhostGame } from "../utils/ghostStorage";
 import { apiFetch } from "../utils/api";
+import { resolveServerUrl } from "../utils/url";
+
+const BACKEND_URL = resolveServerUrl();
 import "../styles/GameController.css";
 
 const REACTIONS = ["🔥", "❤️", "😮", "😂", "👏"];
@@ -48,6 +51,8 @@ export default function GameController() {
 
   const [powerUpsEnabled, setPowerUpsEnabled] = useState(false);
   const [usedPowerups,    setUsedPowerups]    = useState({ fifty_fifty: false, double: false, shield: false });
+  const [examMode,        setExamMode]        = useState(false);
+  const examModeRef = useRef(false);
   const [eliminatedOpts,  setEliminatedOpts]  = useState([]);
   const [armedPowerup,    setArmedPowerup]    = useState(null);
 
@@ -126,6 +131,7 @@ export default function GameController() {
         setEliminatedOpts([]);
         setArmedPowerup(null);
         if (q.powerUpsEnabled) setPowerUpsEnabled(true);
+        if (q.examMode) { examModeRef.current = true; setExamMode(true); }
         setGameState("answering");
       } else {
         setGameState("waiting");
@@ -146,6 +152,11 @@ export default function GameController() {
         clearTimeout(pendingSubmitRef.current);
         pendingSubmitRef.current = null;
       }
+      // Exam mode: skip feedback, stay on neutral waiting screen
+      if (examModeRef.current) {
+        setGameState("waiting");
+        return;
+      }
       setGameState("result");
     };
 
@@ -159,6 +170,24 @@ export default function GameController() {
       try { saveGhostGame(ghostCaptureRef.current); } catch { /* no-op en contextos HTTP */ }
       const myIndex = sortedList.findIndex(p => p.name === myName);
       setFinalRank(myIndex + 1);
+
+      // Save session if student is logged in (fire-and-forget)
+      const studentToken = localStorage.getItem("studentToken");
+      if (studentToken && myIndex !== -1) {
+        const log = questionLogRef.current;
+        fetch(`${BACKEND_URL}/student/session`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${studentToken}` },
+          body: JSON.stringify({
+            roomCode: pin,
+            score: sortedList[myIndex].score || 0,
+            rank: myIndex + 1,
+            totalPlayers: sortedList.length,
+            correctAnswers: log.filter(q => q.isCorrect).length,
+            totalQuestions: log.length,
+          }),
+        }).catch(() => {});
+      }
       if (myIndex !== -1) {
         setResultData(prev => ({ ...prev, myTime: sortedList[myIndex].timeAccumulated }));
       }
@@ -516,7 +545,7 @@ export default function GameController() {
             ¡Atento a la pantalla!
           </h2>
           <p className="gc-state-sub gc-waiting-sub">
-            La siguiente pregunta está por salir
+            {examMode ? "Puntaje revelado al finalizar el examen" : "La siguiente pregunta está por salir"}
           </p>
           <div className="gc-name-chip gc-waiting-chip" aria-label={`Jugando como ${myName}`}>
             {myName}
@@ -826,12 +855,24 @@ export default function GameController() {
           </motion.button>
         )}
 
+        {localStorage.getItem("studentToken") && (
+          <motion.button
+            className="gc-btn-history"
+            onClick={() => navigate("/student-history")}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.88 }}
+          >
+            Ver mi historial
+          </motion.button>
+        )}
+
         <motion.button
           className="gc-btn-exit"
           onClick={() => navigate("/join")}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.78 }}
+          transition={{ delay: 0.98 }}
           aria-label="Salir del juego"
         >
           Salir del juego

@@ -31,6 +31,8 @@ function lazyWithReload(fn) {
 }
 
 const GhostMode          = lazyWithReload(() => import("./pages/GhostMode.jsx"));
+const StudentAuth        = lazyWithReload(() => import("./pages/StudentAuth.jsx"));
+const StudentHistory     = lazyWithReload(() => import("./pages/StudentHistory.jsx"));
 const Host               = lazyWithReload(() => import("./pages/Host.jsx"));
 const EditQuiz           = lazyWithReload(() => import("./pages/EditQuiz.jsx"));
 const GameRoom           = lazyWithReload(() => import("./pages/GameRoom.jsx"));
@@ -64,6 +66,8 @@ ReactDOM.createRoot(document.getElementById("root")).render(
             <Route path="/tareas" element={<AssignmentsPage />} />
             <Route path="/banco" element={<PublicBank />} />
             <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/student-login" element={<StudentAuth />} />
+            <Route path="/student-history" element={<StudentHistory />} />
           </Routes>
         </Suspense>
         <AuthModal />
