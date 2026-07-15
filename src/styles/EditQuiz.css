@@ -1251,3 +1251,110 @@
 }
 
 .eq-draw-note svg { flex-shrink: 0; margin-top: 2px; }
+
+/* ─── Video Quiz URL bar ─────────────────────────────── */
+.eq-video-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: var(--surface);
+  border: 1.5px solid var(--border-subtle);
+  border-radius: 12px;
+  padding: 0.65rem 1rem;
+  margin-bottom: 1.25rem;
+  transition: border-color 0.18s;
+}
+
+.eq-video-bar:focus-within {
+  border-color: oklch(0.60 0.22 258);
+}
+
+.eq-video-icon {
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.eq-video-input-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-width: 0;
+}
+
+.eq-video-url-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: 0.86rem;
+  color: var(--text-main);
+  outline: none;
+  min-width: 0;
+}
+
+.eq-video-url-input::placeholder {
+  color: var(--text-muted);
+}
+
+.eq-video-status {
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.eq-video-status--ok  { color: oklch(0.58 0.20 145); }
+.eq-video-status--err { color: oklch(0.58 0.22 25);  }
+
+.eq-video-clear {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  padding: 0.2rem;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  border-radius: 6px;
+  transition: color 0.15s, background 0.15s;
+}
+
+.eq-video-clear:hover {
+  color: var(--text-main);
+  background: var(--border-subtle);
+}
+
+/* ─── Timestamp per question ─────────────────────────── */
+.eq-timestamp-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0.75rem;
+  background: oklch(0.96 0.015 258);
+  border: 1px solid oklch(0.88 0.05 258);
+  border-radius: 8px;
+  margin-bottom: 0.75rem;
+}
+
+.eq-timestamp-label {
+  font-size: 0.78rem;
+  color: oklch(0.50 0.16 258);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.eq-timestamp-input {
+  border: none;
+  background: transparent;
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: oklch(0.35 0.18 258);
+  outline: none;
+  width: 5rem;
+  font-family: var(--font-mono, monospace);
+}
+
+.eq-timestamp-input::placeholder {
+  color: oklch(0.72 0.10 258);
+  font-weight: 400;
+}

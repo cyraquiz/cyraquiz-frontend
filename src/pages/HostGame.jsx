@@ -10,6 +10,12 @@ import { useFocusTrap } from "../hooks/useFocusTrap";
 import { OPTION_BG, OPTION_SHADOW, OPTION_LETTER } from "../constants/game";
 import "../styles/HostGame.css";
 
+function extractYouTubeId(url) {
+  if (!url) return null;
+  const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([a-zA-Z0-9_-]{11})/);
+  return m ? m[1] : null;
+}
+
 const WC_COLORS = [
   "oklch(0.75 0.20 25)",
   "oklch(0.72 0.19 55)",
@@ -70,6 +76,19 @@ export default function HostGame() {
   const speedMode        = location.state?.speedMode || false;
   const examMode         = location.state?.examMode  || false;
 
+  const videoUrl  = quizData?.video_url || "";
+  const videoMode = !!extractYouTubeId(videoUrl);
+
+  const videoTimedQuestions = useMemo(() => {
+    if (!videoMode) return [];
+    return [...questionsList]
+      .filter(q => q.timestamp != null && q.timestamp > 0)
+      .sort((a, b) => a.timestamp - b.timestamp);
+  }, [videoMode, questionsList]);
+
+  const activeQuestionsList = videoMode ? videoTimedQuestions : questionsList;
+  const activeLen           = activeQuestionsList.length;
+
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [timeLeft,             setTimeLeft]             = useState(null);
   const [isShowingResult,      setIsShowingResult]      = useState(false);
@@ -80,6 +99,11 @@ export default function HostGame() {
   const [reactions,            setReactions]            = useState([]);
   const [textAnswers,          setTextAnswers]          = useState([]);
   const [drawings,             setDrawings]             = useState([]);
+  const [videoPhase,           setVideoPhase]           = useState(videoMode ? "playing" : "idle");
+
+  const videoPlayerRef = useRef(null);
+  const videoQIndexRef = useRef(0);
+  const handleNextRef  = useRef(null);
 
   const [playCountdown, { stop: stopCountdown }] = useSound("/countdown.wav",  { volume: 0.6 });
   const [playResultSound]                        = useSound("/result.mp3",      { volume: 0.7 });
@@ -106,7 +130,7 @@ export default function HostGame() {
   const nextLocked      = useRef(false);
   const cancelModalRef  = useFocusTrap(showCancelModal);
 
-  const currentQ = questionsList[currentQuestionIndex];
+  const currentQ = activeQuestionsList[currentQuestionIndex];
 
   const handleExitGame = () => {
     socket.emit("cancel_game", { roomCode, hostToken });
@@ -126,13 +150,14 @@ export default function HostGame() {
 
   // ─── Question music ─────────────────────────────────
   useEffect(() => {
+    if (videoMode) { stopQuestionMusic(); return () => stopQuestionMusic(); }
     if (startCountdown < 0 && !isShowingResult) {
       playQuestionMusic();
     } else {
       stopQuestionMusic();
     }
     return () => stopQuestionMusic();
-  }, [startCountdown, isShowingResult, playQuestionMusic, stopQuestionMusic]);
+  }, [startCountdown, isShowingResult, videoMode, playQuestionMusic, stopQuestionMusic]);
 
   // ─── Auto-reveal when all players answered ──────────
   useEffect(() => {
@@ -154,7 +179,8 @@ export default function HostGame() {
   // ─── New question setup ─────────────────────────────
   useEffect(() => {
     if (startCountdown !== -1) return;
-    const q = questionsList[currentQuestionIndex];
+    if (videoMode && videoPhase !== "questioning") return;
+    const q = activeQuestionsList[currentQuestionIndex];
     if (!q) return;
     nextLocked.current = false;
     setIsShowingResult(false);
@@ -181,7 +207,7 @@ export default function HostGame() {
       socket.off("update_stats",        onUpdateStats);
       socket.off("update_text_answers", onUpdateTextAnswers);
     };
-  }, [currentQuestionIndex, startCountdown, roomCode, questionsList]);
+  }, [currentQuestionIndex, startCountdown, roomCode, activeQuestionsList, videoMode, videoPhase]);
 
   // ─── Timer ──────────────────────────────────────────
   useEffect(() => {
@@ -229,7 +255,7 @@ export default function HostGame() {
   const handleNext = useCallback(() => {
     if (nextLocked.current) return;
     nextLocked.current = true;
-    if (currentQuestionIndex < questionsList.length - 1) {
+    if (currentQuestionIndex < activeLen - 1) {
       setTimeLeft(null);
       setIsShowingResult(false);
       setAnswersCount(0);
@@ -238,14 +264,104 @@ export default function HostGame() {
       socket.emit("game_over", { roomCode, hostToken });
       navigate(`/podium/${roomCode}`, { state: { quizData, players, hostToken } });
     }
-  }, [currentQuestionIndex, questionsList.length, roomCode, hostToken, quizData, players, navigate]);
+  }, [currentQuestionIndex, activeLen, roomCode, hostToken, quizData, players, navigate]);
 
   // ─── Speed Round auto-advance ────────────────────────
   useEffect(() => {
-    if (!speedMode || !isShowingResult) return;
+    if (!speedMode || videoMode || !isShowingResult) return;
     const t = setTimeout(handleNext, 1500);
     return () => clearTimeout(t);
-  }, [isShowingResult, speedMode, handleNext]);
+  }, [isShowingResult, speedMode, videoMode, handleNext]);
+
+  // ─── Keep handleNextRef current ─────────────────────
+  useEffect(() => { handleNextRef.current = handleNext; }, [handleNext]);
+
+  // ─── Load YouTube IFrame API script ─────────────────
+  useEffect(() => {
+    if (!videoMode) return;
+    if (!document.querySelector('script[src*="youtube.com/iframe_api"]')) {
+      const tag = document.createElement("script");
+      tag.src = "https://www.youtube.com/iframe_api";
+      document.head.appendChild(tag);
+    }
+  }, [videoMode]);
+
+  // ─── Init YouTube player when countdown done ─────────
+  useEffect(() => {
+    if (startCountdown !== -1 || !videoMode) return;
+    const ytId = extractYouTubeId(videoUrl);
+    if (!ytId) return;
+
+    const initPlayer = () => {
+      videoPlayerRef.current = new window.YT.Player("yt-player", {
+        videoId: ytId,
+        width: "100%",
+        height: "100%",
+        playerVars: { autoplay: 1, controls: 1, modestbranding: 1, rel: 0, playsinline: 1 },
+        events: {
+          onStateChange: (event) => {
+            if (event.data === window.YT.PlayerState.ENDED) {
+              handleNextRef.current?.();
+            }
+          },
+        },
+      });
+    };
+
+    if (window.YT?.Player) {
+      initPlayer();
+    } else {
+      const prev = window.onYouTubeIframeAPIReady;
+      window.onYouTubeIframeAPIReady = () => {
+        if (typeof prev === "function") prev();
+        initPlayer();
+      };
+    }
+
+    return () => {
+      if (videoPlayerRef.current?.destroy) {
+        try { videoPlayerRef.current.destroy(); } catch {}
+        videoPlayerRef.current = null;
+      }
+    };
+  }, [startCountdown, videoMode, videoUrl]);
+
+  // ─── Poll video timestamps ───────────────────────────
+  useEffect(() => {
+    if (!videoMode || videoPhase !== "playing") return;
+    const interval = setInterval(() => {
+      if (!videoPlayerRef.current?.getCurrentTime) return;
+      const nextQ = videoTimedQuestions[videoQIndexRef.current];
+      if (!nextQ) return;
+      let t;
+      try { t = videoPlayerRef.current.getCurrentTime(); } catch { return; }
+      if (t >= nextQ.timestamp) {
+        try { videoPlayerRef.current.pauseVideo(); } catch {}
+        const qIdx = videoQIndexRef.current;
+        videoQIndexRef.current++;
+        setCurrentQuestionIndex(qIdx);
+        setAnswersCount(0);
+        setVideoPhase("questioning");
+      }
+    }, 250);
+    return () => clearInterval(interval);
+  }, [videoMode, videoPhase, videoTimedQuestions]);
+
+  // ─── Resume video after result (video mode) ──────────
+  useEffect(() => {
+    if (!videoMode || !isShowingResult) return;
+    const isLast = currentQuestionIndex >= videoTimedQuestions.length - 1;
+    const t = setTimeout(() => {
+      if (isLast) {
+        handleNextRef.current?.();
+      } else {
+        try { videoPlayerRef.current?.playVideo(); } catch {}
+        setIsShowingResult(false);
+        setVideoPhase("playing");
+      }
+    }, 2500);
+    return () => clearTimeout(t);
+  }, [isShowingResult, videoMode, currentQuestionIndex, videoTimedQuestions.length]);
 
   const formatTime = (s) => {
     if (s === null) return "···";
@@ -262,9 +378,9 @@ export default function HostGame() {
     timeLeft !== null && timeLeft <= 5  ? "critical" :
     timeLeft !== null && timeLeft <= 10 ? "warning"  : "normal";
 
-  const isLastQuestion = currentQuestionIndex === questionsList.length - 1;
+  const isLastQuestion = currentQuestionIndex === activeLen - 1;
 
-  if (!currentQ) {
+  if (!currentQ && !videoMode) {
     return <div className="hg-loading" role="status">Cargando pregunta…</div>;
   }
 
@@ -337,12 +453,15 @@ export default function HostGame() {
             {examMode && (
               <span className="hg-exam-badge" aria-label="Modo Examen activo">📋 EXAMEN</span>
             )}
+            {videoMode && (
+              <span className="hg-video-badge" aria-label="Video Quiz activo">🎬 VIDEO</span>
+            )}
           </div>
         </div>
 
         <div className="hg-nav-right">
           <AnimatePresence>
-            {isShowingResult && !speedMode && (
+            {isShowingResult && !speedMode && !videoMode && (
               <motion.button
                 className="hg-btn-next"
                 onClick={handleNext}
@@ -368,8 +487,24 @@ export default function HostGame() {
         />
       </div>
 
+      {/* ─ YouTube video screen ─────────────────────── */}
+      {videoMode && (
+        <div
+          className={`hg-video-screen${videoPhase === "playing" ? " hg-video-screen--active" : ""}`}
+          aria-hidden={videoPhase !== "playing"}
+        >
+          <div id="yt-player" className="hg-video-player" />
+          {videoPhase === "playing" && (
+            <p className="hg-video-hint">
+              ▶ El video se pausará automáticamente para cada pregunta
+            </p>
+          )}
+        </div>
+      )}
+
       {/* ─ Main content ─────────────────────────────── */}
-      <main className="hg-main" id="main-content">
+      <main className={`hg-main${videoMode && videoPhase === "playing" ? " hg-main--hidden" : ""}`} id="main-content">
+      {currentQ && (<>
 
         {/* Question card */}
         <div className={`hg-question-area${currentQ.image ? " hg-question-area--has-image" : ""}${isShowingResult ? " hg-question-area--results" : ""}`}>
@@ -562,6 +697,7 @@ export default function HostGame() {
           </motion.div>
         )}
 
+      </>)}
       </main>
 
       {/* ─ Bottom bar ───────────────────────────────── */}
@@ -594,18 +730,18 @@ export default function HostGame() {
 
           {/* Progress + Points */}
           <div className="hg-bottom-right">
-            <div className="hg-bottom-stat hg-bottom-stat--right" aria-label={`Pregunta ${currentQuestionIndex + 1} de ${questionsList.length}`}>
+            <div className="hg-bottom-stat hg-bottom-stat--right" aria-label={`Pregunta ${currentQuestionIndex + 1} de ${activeLen}`}>
               <div className="hg-bottom-stat-row">
                 <span className="hg-bottom-big">
                   {currentQuestionIndex + 1}
-                  <span className="hg-bottom-of">/{questionsList.length}</span>
+                  <span className="hg-bottom-of">/{activeLen}</span>
                 </span>
               </div>
               <span className="hg-bottom-label">Pregunta</span>
             </div>
             <div className="hg-bottom-divider" aria-hidden="true" />
-            <div className="hg-bottom-stat hg-bottom-stat--right" aria-label={`${currentQ.points || 100} puntos`}>
-              <span className="hg-bottom-big">{currentQ.points || 100}</span>
+            <div className="hg-bottom-stat hg-bottom-stat--right" aria-label={`${currentQ?.points || 100} puntos`}>
+              <span className="hg-bottom-big">{currentQ?.points || 100}</span>
               <span className="hg-bottom-label">Puntos</span>
             </div>
           </div>

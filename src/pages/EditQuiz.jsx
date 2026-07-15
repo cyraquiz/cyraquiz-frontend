@@ -57,6 +57,26 @@ const POINTS_OPTIONS = [
   { value: 500, label: "500 pts" },
 ];
 
+/* ─── Video helpers ───────────────────────────────────── */
+function extractYouTubeId(url) {
+  if (!url) return null;
+  const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([a-zA-Z0-9_-]{11})/);
+  return m ? m[1] : null;
+}
+function secsToMmss(secs) {
+  if (secs == null || secs === "") return "";
+  const n = Number(secs);
+  const m = Math.floor(n / 60);
+  const s = n % 60;
+  return `${m}:${s < 10 ? "0" : ""}${s}`;
+}
+function mmssToSecs(str) {
+  if (!str) return null;
+  const parts = str.split(":").map(Number);
+  if (parts.length === 2) return parts[0] * 60 + (parts[1] || 0);
+  return Number(parts[0]) || 0;
+}
+
 /* ─── CustomDropdown ──────────────────────────────────── */
 const CustomDropdown = ({ value, options, onChange, icon, ariaLabel }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -175,6 +195,7 @@ export default function EditQuiz() {
 
   const [currentId, setCurrentId]           = useState(initialData?.id ?? null);
   const [quizTitle, setQuizTitle]           = useState(initialData?.title || "Nuevo Quiz");
+  const [videoUrl, setVideoUrl]             = useState(initialData?.video_url || "");
   const [questions, setQuestions]           = useState(() => {
     const raw = initialData?.questions ?? initialData?.questionsData ?? [];
     let arr;
@@ -378,6 +399,7 @@ export default function EditQuiz() {
           title: quizTitle,
           questions: questions.map(({ _uid, ...q }) => q),
           description: "Creado/Editado en CYRAQuiz",
+          videoUrl: videoUrl || null,
         }),
       });
       if (res.ok) {
@@ -421,6 +443,7 @@ export default function EditQuiz() {
           title: quizTitle,
           questions: questions.map(({ _uid, ...q }) => q),
           questionsData: questions.map(({ _uid, ...q }) => q),
+          video_url: videoUrl || null,
         },
       },
     });
@@ -541,6 +564,37 @@ export default function EditQuiz() {
             className="eq-title-input"
             maxLength={120}
           />
+        </div>
+
+        {/* Video Quiz URL */}
+        <div className="eq-video-bar">
+          <span className="eq-video-icon" aria-hidden="true">🎬</span>
+          <div className="eq-video-input-wrap">
+            <input
+              type="url"
+              value={videoUrl}
+              onChange={(e) => setVideoUrl(e.target.value)}
+              placeholder="URL de YouTube (opcional) — convierte el quiz en Video Quiz"
+              className="eq-video-url-input"
+              aria-label="URL del video de YouTube"
+            />
+            {videoUrl && extractYouTubeId(videoUrl) && (
+              <span className="eq-video-status eq-video-status--ok">✓ Video detectado</span>
+            )}
+            {videoUrl && !extractYouTubeId(videoUrl) && (
+              <span className="eq-video-status eq-video-status--err">URL de YouTube no válida</span>
+            )}
+          </div>
+          {videoUrl && (
+            <button
+              type="button"
+              className="eq-video-clear"
+              onClick={() => setVideoUrl("")}
+              aria-label="Quitar video"
+            >
+              <X size={14} />
+            </button>
+          )}
         </div>
 
         {/* Empty state */}
@@ -734,6 +788,30 @@ export default function EditQuiz() {
                       </label>
                     )}
                   </div>
+
+                  {/* Timestamp — solo visible en Video Quiz */}
+                  {videoUrl && extractYouTubeId(videoUrl) && (
+                    <div className="eq-timestamp-wrap">
+                      <label
+                        htmlFor={`q-${qIndex}-ts`}
+                        className="eq-timestamp-label"
+                      >
+                        ⏱ Aparece en:
+                      </label>
+                      <input
+                        id={`q-${qIndex}-ts`}
+                        type="text"
+                        className="eq-timestamp-input"
+                        value={secsToMmss(q.timestamp)}
+                        onChange={(e) => {
+                          const secs = mmssToSecs(e.target.value);
+                          handleConfigChange(qIndex, "timestamp", secs);
+                        }}
+                        placeholder="1:30"
+                        aria-label={`Momento del video para la pregunta ${qIndex + 1} (MM:SS)`}
+                      />
+                    </div>
+                  )}
 
                   {/* === single | multi | tf | poll → options grid === */}
                   {(!q.type || q.type === "single" || q.type === "multi" || q.type === "tf" || q.type === "poll") && (
