@@ -5,7 +5,7 @@ import {
   ArrowLeft, Save, Play, Clock, Trophy, ChevronDown,
   Trash2, Plus, Check, FileQuestion, Copy, GripVertical,
   X, List, Layers, ToggleLeft,
-  BarChart2, Star, AlignLeft, SlidersHorizontal, ImageIcon, Pencil,
+  BarChart2, Star, AlignLeft, SlidersHorizontal, ImageIcon, Pencil, Sparkles,
 } from "lucide-react";
 import {
   DndContext, closestCenter,
@@ -208,6 +208,13 @@ export default function EditQuiz() {
   });
   const [isSaving, setIsSaving]             = useState(false);
   const [isStarting, setIsStarting]         = useState(false);
+
+  // AI generation panel
+  const [aiOpen,     setAiOpen]     = useState(false);
+  const [aiMode,     setAiMode]     = useState("topic");
+  const [aiInput,    setAiInput]    = useState("");
+  const [aiLoading,  setAiLoading]  = useState(false);
+  const [aiPreview,  setAiPreview]  = useState([]);
   const [pendingDeleteIndex, setPendingDeleteIndex] = useState(null);
   const [toast, setToast]                   = useState(null);
 
@@ -383,6 +390,36 @@ export default function EditQuiz() {
     });
   };
 
+  /* ── AI generation ── */
+  const handleAiGenerate = async () => {
+    if (!aiInput.trim()) return;
+    setAiLoading(true);
+    setAiPreview([]);
+    try {
+      const res = await apiFetch("/generate-text", {
+        method: "POST",
+        body: JSON.stringify({ mode: aiMode, content: aiInput.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) { showToast(data.error || "Error generando preguntas", "error"); return; }
+      const withUids = (data.questions || []).map(q => ({ ...q, _uid: crypto.randomUUID() }));
+      setAiPreview(withUids);
+      if (!withUids.length) showToast("La IA no generó preguntas. Intenta con más texto.", "error");
+    } catch {
+      showToast("Error de conexión con el servidor", "error");
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  const handleAiAddAll = () => {
+    setQuestions(prev => [...prev, ...aiPreview]);
+    setAiPreview([]);
+    setAiInput("");
+    setAiOpen(false);
+    showToast(`${aiPreview.length} preguntas agregadas al quiz`);
+  };
+
   /* ── Save / Start ── */
   const saveToBackend = async () => {
     if (!isLoggedIn()) {
@@ -519,6 +556,14 @@ export default function EditQuiz() {
 
           <div className="eq-nav-right">
             <button
+              className="eq-btn-ai"
+              onClick={() => { setAiOpen(v => !v); setAiPreview([]); }}
+              aria-label="Generar preguntas con IA"
+            >
+              <Sparkles size={14} aria-hidden="true" />
+              <span>IA</span>
+            </button>
+            <button
               className="eq-btn-save"
               onClick={handleSaveOnly}
               disabled={isSaving}
@@ -596,6 +641,110 @@ export default function EditQuiz() {
             </button>
           )}
         </div>
+
+        {/* ─ AI Generation panel ─────────────────────── */}
+        <AnimatePresence>
+          {aiOpen && (
+            <motion.div
+              className="eq-ai-panel"
+              initial={{ opacity: 0, y: -12, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0,   scale: 1    }}
+              exit={{    opacity: 0, y: -8,  scale: 0.98 }}
+              transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <div className="eq-ai-panel-header">
+                <Sparkles size={15} className="eq-ai-icon" aria-hidden="true" />
+                <span className="eq-ai-title">Generar preguntas con IA</span>
+                <button className="eq-ai-close" onClick={() => setAiOpen(false)} aria-label="Cerrar panel IA">
+                  <X size={14} />
+                </button>
+              </div>
+
+              {/* Mode tabs */}
+              <div className="eq-ai-tabs" role="tablist">
+                {[
+                  { id: "topic", label: "Tema" },
+                  { id: "text",  label: "Texto" },
+                  { id: "url",   label: "URL"   },
+                ].map(tab => (
+                  <button
+                    key={tab.id}
+                    role="tab"
+                    aria-selected={aiMode === tab.id}
+                    className={`eq-ai-tab${aiMode === tab.id ? " eq-ai-tab--active" : ""}`}
+                    onClick={() => { setAiMode(tab.id); setAiPreview([]); }}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Input */}
+              {aiMode === "url" ? (
+                <input
+                  type="url"
+                  className="eq-ai-input"
+                  value={aiInput}
+                  onChange={e => setAiInput(e.target.value)}
+                  placeholder="https://..."
+                  aria-label="URL de la que extraer preguntas"
+                />
+              ) : aiMode === "topic" ? (
+                <input
+                  type="text"
+                  className="eq-ai-input"
+                  value={aiInput}
+                  onChange={e => setAiInput(e.target.value)}
+                  placeholder="Ej: Revolución Francesa, tabla periódica, fotosíntesis..."
+                  onKeyDown={e => e.key === "Enter" && handleAiGenerate()}
+                  aria-label="Tema para generar preguntas"
+                />
+              ) : (
+                <textarea
+                  className="eq-ai-textarea"
+                  value={aiInput}
+                  onChange={e => setAiInput(e.target.value)}
+                  placeholder="Pega aquí tus apuntes, el capítulo del libro, o cualquier texto..."
+                  rows={4}
+                  aria-label="Texto del que extraer preguntas"
+                />
+              )}
+
+              <button
+                className="eq-ai-generate-btn"
+                onClick={handleAiGenerate}
+                disabled={aiLoading || !aiInput.trim()}
+              >
+                {aiLoading ? (
+                  <><Spinner className="eq-spinner" /><span>Generando...</span></>
+                ) : (
+                  <><Sparkles size={14} /><span>Generar preguntas</span></>
+                )}
+              </button>
+
+              {/* Preview */}
+              {aiPreview.length > 0 && (
+                <div className="eq-ai-preview">
+                  <div className="eq-ai-preview-header">
+                    <span className="eq-ai-preview-count">{aiPreview.length} preguntas generadas</span>
+                    <button className="eq-ai-add-btn" onClick={handleAiAddAll}>
+                      <Plus size={13} /> Agregar todas al quiz
+                    </button>
+                  </div>
+                  <ul className="eq-ai-preview-list">
+                    {aiPreview.map((q, i) => (
+                      <li key={q._uid} className="eq-ai-preview-item">
+                        <span className="eq-ai-preview-num">{i + 1}</span>
+                        <span className="eq-ai-preview-q">{q.question}</span>
+                        <span className="eq-ai-preview-type">{q.type}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Empty state */}
         {questions.length === 0 && (
@@ -812,6 +961,26 @@ export default function EditQuiz() {
                       />
                     </div>
                   )}
+
+                  {/* Difficulty selector */}
+                  <div className="eq-difficulty-row">
+                    <span className="eq-difficulty-label">Dificultad:</span>
+                    {[
+                      { id: "easy",   emoji: "🟢", label: "Fácil"   },
+                      { id: "medium", emoji: "🟡", label: "Media"   },
+                      { id: "hard",   emoji: "🔴", label: "Difícil" },
+                    ].map(d => (
+                      <button
+                        key={d.id}
+                        type="button"
+                        className={`eq-difficulty-btn eq-difficulty-btn--${d.id}${(q.difficulty || "medium") === d.id ? " eq-difficulty-btn--active" : ""}`}
+                        onClick={() => handleConfigChange(qIndex, "difficulty", d.id)}
+                        aria-pressed={(q.difficulty || "medium") === d.id}
+                      >
+                        {d.emoji} {d.label}
+                      </button>
+                    ))}
+                  </div>
 
                   {/* === single | multi | tf | poll → options grid === */}
                   {(!q.type || q.type === "single" || q.type === "multi" || q.type === "tf" || q.type === "poll") && (

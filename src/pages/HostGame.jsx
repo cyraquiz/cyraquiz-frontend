@@ -2,11 +2,12 @@ import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  ArrowLeft, ChevronRight, Check, AlertTriangle, Users,
+  ArrowLeft, ChevronRight, Check, AlertTriangle, Users, BarChart2, Sparkles, X,
 } from "lucide-react";
 import { socket } from "../socket";
 import useSound from "use-sound";
 import { useFocusTrap } from "../hooks/useFocusTrap";
+import { apiFetch } from "../utils/api";
 import { OPTION_BG, OPTION_SHADOW, OPTION_LETTER } from "../constants/game";
 import "../styles/HostGame.css";
 
@@ -111,6 +112,16 @@ export default function HostGame() {
   const [isChampion,           setIsChampion]           = useState(false);
   const [champion,             setChampion]             = useState(null);
 
+  // Performance log (F10)
+  const [perfLog,              setPerfLog]              = useState([]);
+  const [perfOpen,             setPerfOpen]             = useState(false);
+  const [perfPractice,         setPerfPractice]         = useState([]);
+  const [perfLoading,          setPerfLoading]          = useState(false);
+
+  const statsRef        = useRef(stats);
+  const answersCountRef = useRef(answersCount);
+  const perfLoggedRef   = useRef(-1);
+
   const videoPlayerRef = useRef(null);
   const videoQIndexRef = useRef(0);
   const handleNextRef  = useRef(null);
@@ -185,6 +196,41 @@ export default function HostGame() {
       playResultSound();
     }
   }, [isShowingResult, roomCode, hostToken, playResultSound]);
+
+  // ─── Keep live refs current ─────────────────────────
+  useEffect(() => { statsRef.current = stats; }, [stats]);
+  useEffect(() => { answersCountRef.current = answersCount; }, [answersCount]);
+
+  // ─── Track per-question performance (F10) ───────────
+  useEffect(() => {
+    if (!isShowingResult || !currentQ) return;
+    if (perfLoggedRef.current === currentQuestionIndex) return;
+    perfLoggedRef.current = currentQuestionIndex;
+
+    const type  = currentQ.type || "single";
+    const total = answersCountRef.current || 0;
+    const s     = statsRef.current;
+    let correctPct = null;
+
+    if ((type === "single" || type === "tf") && currentQ.options && currentQ.answer) {
+      const idx = currentQ.options.indexOf(currentQ.answer);
+      if (idx >= 0) correctPct = total > 0 ? Math.round((s[idx] / total) * 100) : 0;
+    } else if (type === "multi" && Array.isArray(currentQ.answer) && currentQ.options) {
+      const idxs = currentQ.answer.map(a => currentQ.options.indexOf(a)).filter(i => i >= 0);
+      if (idxs.length) {
+        const minCorrect = Math.min(...idxs.map(i => s[i] || 0));
+        correctPct = total > 0 ? Math.round((minCorrect / total) * 100) : 0;
+      }
+    }
+
+    setPerfLog(prev => [...prev, {
+      qIndex:     currentQuestionIndex,
+      question:   currentQ.question,
+      difficulty: currentQ.difficulty || "medium",
+      correctPct,
+      type,
+    }]);
+  }, [isShowingResult, currentQuestionIndex]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ─── New question setup ─────────────────────────────
   useEffect(() => {
@@ -406,6 +452,29 @@ export default function HostGame() {
     socket.emit("end_round", { roomCode, hostToken });
   };
 
+  const handlePerfAnalysis = async () => {
+    const weak = perfLog
+      .filter(p => p.correctPct !== null && p.correctPct < 60)
+      .sort((a, b) => a.correctPct - b.correctPct)
+      .slice(0, 5);
+    if (!weak.length) return;
+    setPerfLoading(true);
+    setPerfPractice([]);
+    try {
+      const content = weak
+        .map(p => `Pregunta: "${p.question}" (${p.correctPct}% correctos)`)
+        .join("\n");
+      const res  = await apiFetch("/generate-text", {
+        method: "POST",
+        body: JSON.stringify({ mode: "text", content }),
+      });
+      const data = await res.json();
+      if (res.ok) setPerfPractice(data.questions || []);
+    } catch { /* silent */ } finally {
+      setPerfLoading(false);
+    }
+  };
+
   const handleStartNextRound = () => {
     socket.emit("start_next_round", { roomCode, hostToken });
     nextLocked.current = false;
@@ -513,6 +582,17 @@ export default function HostGame() {
         </div>
 
         <div className="hg-nav-right">
+          {/* Perf analysis button — visible once we have data */}
+          {perfLog.length > 0 && (
+            <button
+              className="hg-btn-perf"
+              onClick={() => { setPerfOpen(true); setPerfPractice([]); }}
+              aria-label="Ver análisis de rendimiento"
+              title="Análisis IA"
+            >
+              <BarChart2 size={14} />
+            </button>
+          )}
           <AnimatePresence>
             {isShowingResult && !speedMode && !videoMode && (
               tournamentMode && questionsInRound >= questionsPerRound ? (
@@ -901,6 +981,93 @@ export default function HostGame() {
           </span>
         ))}
       </div>
+
+      {/* ─ Performance Analysis modal (F10) ────────── */}
+      <AnimatePresence>
+        {perfOpen && (
+          <motion.div
+            className="hg-modal-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.18 }}
+            onClick={() => setPerfOpen(false)}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="hg-perf-title"
+          >
+            <motion.div
+              className="hg-modal hg-perf-modal"
+              initial={{ scale: 0.88, y: 24, opacity: 0 }}
+              animate={{ scale: 1, y: 0, opacity: 1 }}
+              exit={{ scale: 0.93, y: 12, opacity: 0 }}
+              transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="hg-perf-header">
+                <BarChart2 size={17} className="hg-perf-icon" />
+                <h2 className="hg-perf-title" id="hg-perf-title">Análisis de rendimiento</h2>
+                <button className="hg-perf-close" onClick={() => setPerfOpen(false)} aria-label="Cerrar">
+                  <X size={14} />
+                </button>
+              </div>
+
+              {/* Questions sorted worst → best */}
+              <ul className="hg-perf-list">
+                {[...perfLog]
+                  .sort((a, b) => {
+                    const pa = a.correctPct ?? 101;
+                    const pb = b.correctPct ?? 101;
+                    return pa - pb;
+                  })
+                  .map((p, i) => {
+                    const pct = p.correctPct;
+                    const level = pct === null ? "na" : pct < 40 ? "hard" : pct < 70 ? "medium" : "easy";
+                    const emoji = { easy: "🟢", medium: "🟡", hard: "🔴", na: "⚪" }[level];
+                    const diffLabel = { easy: "Fácil", medium: "Media", hard: "Difícil", na: "—" }[level];
+                    return (
+                      <li key={p.qIndex} className={`hg-perf-item hg-perf-item--${level}`}>
+                        <span className="hg-perf-num">{p.qIndex + 1}</span>
+                        <span className="hg-perf-q">{p.question}</span>
+                        <div className="hg-perf-meta">
+                          <span className="hg-perf-diff">{emoji} {diffLabel}</span>
+                          <span className="hg-perf-pct">
+                            {pct !== null ? `${pct}% ✓` : "—"}
+                          </span>
+                        </div>
+                      </li>
+                    );
+                  })}
+              </ul>
+
+              {/* AI practice generation */}
+              {perfLog.some(p => p.correctPct !== null && p.correctPct < 60) && (
+                <div className="hg-perf-ai-section">
+                  <button
+                    className="hg-perf-ai-btn"
+                    onClick={handlePerfAnalysis}
+                    disabled={perfLoading}
+                  >
+                    <Sparkles size={13} />
+                    {perfLoading ? "Generando…" : "Generar práctica para temas débiles"}
+                  </button>
+
+                  {perfPractice.length > 0 && (
+                    <ul className="hg-perf-practice-list">
+                      {perfPractice.map((q, i) => (
+                        <li key={i} className="hg-perf-practice-item">
+                          <span className="hg-perf-practice-num">{i + 1}</span>
+                          <span className="hg-perf-practice-q">{q.question}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ─ Cancel modal ─────────────────────────────── */}
       <AnimatePresence>

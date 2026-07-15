@@ -1189,3 +1189,189 @@
   font-size: 1rem;
   padding: 0.85rem;
 }
+
+/* ═══════════════════════════════════════════
+   F10: PERFORMANCE ANALYSIS MODAL
+   ═══════════════════════════════════════════ */
+
+.hg-btn-perf {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 1.5px solid oklch(0.78 0.16 270);
+  background: oklch(0.97 0.04 270);
+  color: oklch(0.45 0.22 270);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, transform 0.1s;
+  margin-right: 0.5rem;
+}
+.hg-btn-perf:hover {
+  background: oklch(0.92 0.08 270);
+  transform: translateY(-1px);
+}
+
+.hg-perf-modal {
+  max-width: 540px;
+  width: 95%;
+  max-height: 85vh;
+  overflow-y: auto;
+  padding: 1.5rem;
+}
+
+.hg-perf-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+.hg-perf-icon {
+  color: oklch(0.50 0.22 270);
+  flex-shrink: 0;
+}
+.hg-perf-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-main);
+  flex: 1;
+  margin: 0;
+}
+.hg-perf-close {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted, #888);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+.hg-perf-close:hover {
+  background: rgba(0,0,0,0.07);
+}
+
+.hg-perf-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.hg-perf-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: 10px;
+  border: 1.5px solid var(--border-subtle, #e0e0e0);
+  background: var(--bg-main, #fafafa);
+}
+.hg-perf-item--hard   { border-color: oklch(0.82 0.12 25);  background: oklch(0.98 0.02 25);  }
+.hg-perf-item--medium { border-color: oklch(0.86 0.10 80);  background: oklch(0.98 0.02 80);  }
+.hg-perf-item--easy   { border-color: oklch(0.84 0.10 150); background: oklch(0.98 0.02 150); }
+
+.hg-perf-num {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 6px;
+  background: rgba(0,0,0,0.07);
+  font-size: 0.72rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--text-muted, #888);
+}
+.hg-perf-q {
+  flex: 1;
+  font-size: 0.84rem;
+  line-height: 1.35;
+  color: var(--text-main);
+}
+.hg-perf-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.2rem;
+  flex-shrink: 0;
+}
+.hg-perf-diff {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-muted, #888);
+  white-space: nowrap;
+}
+.hg-perf-pct {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+/* AI practice section */
+.hg-perf-ai-section {
+  border-top: 1px solid var(--border-subtle, #e0e0e0);
+  padding-top: 1rem;
+}
+.hg-perf-ai-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  width: 100%;
+  padding: 0.7rem;
+  border-radius: 10px;
+  border: none;
+  background: oklch(0.55 0.22 300);
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s, opacity 0.15s;
+}
+.hg-perf-ai-btn:hover:not(:disabled) { background: oklch(0.48 0.24 300); }
+.hg-perf-ai-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+
+.hg-perf-practice-list {
+  list-style: none;
+  padding: 0;
+  margin: 0.75rem 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.hg-perf-practice-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.55rem 0.75rem;
+  border-radius: 8px;
+  background: oklch(0.97 0.03 300);
+  border: 1px solid oklch(0.90 0.05 300);
+  font-size: 0.82rem;
+}
+.hg-perf-practice-num {
+  width: 1.4rem;
+  height: 1.4rem;
+  border-radius: 5px;
+  background: oklch(0.55 0.22 300 / 0.15);
+  color: oklch(0.45 0.22 300);
+  font-size: 0.7rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.hg-perf-practice-q {
+  flex: 1;
+  color: var(--text-main);
+  line-height: 1.35;
+}
