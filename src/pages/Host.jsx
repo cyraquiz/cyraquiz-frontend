@@ -302,6 +302,14 @@ export default function Host() {
   return (
     <div className="host-page">
 
+      {/* Background blobs */}
+      <div className="host-bg" aria-hidden="true">
+        <div className="host-blob host-blob-1" />
+        <div className="host-blob host-blob-2" />
+        <div className="host-blob host-blob-3" />
+      </div>
+
+
       <AnimatePresence>
         {toast && (
           <Toast

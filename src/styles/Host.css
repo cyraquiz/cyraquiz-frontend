@@ -14,9 +14,55 @@
 
 .host-page {
   min-height: 100vh;
-  background: var(--bg-main);
+  position: relative;
+  background: linear-gradient(180deg,
+    oklch(0.995 0.004 14) 0%,
+    oklch(0.98  0.003 252) 100%
+  );
   display: flex;
   flex-direction: column;
+  overflow-x: hidden;
+}
+
+/* ─── Background blobs ─────────────────────────────── */
+.host-bg {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.host-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.32;
+}
+
+.host-blob-1 {
+  width: 700px;
+  height: 700px;
+  background: linear-gradient(135deg, oklch(0.26 0.14 14) 0%, oklch(0.72 0.09 72) 100%);
+  top: -250px;
+  left: -150px;
+}
+
+.host-blob-2 {
+  width: 550px;
+  height: 550px;
+  background: linear-gradient(135deg, oklch(0.88 0.06 72) 0%, oklch(0.72 0.09 72) 100%);
+  bottom: -180px;
+  right: -160px;
+}
+
+.host-blob-3 {
+  width: 450px;
+  height: 450px;
+  background: linear-gradient(135deg, oklch(0.32 0.14 14) 0%, oklch(0.26 0.14 14) 100%);
+  top: 45%;
+  left: 55%;
+  transform: translate(-50%, -50%);
 }
 
 /* ===========================
@@ -156,6 +202,8 @@
   padding: 3rem 2rem 4rem;
   width: 100%;
   flex: 1;
+  position: relative;
+  z-index: 1;
 }
 
 /* ===========================
