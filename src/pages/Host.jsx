@@ -54,6 +54,8 @@ export default function Host() {
   // AI modal — tab mode
   const [aiMode, setAiMode] = useState("pdf");
   const [textContent, setTextContent] = useState("");
+  const [aiCount, setAiCount] = useState(10);
+  const [aiTypes, setAiTypes] = useState(["single", "multi", "tf"]);
 
   // Assignment modal
   const [assignmentQuiz, setAssignmentQuiz] = useState(null);
@@ -151,6 +153,8 @@ export default function Host() {
     setIsDragging(false);
     setAiMode("pdf");
     setTextContent("");
+    setAiCount(10);
+    setAiTypes(["single", "multi", "tf"]);
   };
 
   const handleGenerateText = async () => {
@@ -159,7 +163,7 @@ export default function Host() {
     try {
       const response = await apiFetch("/generate-text", {
         method: "POST",
-        body: JSON.stringify({ mode: aiMode, content: textContent.trim() }),
+        body: JSON.stringify({ mode: aiMode, content: textContent.trim(), count: aiCount, types: aiTypes }),
       });
       const data = await response.json();
       if (data.success) {
@@ -681,6 +685,69 @@ export default function Host() {
                       </>
                     ) : (
                       <>
+                        {/* ── Personalización: cantidad + tipos ─── */}
+                        <div className="host-ai-config">
+                          <div className="host-ai-config-group">
+                            <span className="host-ai-config-label">Cantidad de preguntas</span>
+                            <div className="host-ai-count-row">
+                              {[5, 10, 15, 20].map(n => (
+                                <button
+                                  key={n}
+                                  type="button"
+                                  className={`host-ai-count-chip${aiCount === n ? " host-ai-count-chip--active" : ""}`}
+                                  onClick={() => setAiCount(n)}
+                                >
+                                  {n}
+                                </button>
+                              ))}
+                              <input
+                                type="number"
+                                className="host-ai-count-input"
+                                value={aiCount}
+                                min={1}
+                                max={30}
+                                onChange={e => {
+                                  const v = Math.min(30, Math.max(1, parseInt(e.target.value) || 1));
+                                  setAiCount(v);
+                                }}
+                                aria-label="Cantidad personalizada"
+                              />
+                            </div>
+                          </div>
+
+                          <div className="host-ai-config-group">
+                            <span className="host-ai-config-label">Tipos de pregunta</span>
+                            <div className="host-ai-types-row">
+                              {[
+                                { id: "single", label: "Única"    },
+                                { id: "multi",  label: "Múltiple" },
+                                { id: "tf",     label: "V / F"    },
+                                { id: "poll",   label: "Encuesta" },
+                                { id: "text",   label: "Abierta"  },
+                              ].map(t => {
+                                const active = aiTypes.includes(t.id);
+                                return (
+                                  <button
+                                    key={t.id}
+                                    type="button"
+                                    className={`host-ai-type-chip${active ? " host-ai-type-chip--active" : ""}`}
+                                    aria-pressed={active}
+                                    onClick={() =>
+                                      setAiTypes(prev =>
+                                        active && prev.length > 1
+                                          ? prev.filter(x => x !== t.id)
+                                          : active ? prev : [...prev, t.id]
+                                      )
+                                    }
+                                  >
+                                    {active ? "✓ " : ""}{t.label}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        </div>
+
                         {aiMode === "topic" && (
                           <div className="host-form-group">
                             <label className="host-form-label">Tema o materia</label>
