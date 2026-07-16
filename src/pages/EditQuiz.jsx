@@ -215,6 +215,8 @@ export default function EditQuiz() {
   const [aiInput,    setAiInput]    = useState("");
   const [aiLoading,  setAiLoading]  = useState(false);
   const [aiPreview,  setAiPreview]  = useState([]);
+  const [aiCount,    setAiCount]    = useState(10);
+  const [aiTypes,    setAiTypes]    = useState(["single", "multi", "tf"]);
   const [pendingDeleteIndex, setPendingDeleteIndex] = useState(null);
   const [toast, setToast]                   = useState(null);
 
@@ -398,7 +400,7 @@ export default function EditQuiz() {
     try {
       const res = await apiFetch("/generate-text", {
         method: "POST",
-        body: JSON.stringify({ mode: aiMode, content: aiInput.trim() }),
+        body: JSON.stringify({ mode: aiMode, content: aiInput.trim(), count: aiCount, types: aiTypes }),
       });
       const data = await res.json();
       if (!res.ok) { showToast(data.error || "Error generando preguntas", "error"); return; }
@@ -677,6 +679,73 @@ export default function EditQuiz() {
                     {tab.label}
                   </button>
                 ))}
+              </div>
+
+              {/* ── Customization row ─────────────────────── */}
+              <div className="eq-ai-config">
+
+                {/* Cantidad */}
+                <div className="eq-ai-config-group">
+                  <span className="eq-ai-config-label">Cantidad</span>
+                  <div className="eq-ai-count-row">
+                    {[5, 10, 15, 20].map(n => (
+                      <button
+                        key={n}
+                        type="button"
+                        className={`eq-ai-count-chip${aiCount === n ? " eq-ai-count-chip--active" : ""}`}
+                        onClick={() => setAiCount(n)}
+                      >
+                        {n}
+                      </button>
+                    ))}
+                    <input
+                      type="number"
+                      className="eq-ai-count-input"
+                      value={aiCount}
+                      min={1}
+                      max={30}
+                      onChange={e => {
+                        const v = Math.min(30, Math.max(1, parseInt(e.target.value) || 1));
+                        setAiCount(v);
+                      }}
+                      aria-label="Cantidad de preguntas"
+                    />
+                  </div>
+                </div>
+
+                {/* Tipos */}
+                <div className="eq-ai-config-group">
+                  <span className="eq-ai-config-label">Tipos de pregunta</span>
+                  <div className="eq-ai-types-row">
+                    {[
+                      { id: "single", label: "Selección única" },
+                      { id: "multi",  label: "Múltiple"        },
+                      { id: "tf",     label: "V / F"           },
+                      { id: "poll",   label: "Encuesta"        },
+                      { id: "text",   label: "Abierta"         },
+                    ].map(t => {
+                      const active = aiTypes.includes(t.id);
+                      return (
+                        <button
+                          key={t.id}
+                          type="button"
+                          className={`eq-ai-type-chip${active ? " eq-ai-type-chip--active" : ""}`}
+                          aria-pressed={active}
+                          onClick={() => {
+                            setAiTypes(prev =>
+                              active && prev.length > 1
+                                ? prev.filter(x => x !== t.id)
+                                : active ? prev : [...prev, t.id]
+                            );
+                          }}
+                        >
+                          {active ? "✓ " : ""}{t.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
               </div>
 
               {/* Input */}
