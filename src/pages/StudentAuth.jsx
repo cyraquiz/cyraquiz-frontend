@@ -49,6 +49,7 @@ export default function StudentAuth() {
       <div className="sa-bg" aria-hidden="true">
         <div className="sa-blob sa-blob-1" />
         <div className="sa-blob sa-blob-2" />
+        <div className="sa-blob sa-blob-3" />
       </div>
 
       <div className="sa-card">
