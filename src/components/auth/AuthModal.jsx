@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Mail, Lock, Eye, EyeOff, CheckCircle, AlertCircle } from "lucide-react";
+import { X, Mail, Lock, Eye, EyeOff, CheckCircle, AlertCircle, KeyRound } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { apiFetch } from "../../utils/api";
@@ -15,6 +15,7 @@ export default function AuthModal() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [teacherCode, setTeacherCode] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState("");
@@ -25,12 +26,14 @@ export default function AuthModal() {
     setEmail("");
     setPassword("");
     setConfirmPassword("");
+    setTeacherCode("");
     setShowPassword(false);
     setShowConfirmPassword(false);
     setError("");
     setSuccessMsg("");
     setIsLoading(false);
   };
+
 
   const handleClose = () => {
     resetForm();
@@ -115,20 +118,24 @@ export default function AuthModal() {
       setError("La contraseña debe tener al menos 6 caracteres");
       return;
     }
+    if (!teacherCode.trim()) {
+      setError("El código de profesor es requerido");
+      return;
+    }
 
     setIsLoading(true);
 
     try {
       const response = await apiFetch("/auth/register", {
         method: "POST",
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, teacher_code: teacherCode.trim() }),
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        setSuccessMsg("¡Registro exitoso! Por favor revisa tu bandeja de entrada (y SPAM) para confirmar tu correo.");
-        setTimeout(() => handleSwitchMode('login'), 3000);
+        setSuccessMsg("¡Registro exitoso! Ya puedes iniciar sesión.");
+        setTimeout(() => handleSwitchMode('login'), 2500);
       } else {
         setError(data.error || "Error al registrar usuario");
       }
@@ -139,6 +146,7 @@ export default function AuthModal() {
       setIsLoading(false);
     }
   };
+
 
   return (
     <>
@@ -291,6 +299,25 @@ export default function AuthModal() {
                     </div>
                   </div>
                 )}
+
+                {authMode === 'register' && (
+                  <div className="auth-form-group">
+                    <label className="auth-label">
+                      <KeyRound size={18} />
+                      <span>Código de Profesor</span>
+                    </label>
+                    <input
+                      type="password"
+                      className="auth-input"
+                      placeholder="Ingresa el código proporcionado"
+                      value={teacherCode}
+                      onChange={(e) => setTeacherCode(e.target.value)}
+                      required
+                      disabled={isLoading || successMsg}
+                    />
+                  </div>
+                )}
+
 
                 <motion.button
                   type="submit"
