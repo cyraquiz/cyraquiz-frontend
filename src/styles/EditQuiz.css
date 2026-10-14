@@ -1753,3 +1753,118 @@
   border-color: oklch(0.70 0.20 25);
   color: oklch(0.40 0.20 25);
 }
+
+/* ─── PDF Upload inside AI Panel ─────────────────────── */
+.eq-ai-panel .host-upload-area {
+  border: 1.5px dashed var(--border-subtle);
+  border-radius: 12px;
+  background: var(--bg-main);
+  margin-bottom: 0.875rem;
+  transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.eq-ai-panel .host-upload-area:has(.host-upload-label:hover) {
+  border-color: oklch(0.55 0.22 300);
+  background: oklch(0.55 0.22 300 / 0.04);
+}
+
+.eq-ai-panel .host-upload-area--drag {
+  border-color: oklch(0.55 0.22 300);
+  background: oklch(0.55 0.22 300 / 0.08);
+  box-shadow: 0 0 0 3px oklch(0.55 0.22 300 / 0.15);
+}
+
+.eq-ai-panel .host-file-input {
+  display: none;
+}
+
+.eq-ai-panel .host-upload-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1.5rem 1rem;
+  cursor: pointer;
+  color: var(--text-muted);
+}
+
+.eq-ai-panel .host-upload-text {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: oklch(0.45 0.22 300);
+  font-family: var(--font-heading);
+}
+
+.eq-ai-panel .host-upload-hint {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-family: var(--font-body);
+}
+
+.eq-ai-panel .host-file-selected {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.875rem 1rem;
+  color: oklch(0.45 0.18 150);
+}
+
+.eq-ai-panel .host-file-name {
+  flex: 1;
+  font-size: 0.84rem;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--font-body);
+}
+
+.eq-ai-panel .host-file-clear {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.eq-ai-panel .host-file-clear:hover {
+  background: rgba(220, 38, 38, 0.1);
+  color: #DC2626;
+}
+
+.eq-ai-panel .host-extract-toggle {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding: 0.65rem 0.85rem;
+  background: var(--bg-main);
+  border: 1px solid var(--border-subtle);
+  border-radius: 9px;
+  cursor: pointer;
+  margin-bottom: 0.875rem;
+}
+
+.eq-ai-panel .host-extract-checkbox {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: oklch(0.55 0.22 300);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.eq-ai-panel .host-extract-text {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--text-main);
+  line-height: 1.4;
+  font-family: var(--font-body);
+}
+

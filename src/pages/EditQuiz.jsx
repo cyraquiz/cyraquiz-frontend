@@ -6,6 +6,7 @@ import {
   Trash2, Plus, Check, FileQuestion, Copy, GripVertical,
   X, List, Layers, ToggleLeft,
   BarChart2, Star, AlignLeft, SlidersHorizontal, ImageIcon, Pencil, Sparkles,
+  Upload, FileText,
 } from "lucide-react";
 import {
   DndContext, closestCenter,
@@ -217,6 +218,9 @@ export default function EditQuiz() {
   const [aiPreview,  setAiPreview]  = useState([]);
   const [aiCount,    setAiCount]    = useState(10);
   const [aiTypes,    setAiTypes]    = useState(["single", "multi", "tf"]);
+  const [pdfFile,    setPdfFile]    = useState(null);
+  const [isExtractMode, setIsExtractMode] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   const [pendingDeleteIndex, setPendingDeleteIndex] = useState(null);
   const [toast, setToast]                   = useState(null);
 
@@ -393,7 +397,47 @@ export default function EditQuiz() {
   };
 
   /* ── AI generation ── */
+  const handlePdfChange = (e) => {
+    const selected = e.target.files[0];
+    if (selected?.type === "application/pdf") setPdfFile(selected);
+  };
+
+  const handleDragOver = (e) => { e.preventDefault(); setIsDragging(true); };
+  const handleDragLeave = (e) => { e.preventDefault(); setIsDragging(false); };
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const dropped = e.dataTransfer.files[0];
+    if (dropped?.type === "application/pdf") setPdfFile(dropped);
+  };
+
   const handleAiGenerate = async () => {
+    if (aiMode === "pdf") {
+      if (!pdfFile) return;
+      setAiLoading(true);
+      setAiPreview([]);
+      try {
+        const formData = new FormData();
+        formData.append("casillaMarcada", isExtractMode);
+        formData.append("pdfFile", pdfFile);
+        const res = await apiUpload("/upload", formData);
+        const data = await res.json();
+        if (!res.ok || !data.success) {
+          showToast(data.error || "Error al procesar PDF con IA", "error");
+          return;
+        }
+        const withUids = (data.questions || []).map(q => ({ ...q, _uid: crypto.randomUUID() }));
+        setAiPreview(withUids);
+        if (!withUids.length) showToast("No se encontraron preguntas en el PDF.", "error");
+      } catch (err) {
+        console.error(err);
+        showToast("Error de conexión al subir PDF", "error");
+      } finally {
+        setAiLoading(false);
+      }
+      return;
+    }
+
     if (!aiInput.trim()) return;
     setAiLoading(true);
     setAiPreview([]);
@@ -418,6 +462,7 @@ export default function EditQuiz() {
     setQuestions(prev => [...prev, ...aiPreview]);
     setAiPreview([]);
     setAiInput("");
+    setPdfFile(null);
     setAiOpen(false);
     showToast(`${aiPreview.length} preguntas agregadas al quiz`);
   };
@@ -665,6 +710,7 @@ export default function EditQuiz() {
               {/* Mode tabs */}
               <div className="eq-ai-tabs" role="tablist">
                 {[
+                  { id: "pdf",   label: "PDF"   },
                   { id: "topic", label: "Tema" },
                   { id: "text",  label: "Texto" },
                   { id: "url",   label: "URL"   },
@@ -681,115 +727,175 @@ export default function EditQuiz() {
                 ))}
               </div>
 
-              {/* ── Customization row ─────────────────────── */}
-              <div className="eq-ai-config">
-
-                {/* Cantidad */}
-                <div className="eq-ai-config-group">
-                  <span className="eq-ai-config-label">Cantidad</span>
-                  <div className="eq-ai-count-row">
-                    {[5, 10, 15, 20].map(n => (
-                      <button
-                        key={n}
-                        type="button"
-                        className={`eq-ai-count-chip${aiCount === n ? " eq-ai-count-chip--active" : ""}`}
-                        onClick={() => setAiCount(n)}
-                      >
-                        {n}
-                      </button>
-                    ))}
+              {aiMode === "pdf" ? (
+                <>
+                  <div
+                    className={`host-upload-area${isDragging ? " host-upload-area--drag" : ""}`}
+                    onDragOver={handleDragOver}
+                    onDragLeave={handleDragLeave}
+                    onDrop={handleDrop}
+                  >
                     <input
-                      type="number"
-                      className="eq-ai-count-input"
-                      value={aiCount}
-                      min={1}
-                      max={30}
-                      onChange={e => {
-                        const v = Math.min(30, Math.max(1, parseInt(e.target.value) || 1));
-                        setAiCount(v);
-                      }}
-                      aria-label="Cantidad de preguntas"
+                      type="file"
+                      id="edit-pdf-upload"
+                      accept="application/pdf"
+                      onChange={handlePdfChange}
+                      className="host-file-input"
                     />
-                  </div>
-                </div>
-
-                {/* Tipos */}
-                <div className="eq-ai-config-group">
-                  <span className="eq-ai-config-label">Tipos de pregunta</span>
-                  <div className="eq-ai-types-row">
-                    {[
-                      { id: "single", label: "Selección única" },
-                      { id: "multi",  label: "Múltiple"        },
-                      { id: "tf",     label: "V / F"           },
-                      { id: "poll",   label: "Encuesta"        },
-                      { id: "text",   label: "Abierta"         },
-                    ].map(t => {
-                      const active = aiTypes.includes(t.id);
-                      return (
-                        <button
-                          key={t.id}
-                          type="button"
-                          className={`eq-ai-type-chip${active ? " eq-ai-type-chip--active" : ""}`}
-                          aria-pressed={active}
-                          onClick={() => {
-                            setAiTypes(prev =>
-                              active && prev.length > 1
-                                ? prev.filter(x => x !== t.id)
-                                : active ? prev : [...prev, t.id]
-                            );
-                          }}
-                        >
-                          {active ? "✓ " : ""}{t.label}
+                    {!pdfFile ? (
+                      <label htmlFor="edit-pdf-upload" className="host-upload-label">
+                        <Upload size={28} aria-hidden="true" />
+                        <span className="host-upload-text">
+                          {isDragging ? "Suelta aquí el archivo" : "Haz clic o arrastra un PDF"}
+                        </span>
+                        <span className="host-upload-hint">Solo archivos .pdf</span>
+                      </label>
+                    ) : (
+                      <div className="host-file-selected">
+                        <FileText size={20} aria-hidden="true" />
+                        <span className="host-file-name">{pdfFile.name}</span>
+                        <button className="host-file-clear" onClick={() => setPdfFile(null)} aria-label="Quitar archivo">
+                          <X size={14} aria-hidden="true" />
                         </button>
-                      );
-                    })}
+                      </div>
+                    )}
                   </div>
-                </div>
-
-              </div>
-
-              {/* Input */}
-              {aiMode === "url" ? (
-                <input
-                  type="url"
-                  className="eq-ai-input"
-                  value={aiInput}
-                  onChange={e => setAiInput(e.target.value)}
-                  placeholder="https://..."
-                  aria-label="URL de la que extraer preguntas"
-                />
-              ) : aiMode === "topic" ? (
-                <input
-                  type="text"
-                  className="eq-ai-input"
-                  value={aiInput}
-                  onChange={e => setAiInput(e.target.value)}
-                  placeholder="Ej: Revolución Francesa, tabla periódica, fotosíntesis..."
-                  onKeyDown={e => e.key === "Enter" && handleAiGenerate()}
-                  aria-label="Tema para generar preguntas"
-                />
+                  <label className="host-extract-toggle">
+                    <input
+                      type="checkbox"
+                      checked={isExtractMode}
+                      onChange={(e) => setIsExtractMode(e.target.checked)}
+                      className="host-extract-checkbox"
+                    />
+                    <span className="host-extract-text">
+                      El PDF ya contiene preguntas (extraer en lugar de generar)
+                    </span>
+                  </label>
+                  <button
+                    className="eq-ai-generate-btn"
+                    onClick={handleAiGenerate}
+                    disabled={aiLoading || !pdfFile}
+                  >
+                    {aiLoading ? (
+                      <><Spinner className="eq-spinner" /><span>Generando preguntas...</span></>
+                    ) : (
+                      <><Sparkles size={14} /><span>Generar desde PDF</span></>
+                    )}
+                  </button>
+                </>
               ) : (
-                <textarea
-                  className="eq-ai-textarea"
-                  value={aiInput}
-                  onChange={e => setAiInput(e.target.value)}
-                  placeholder="Pega aquí tus apuntes, el capítulo del libro, o cualquier texto..."
-                  rows={4}
-                  aria-label="Texto del que extraer preguntas"
-                />
-              )}
+                <>
+                  {/* ── Customization row ─────────────────────── */}
+                  <div className="eq-ai-config">
 
-              <button
-                className="eq-ai-generate-btn"
-                onClick={handleAiGenerate}
-                disabled={aiLoading || !aiInput.trim()}
-              >
-                {aiLoading ? (
-                  <><Spinner className="eq-spinner" /><span>Generando...</span></>
-                ) : (
-                  <><Sparkles size={14} /><span>Generar preguntas</span></>
-                )}
-              </button>
+                    {/* Cantidad */}
+                    <div className="eq-ai-config-group">
+                      <span className="eq-ai-config-label">Cantidad</span>
+                      <div className="eq-ai-count-row">
+                        {[5, 10, 15, 20].map(n => (
+                          <button
+                            key={n}
+                            type="button"
+                            className={`eq-ai-count-chip${aiCount === n ? " eq-ai-count-chip--active" : ""}`}
+                            onClick={() => setAiCount(n)}
+                          >
+                            {n}
+                          </button>
+                        ))}
+                        <input
+                          type="number"
+                          className="eq-ai-count-input"
+                          value={aiCount}
+                          min={1}
+                          max={30}
+                          onChange={e => {
+                            const v = Math.min(30, Math.max(1, parseInt(e.target.value) || 1));
+                            setAiCount(v);
+                          }}
+                          aria-label="Cantidad de preguntas"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Tipos */}
+                    <div className="eq-ai-config-group">
+                      <span className="eq-ai-config-label">Tipos de pregunta</span>
+                      <div className="eq-ai-types-row">
+                        {[
+                          { id: "single", label: "Selección única" },
+                          { id: "multi",  label: "Múltiple"        },
+                          { id: "tf",     label: "V / F"           },
+                          { id: "poll",   label: "Encuesta"        },
+                          { id: "text",   label: "Abierta"         },
+                        ].map(t => {
+                          const active = aiTypes.includes(t.id);
+                          return (
+                            <button
+                              key={t.id}
+                              type="button"
+                              className={`eq-ai-type-chip${active ? " eq-ai-type-chip--active" : ""}`}
+                              aria-pressed={active}
+                              onClick={() => {
+                                setAiTypes(prev =>
+                                  active && prev.length > 1
+                                    ? prev.filter(x => x !== t.id)
+                                    : active ? prev : [...prev, t.id]
+                                );
+                              }}
+                            >
+                              {active ? "✓ " : ""}{t.label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                  </div>
+
+                  {/* Input */}
+                  {aiMode === "url" ? (
+                    <input
+                      type="url"
+                      className="eq-ai-input"
+                      value={aiInput}
+                      onChange={e => setAiInput(e.target.value)}
+                      placeholder="https://..."
+                      aria-label="URL de la que extraer preguntas"
+                    />
+                  ) : aiMode === "topic" ? (
+                    <input
+                      type="text"
+                      className="eq-ai-input"
+                      value={aiInput}
+                      onChange={e => setAiInput(e.target.value)}
+                      placeholder="Ej: Revolución Francesa, tabla periódica, fotosíntesis..."
+                      onKeyDown={e => e.key === "Enter" && handleAiGenerate()}
+                      aria-label="Tema para generar preguntas"
+                    />
+                  ) : (
+                    <textarea
+                      className="eq-ai-textarea"
+                      value={aiInput}
+                      onChange={e => setAiInput(e.target.value)}
+                      placeholder="Pega aquí tus apuntes, el capítulo del libro, o cualquier texto..."
+                      rows={4}
+                      aria-label="Texto del que extraer preguntas"
+                    />
+                  )}
+
+                  <button
+                    className="eq-ai-generate-btn"
+                    onClick={handleAiGenerate}
+                    disabled={aiLoading || !aiInput.trim()}
+                  >
+                    {aiLoading ? (
+                      <><Spinner className="eq-spinner" /><span>Generando...</span></>
+                    ) : (
+                      <><Sparkles size={14} /><span>Generar preguntas</span></>
+                    )}
+                  </button>
+                </>
+              )}
 
               {/* Preview */}
               {aiPreview.length > 0 && (
