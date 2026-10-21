@@ -303,7 +303,7 @@ export default function GameRoom() {
           <div className="gr-qr" aria-label="Código QR para unirse">
             {roomCode ? (
               <QRCodeSVG
-                value={`${window.location.origin}/join?pin=${roomCode}`}
+                value={`${/^(\d{1,3}\.){3}\d{1,3}/.test(window.location.hostname) || window.location.hostname === "localhost" ? `http://${window.location.host}` : window.location.origin}/join?pin=${roomCode}`}
                 size={148}
                 bgColor="transparent"
                 fgColor="oklch(0.22 0.03 252)"
