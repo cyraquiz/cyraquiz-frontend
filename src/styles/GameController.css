@@ -465,7 +465,7 @@
 /* ─── Instruction bar ─────────────────────────────────── */
 .gc-info-bar {
   flex-shrink: 0;
-  height: 46px;
+  height: clamp(36px, 6dvh, 52px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -489,6 +489,12 @@
   gap: 5px;
   padding: 5px;
   min-height: 0;
+}
+
+/* ─── 2-option variant: columna única, 2 filas ─────────── */
+.gc-grid--2 {
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr 1fr;
 }
 
 /* ─── Answer button ───────────────────────────────────── */
@@ -589,7 +595,7 @@
 .gc-submit {
   flex-shrink: 0;
   width: 100%;
-  height: 62px;
+  height: clamp(50px, 8dvh, 70px);
   border-radius: 14px;
   display: flex;
   align-items: center;

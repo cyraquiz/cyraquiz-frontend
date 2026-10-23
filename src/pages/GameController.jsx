@@ -88,6 +88,21 @@ export default function GameController() {
     return () => socket.off("connect", rejoin);
   }, [pin, myName]);
 
+  // ─── Bloquear scroll del body cuando el alumno está respondiendo ───
+  useEffect(() => {
+    if (gameState === "answering") {
+      document.body.style.overflow = "hidden";
+      document.body.style.height = "100dvh";
+    } else {
+      document.body.style.overflow = "";
+      document.body.style.height = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+      document.body.style.height = "";
+    };
+  }, [gameState]);
+
   // While in "result" state, poll the server every 1.5 s so that if
   // final_results was missed (timing/socket issue) we get it on rejoin.
   useEffect(() => {
@@ -648,8 +663,8 @@ export default function GameController() {
 
         <div className="gc-timer-track" aria-hidden="true"><div className="gc-timer-fill" style={{ animationDuration: `${questionTimeRef.current}s` }} /></div>
 
-        {/* 2×2 button grid */}
-        <div className="gc-grid" role="group" aria-label="Opciones de respuesta">
+        {/* 2×2 or 1×2 button grid */}
+        <div className={`gc-grid${currentOptions.length === 2 ? " gc-grid--2" : ""}`} role="group" aria-label="Opciones de respuesta">
           {currentOptions.map((opt, i) => {
             const isSelected   = selectedOptions.includes(opt);
             const isDimmed     = questionType === "multi" && selectedOptions.length > 0 && !isSelected;
